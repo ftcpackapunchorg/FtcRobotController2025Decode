@@ -62,11 +62,11 @@ public class DecodeRi3D extends OpMode {
     // Declare OpMode members.
     private DcMotor leftFrontDrive = null;
     private DcMotor rightFrontDrive = null;
-    private DcMotor leftBackDrive = null;
-    private DcMotor rightBackDrive = null;
-    private DcMotorEx leftLauncher = null;
-    private DcMotorEx rightLauncher = null;
-    private DcMotor intake = null;
+//    private DcMotor leftBackDrive = null;
+//    private DcMotor rightBackDrive = null;
+//    private DcMotorEx leftLauncher = null;
+//    private DcMotorEx rightLauncher = null;
+//    private DcMotor intake = null;
     private CRServo leftFeeder = null;
     private CRServo rightFeeder = null;
     private Servo diverter = null;
@@ -118,15 +118,15 @@ public class DecodeRi3D extends OpMode {
         leftLaunchState = LaunchState.IDLE;
         rightLaunchState = LaunchState.IDLE;
 
-        leftFrontDrive = hardwareMap.get(DcMotor.class, "left_front_drive");
-        rightFrontDrive = hardwareMap.get(DcMotor.class, "right_front_drive");
-        leftBackDrive = hardwareMap.get(DcMotor.class, "left_back_drive");
-        rightBackDrive = hardwareMap.get(DcMotor.class, "right_back_drive");
-        leftLauncher = hardwareMap.get(DcMotorEx.class, "left_launcher");
-        rightLauncher = hardwareMap.get(DcMotorEx.class, "right_launcher");
-        intake = hardwareMap.get(DcMotor.class, "intake");
-        leftFeeder = hardwareMap.get(CRServo.class, "left_feeder");
-        rightFeeder = hardwareMap.get(CRServo.class, "right_feeder");
+        leftFrontDrive = hardwareMap.get(DcMotor.class, "frontLeft");
+        rightFrontDrive = hardwareMap.get(DcMotor.class, "frontRight");
+        // leftBackDrive = hardwareMap.get(DcMotor.class, "left_back_drive");
+//        rightBackDrive = hardwareMap.get(DcMotor.class, "right_back_drive");
+        //leftLauncher = hardwareMap.get(DcMotorEx.class, "leftServo");
+        //rightLauncher = hardwareMap.get(DcMotorEx.class, "rightServo");
+        //intake = hardwareMap.get(DcMotor.class, "intake");
+        leftFeeder = hardwareMap.get(CRServo.class, "leftServo");
+        rightFeeder = hardwareMap.get(CRServo.class, "rightServo");
         diverter = hardwareMap.get(Servo.class, "diverter");
 
         /*
@@ -138,15 +138,15 @@ public class DecodeRi3D extends OpMode {
          */
         leftFrontDrive.setDirection(DcMotor.Direction.REVERSE);
         rightFrontDrive.setDirection(DcMotor.Direction.FORWARD);
-        leftBackDrive.setDirection(DcMotor.Direction.REVERSE);
-        rightBackDrive.setDirection(DcMotor.Direction.FORWARD);
+        //leftBackDrive.setDirection(DcMotor.Direction.REVERSE);
+        //rightBackDrive.setDirection(DcMotor.Direction.FORWARD);
 
-        leftLauncher.setDirection(DcMotorSimple.Direction.REVERSE);
+        //leftLauncher.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        intake.setDirection(DcMotorSimple.Direction.REVERSE);
+        //intake.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        leftLauncher.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        rightLauncher.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        //leftLauncher.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        //rightLauncher.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         /*
          * Setting zeroPowerBehavior to BRAKE enables a "brake mode". This causes the motor to
@@ -155,10 +155,10 @@ public class DecodeRi3D extends OpMode {
          */
         leftFrontDrive.setZeroPowerBehavior(BRAKE);
         rightFrontDrive.setZeroPowerBehavior(BRAKE);
-        leftBackDrive.setZeroPowerBehavior(BRAKE);
-        rightBackDrive.setZeroPowerBehavior(BRAKE);
-        leftLauncher.setZeroPowerBehavior(BRAKE);
-        rightLauncher.setZeroPowerBehavior(BRAKE);
+//        leftBackDrive.setZeroPowerBehavior(BRAKE);
+//        rightBackDrive.setZeroPowerBehavior(BRAKE);
+//        leftLauncher.setZeroPowerBehavior(BRAKE);
+//        rightLauncher.setZeroPowerBehavior(BRAKE);
 
         /*
          * set Feeders to an initial value to initialize the servo controller
@@ -166,8 +166,8 @@ public class DecodeRi3D extends OpMode {
         leftFeeder.setPower(STOP_SPEED);
         rightFeeder.setPower(STOP_SPEED);
 
-        leftLauncher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 0, 0, 10));
-        rightLauncher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 0, 0, 10));
+//        leftLauncher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 0, 0, 10));
+//        rightLauncher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 0, 0, 10));
 
         /*
          * Much like our drivetrain motors, we set the left feeder servo to reverse so that they
@@ -207,13 +207,13 @@ public class DecodeRi3D extends OpMode {
          * Here we give the user control of the speed of the launcher motor without automatically
          * queuing a shot.
          */
-        if (gamepad1.y) {
-            leftLauncher.setVelocity(launcherTarget);
-            rightLauncher.setVelocity(launcherTarget);
-        } else if (gamepad1.b) { // stop flywheel
-            leftLauncher.setVelocity(STOP_SPEED);
-            rightLauncher.setVelocity(STOP_SPEED);
-        }
+//        if (gamepad1.y) {
+//            leftLauncher.setVelocity(launcherTarget);
+//            rightLauncher.setVelocity(launcherTarget);
+//        } else if (gamepad1.b) { // stop flywheel
+//            leftLauncher.setVelocity(STOP_SPEED);
+//            rightLauncher.setVelocity(STOP_SPEED);
+//        }
 
         if (gamepad1.dpadDownWasPressed()) {
             switch (diverterDirection){
@@ -232,11 +232,11 @@ public class DecodeRi3D extends OpMode {
             switch (intakeState){
                 case ON:
                     intakeState = IntakeState.OFF;
-                    intake.setPower(0);
+//                    intake.setPower(0);
                     break;
                 case OFF:
                     intakeState = IntakeState.ON;
-                    intake.setPower(1);
+//                    intake.setPower(1);
                     break;
             }
         }
@@ -267,8 +267,8 @@ public class DecodeRi3D extends OpMode {
          */
         telemetry.addData("State", leftLaunchState);
         telemetry.addData("launch distance", launcherDistance);
-        telemetry.addData("Left Launcher Velocity", leftLauncher.getVelocity());
-        telemetry.addData("Right Launcher Velocity", rightLauncher.getVelocity());
+//        telemetry.addData("Left Launcher Velocity", leftLauncher.getVelocity());
+//        telemetry.addData("Right Launcher Velocity", rightLauncher.getVelocity());
 
     }
 
@@ -294,8 +294,8 @@ public class DecodeRi3D extends OpMode {
 
         leftFrontDrive.setPower(leftFrontPower);
         rightFrontDrive.setPower(rightFrontPower);
-        leftBackDrive.setPower(leftBackPower);
-        rightBackDrive.setPower(rightBackPower);
+//        leftBackDrive.setPower(leftBackPower);
+//        rightBackDrive.setPower(rightBackPower);
 
     }
 
@@ -307,11 +307,11 @@ public class DecodeRi3D extends OpMode {
                 }
                 break;
             case SPIN_UP:
-                leftLauncher.setVelocity(launcherTarget);
-                rightLauncher.setVelocity(launcherTarget);
-                if (leftLauncher.getVelocity() > launcherMin) {
-                    leftLaunchState = LaunchState.LAUNCH;
-                }
+//                leftLauncher.setVelocity(launcherTarget);
+//                rightLauncher.setVelocity(launcherTarget);
+//                if (leftLauncher.getVelocity() > launcherMin) {
+//                    leftLaunchState = LaunchState.LAUNCH;
+//                }
                 break;
             case LAUNCH:
                 leftFeeder.setPower(FULL_SPEED);
@@ -335,11 +335,11 @@ public class DecodeRi3D extends OpMode {
                 }
                 break;
             case SPIN_UP:
-                leftLauncher.setVelocity(launcherTarget);
-                rightLauncher.setVelocity(launcherTarget);
-                if (leftLauncher.getVelocity() > launcherMin) {
-                    rightLaunchState = LaunchState.LAUNCH;
-                }
+//                leftLauncher.setVelocity(launcherTarget);
+//                rightLauncher.setVelocity(launcherTarget);
+//                if (leftLauncher.getVelocity() > launcherMin) {
+//                    rightLaunchState = LaunchState.LAUNCH;
+//                }
                 break;
             case LAUNCH:
                 rightFeeder.setPower(FULL_SPEED);
