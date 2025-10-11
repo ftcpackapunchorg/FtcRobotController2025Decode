@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.test;
+package org.firstinspires.ftc.teamcode.testbench;
 
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -6,8 +6,8 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 
-@TeleOp(name="testmotor1", group="Linear OpMode")
-public class testmotor extends LinearOpMode {
+@TeleOp(name="TestMotorPort0", group="Linear OpMode")
+public class TestMotorPort0 extends LinearOpMode {
 
     DcMotor motor;
     double power = 1;
