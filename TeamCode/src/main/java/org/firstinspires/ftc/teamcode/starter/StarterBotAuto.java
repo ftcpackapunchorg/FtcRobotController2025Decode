@@ -341,7 +341,7 @@ public class StarterBotAuto extends OpMode
                  * the robot has been within a tolerance of the target position for "holdSeconds."
                  * Once the function returns "true" we reset the encoders again and move on.
                  */
-                if(drive(DRIVE_SPEED, -4, DistanceUnit.INCH, 1)){
+                if(drive(DRIVE_SPEED, -1, DistanceUnit.INCH, 1)){
                     leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     autonomousState = AutonomousState.ROTATING;
