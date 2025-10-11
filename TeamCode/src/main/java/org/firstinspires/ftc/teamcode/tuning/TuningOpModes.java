@@ -1,4 +1,4 @@
-package teamcode.tuning;
+package org.firstinspires.ftc.teamcode.tuning;
 
 import androidx.annotation.NonNull;
 
@@ -70,6 +70,16 @@ public final class TuningOpModes {
 
     private static PinpointView makePinpointView(PinpointLocalizer pl) {
         return new PinpointView() {
+
+            @Override
+            public float getHeadingVelocity() {
+                return 0;
+            }
+
+            public float getHeadingVelocity(UnnormalizedAngleUnit unit) {
+                return (float) pl.driver.getHeadingVelocity(unit);
+            }
+
             GoBildaPinpointDriver.EncoderDirection parDirection = pl.initialParDirection;
             GoBildaPinpointDriver.EncoderDirection perpDirection = pl.initialPerpDirection;
 
@@ -88,10 +98,7 @@ public final class TuningOpModes {
                 return pl.driver.getEncoderY();
             }
 
-            @Override
-            public float getHeadingVelocity(UnnormalizedAngleUnit unit) {
-                return (float) pl.driver.getHeadingVelocity(unit);
-            }
+
 
             @Override
             public void setParDirection(@NonNull DcMotorSimple.Direction direction) {
@@ -120,6 +127,7 @@ public final class TuningOpModes {
                 return perpDirection == GoBildaPinpointDriver.EncoderDirection.FORWARD ?
                         DcMotorSimple.Direction.FORWARD : DcMotorSimple.Direction.REVERSE;
             }
+
         };
     }
 
