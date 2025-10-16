@@ -129,9 +129,9 @@ public class StarterBotTeleopMecanums extends OpMode {
          * step.
          */
         leftFrontDrive = hardwareMap.get(DcMotor.class, "frontLeft");
-      rightFrontDrive = hardwareMap.get(DcMotor.class, "frontRight");
-//        leftBackDrive = hardwareMap.get(DcMotor.class, "left_back_drive");
-    //    rightBackDrive = hardwareMap.get(DcMotor.class, "right_back_drive");
+        rightFrontDrive = hardwareMap.get(DcMotor.class, "frontRight");
+        leftBackDrive = hardwareMap.get(DcMotor.class, "backLeft");
+        rightBackDrive = hardwareMap.get(DcMotor.class, "backRight");
         launcher = hardwareMap.get(DcMotorEx.class, "shooter");
         leftFeeder = hardwareMap.get(CRServo.class, "leftServo");
         rightFeeder = hardwareMap.get(CRServo.class, "rightServo");
@@ -145,8 +145,8 @@ public class StarterBotTeleopMecanums extends OpMode {
          */
         leftFrontDrive.setDirection(DcMotor.Direction.REVERSE);
         rightFrontDrive.setDirection(DcMotor.Direction.FORWARD);
-//        leftBackDrive.setDirection(DcMotor.Direction.REVERSE);
-//        rightBackDrive.setDirection(DcMotor.Direction.FORWARD);
+        leftBackDrive.setDirection(DcMotor.Direction.REVERSE);
+        rightBackDrive.setDirection(DcMotor.Direction.FORWARD);
 
         /*
          * Here we set our launcher to the RUN_USING_ENCODER runmode.
@@ -164,8 +164,8 @@ public class StarterBotTeleopMecanums extends OpMode {
          */
         leftFrontDrive.setZeroPowerBehavior(BRAKE);
         rightFrontDrive.setZeroPowerBehavior(BRAKE);
-//        leftBackDrive.setZeroPowerBehavior(BRAKE);
-//        rightBackDrive.setZeroPowerBehavior(BRAKE);
+        leftBackDrive.setZeroPowerBehavior(BRAKE);
+        rightBackDrive.setZeroPowerBehavior(BRAKE);
         launcher.setZeroPowerBehavior(BRAKE);
 
         /*
@@ -258,13 +258,13 @@ public class StarterBotTeleopMecanums extends OpMode {
 
         leftFrontPower = (forward + strafe + rotate) / denominator;
         rightFrontPower = (forward - strafe - rotate) / denominator;
-//        leftBackPower = (forward - strafe + rotate) / denominator;
-//        rightBackPower = (forward + strafe - rotate) / denominator;
+        leftBackPower = (forward - strafe + rotate) / denominator;
+        rightBackPower = (forward + strafe - rotate) / denominator;
 
         leftFrontDrive.setPower(leftFrontPower);
         rightFrontDrive.setPower(rightFrontPower);
-//        leftBackDrive.setPower(leftBackPower);
-//        rightBackDrive.setPower(rightBackPower);
+        leftBackDrive.setPower(leftBackPower);
+        rightBackDrive.setPower(rightBackPower);
 
     }
 
