@@ -32,8 +32,17 @@ public class OpenCV extends LinearOpMode {
 
             if (tagProcessor.getDetections().size() > 0) {
                 AprilTagDetection tag = tagProcessor.getDetections().get(0);
+
+                telemetry.addData("x", tag.ftcPose.x);
+                telemetry.addData("x", tag.ftcPose.y);
+                telemetry.addData("x", tag.ftcPose.z);
+                telemetry.addData("roll", tag.ftcPose.roll);
+                telemetry.addData("pitch", tag.ftcPose.pitch);
+                telemetry.addData("yaw", tag.ftcPose.yaw);
+
             }
 
+            telemetry.update();
 
         }
     }
