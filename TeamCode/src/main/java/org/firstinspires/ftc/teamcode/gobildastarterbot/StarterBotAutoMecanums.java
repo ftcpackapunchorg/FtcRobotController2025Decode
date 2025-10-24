@@ -34,6 +34,7 @@ package org.firstinspires.ftc.teamcode.gobildastarterbot;
 
 import static com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior.BRAKE;
 
+import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -45,6 +46,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.teamcode.MecanumDrive;
 
 
 /*
@@ -68,6 +70,7 @@ public class StarterBotAutoMecanums extends OpMode
 {
 
     final double FEED_TIME = 0.20; //The feeder servos run this long when a shot is requested.
+    MecanumDrive drive;
 
     /*
      * When we control our launcher motor, we are using encoders. These allow the control system
@@ -114,12 +117,6 @@ public class StarterBotAutoMecanums extends OpMode
     private ElapsedTime feederTimer = new ElapsedTime();
     private ElapsedTime driveTimer = new ElapsedTime();
 
-    // Declare OpMode members.
-    private DcMotor leftDrive = null;
-    private DcMotor rightDrive = null;
-    private DcMotorEx launcher = null;
-    private CRServo leftFeeder = null;
-    private CRServo rightFeeder = null;
 
     /*
      * TECH TIP: State Machines
@@ -184,64 +181,11 @@ public class StarterBotAutoMecanums extends OpMode
          */
         autonomousState = AutonomousState.LAUNCH;
         launchState = LaunchState.IDLE;
+        Pose2d initPose = new Pose2d(-43,43,0);
+
+        drive = new MecanumDrive(hardwareMap,initPose);
 
 
-        /*
-         * Initialize the hardware variables. Note that the strings used here as parameters
-         * to 'get' must correspond to the names assigned during the robot configuration
-         * step (using the FTC Robot Controller app on the driver's station).
-         */
-        leftDrive  = hardwareMap.get(DcMotor.class, "left_drive");
-        rightDrive = hardwareMap.get(DcMotor.class, "right_drive");
-        launcher = hardwareMap.get(DcMotorEx.class,"launcher");
-        leftFeeder = hardwareMap.get(CRServo.class, "left_feeder");
-        rightFeeder = hardwareMap.get(CRServo.class, "right_feeder");
-
-
-        /*
-         * To drive forward, most robots need the motor on one side to be reversed,
-         * because the axles point in opposite directions. Pushing the left stick forward
-         * MUST make the robot go forward. So, adjust these two lines based on your first test drive.
-         * Note: The settings here assume direct drive on left and right wheels. Gear
-         * Reduction or 90° drives may require direction flips
-         */
-        leftDrive.setDirection(DcMotor.Direction.REVERSE);
-        rightDrive.setDirection(DcMotor.Direction.FORWARD);
-
-        /*
-         * Here we reset the encoders on our drive motors before we start moving.
-         */
-        leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
-        /*
-         * Setting zeroPowerBehavior to BRAKE enables a "brake mode." This causes the motor to
-         * slow down much faster when it is coasting. This creates a much more controllable
-         * drivetrain, as the robot stops much quicker.
-         */
-        leftDrive.setZeroPowerBehavior(BRAKE);
-        rightDrive.setZeroPowerBehavior(BRAKE);
-        launcher.setZeroPowerBehavior(BRAKE);
-
-        /*
-         * Here we set our launcher to the RUN_USING_ENCODER runmode.
-         * If you notice that you have no control over the velocity of the motor, and it just jumps
-         * right to a number much higher than your set point, make sure that your encoders are plugged
-         * into the port right beside the motor itself.
-         */
-        launcher.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-        /*
-         * Here we set the aforementioned PID coefficients. You shouldn't have to do this for any
-         * other motors on this robot.
-         */
-        launcher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER,new PIDFCoefficients(300,0,0,10));
-
-        /*
-         * Much like our drivetrain motors, we set the left feeder servo to reverse so that they
-         * both work to feed the ball into the robot.
-         */
-        leftFeeder.setDirection(DcMotorSimple.Direction.REVERSE);
 
 
         // Tell the driver that initialization is complete.
@@ -257,8 +201,8 @@ public class StarterBotAutoMecanums extends OpMode
          * We also set the servo power to 0 here to make sure that the servo controller is booted
          * up and ready to go.
          */
-        rightFeeder.setPower(0);
-        leftFeeder.setPower(0);
+        drive.rightFeeder.setPower(0);
+        drive.leftFeeder.setPower(0);
 
 
         /*
@@ -327,9 +271,11 @@ public class StarterBotAutoMecanums extends OpMode
                     if(shotsToFire > 0) {
                         autonomousState = AutonomousState.LAUNCH;
                     } else {
-                        leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                        rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                        launcher.setVelocity(0);
+                        drive.leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                        drive.rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                        drive.leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                        drive.rightBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                        drive.launcher.setVelocity(0);
                         autonomousState = AutonomousState.DRIVING_AWAY_FROM_GOAL;
                     }
                 }
@@ -342,8 +288,10 @@ public class StarterBotAutoMecanums extends OpMode
                  * Once the function returns "true" we reset the encoders again and move on.
                  */
                 if(drive(DRIVE_SPEED, -4, DistanceUnit.INCH, 1)){
-                    leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    drive.leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    drive.rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    drive.leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    drive.rightBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     autonomousState = AutonomousState.ROTATING;
                 }
                 break;
@@ -356,8 +304,10 @@ public class StarterBotAutoMecanums extends OpMode
                 }
 
                 if(rotate(ROTATE_SPEED, robotRotationAngle, AngleUnit.DEGREES,1)){
-                    leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    drive.leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    drive.rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    drive.leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    drive.rightBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     autonomousState = AutonomousState.DRIVING_OFF_LINE;
                 }
                 break;
@@ -380,9 +330,11 @@ public class StarterBotAutoMecanums extends OpMode
         telemetry.addData("AutoState", autonomousState);
         telemetry.addData("LauncherState", launchState);
         telemetry.addData("Motor Current Positions", "left (%d), right (%d)",
-                leftDrive.getCurrentPosition(), rightDrive.getCurrentPosition());
+                drive.leftFront.getCurrentPosition(), drive.rightFront.getCurrentPosition(),
+                drive.leftBack.getCurrentPosition(), drive.rightBack.getCurrentPosition());
         telemetry.addData("Motor Target Positions", "left (%d), right (%d)",
-                leftDrive.getTargetPosition(), rightDrive.getTargetPosition());
+                drive.leftFront.getTargetPosition(), drive.rightFront.getTargetPosition(),
+                drive.leftBack.getTargetPosition(), drive.rightBack.getTargetPosition());
         telemetry.update();
     }
 
@@ -410,18 +362,18 @@ public class StarterBotAutoMecanums extends OpMode
                 }
                 break;
             case PREPARE:
-                launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
-                if (launcher.getVelocity() > LAUNCHER_MIN_VELOCITY){
+                drive.launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
+                if (drive.launcher.getVelocity() > LAUNCHER_MIN_VELOCITY){
                     launchState = LaunchState.LAUNCH;
-                    leftFeeder.setPower(1);
-                    rightFeeder.setPower(1);
+                    drive.leftFeeder.setPower(1);
+                    drive.rightFeeder.setPower(1);
                     feederTimer.reset();
                 }
                 break;
             case LAUNCH:
                 if (feederTimer.seconds() > FEED_TIME) {
-                    leftFeeder.setPower(0);
-                    rightFeeder.setPower(0);
+                    drive.leftFeeder.setPower(0);
+                    drive.rightFeeder.setPower(0);
 
                     if(shotTimer.seconds() > TIME_BETWEEN_SHOTS){
                         launchState = LaunchState.IDLE;
@@ -453,14 +405,20 @@ public class StarterBotAutoMecanums extends OpMode
          */
         double targetPosition = (distanceUnit.toMm(distance) * TICKS_PER_MM);
 
-        leftDrive.setTargetPosition((int) targetPosition);
-        rightDrive.setTargetPosition((int) targetPosition);
+        drive.leftFront.setTargetPosition((int) targetPosition);
+        drive.rightFront.setTargetPosition((int) targetPosition);
+        drive.leftBack.setTargetPosition((int) targetPosition);
+        drive.rightBack.setTargetPosition((int) targetPosition);
 
-        leftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        rightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        drive.leftFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        drive.rightFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        drive.leftBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        drive.rightBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        leftDrive.setPower(speed);
-        rightDrive.setPower(speed);
+        drive.leftFront.setPower(speed);
+        drive.rightFront.setPower(speed);
+        drive.leftBack.setPower(speed);
+        drive.rightBack.setPower(speed);
 
         /*
          * Here we check if we are within tolerance of our target position or not. We calculate the
@@ -469,7 +427,7 @@ public class StarterBotAutoMecanums extends OpMode
          * the driveTimer. Only after we reach the target can the timer count higher than our
          * holdSeconds variable.
          */
-        if(Math.abs(targetPosition - leftDrive.getCurrentPosition()) > (TOLERANCE_MM * TICKS_PER_MM)){
+        if(Math.abs(targetPosition - drive.leftFront.getCurrentPosition()) > (TOLERANCE_MM * TICKS_PER_MM)){
             driveTimer.reset();
         }
 
@@ -505,16 +463,22 @@ public class StarterBotAutoMecanums extends OpMode
         double leftTargetPosition = -(targetMm*TICKS_PER_MM);
         double rightTargetPosition = targetMm*TICKS_PER_MM;
 
-        leftDrive.setTargetPosition((int) leftTargetPosition);
-        rightDrive.setTargetPosition((int) rightTargetPosition);
+        drive.leftFront.setTargetPosition((int) leftTargetPosition);
+        drive.rightFront.setTargetPosition((int) rightTargetPosition);
+        drive.leftBack.setTargetPosition((int) leftTargetPosition);
+        drive.rightBack.setTargetPosition((int) rightTargetPosition);
 
-        leftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        rightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        drive.leftFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        drive.rightFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        drive.leftBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        drive.rightBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        leftDrive.setPower(speed);
-        rightDrive.setPower(speed);
+        drive.leftFront.setPower(speed);
+        drive.rightFront.setPower(speed);
+        drive.leftBack.setPower(speed);
+        drive.rightBack.setPower(speed);
 
-        if((Math.abs(leftTargetPosition - leftDrive.getCurrentPosition())) > (TOLERANCE_MM * TICKS_PER_MM)){
+        if((Math.abs(leftTargetPosition - drive.leftFront.getCurrentPosition())) > (TOLERANCE_MM * TICKS_PER_MM)){
             driveTimer.reset();
         }
 

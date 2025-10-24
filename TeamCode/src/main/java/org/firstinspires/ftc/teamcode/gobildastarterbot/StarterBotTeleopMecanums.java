@@ -34,6 +34,7 @@ package org.firstinspires.ftc.teamcode.gobildastarterbot;
 
 import static com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior.BRAKE;
 
+import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -42,6 +43,8 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.util.ElapsedTime;
+
+import org.firstinspires.ftc.teamcode.MecanumDrive;
 
 /*
  * This file includes a teleop (driver-controlled) file for the goBILDA® StarterBot for the
@@ -74,16 +77,10 @@ public class StarterBotTeleopMecanums extends OpMode {
     final double LAUNCHER_TARGET_VELOCITY = 1125;
     final double LAUNCHER_MIN_VELOCITY = 1075;
 
-    // Declare OpMode members.
-    private DcMotor leftFrontDrive = null;
-    private DcMotor rightFrontDrive = null;
-    private DcMotor leftBackDrive = null;
-    private DcMotor rightBackDrive = null;
-    private DcMotorEx launcher = null;
-    private CRServo leftFeeder = null;
-    private CRServo rightFeeder = null;
 
     ElapsedTime feederTimer = new ElapsedTime();
+
+    MecanumDrive drive;
 
     /*
      * TECH TIP: State Machines
@@ -123,64 +120,17 @@ public class StarterBotTeleopMecanums extends OpMode {
     public void init() {
         launchState = LaunchState.IDLE;
 
+        Pose2d initPose = new Pose2d(-43,43,0);
+
+        drive = new MecanumDrive(hardwareMap,initPose);
+
         /*
          * Initialize the hardware variables. Note that the strings used here as parameters
          * to 'get' must correspond to the names assigned during the robot configuration
          * step.
          */
-        leftFrontDrive = hardwareMap.get(DcMotor.class, "frontLeft");
-        rightFrontDrive = hardwareMap.get(DcMotor.class, "frontRight");
-        leftBackDrive = hardwareMap.get(DcMotor.class, "backLeft");
-        rightBackDrive = hardwareMap.get(DcMotor.class, "backRight");
-        launcher = hardwareMap.get(DcMotorEx.class, "shooter");
-        leftFeeder = hardwareMap.get(CRServo.class, "leftServo");
-        rightFeeder = hardwareMap.get(CRServo.class, "rightServo");
 
-        /*
-         * To drive forward, most robots need the motor on one side to be reversed,
-         * because the axles point in opposite directions. Pushing the left stick forward
-         * MUST make robot go forward. So adjust these two lines based on your first test drive.
-         * Note: The settings here assume direct drive on left and right wheels. Gear
-         * Reduction or 90 Deg drives may require direction flips
-         */
-        leftFrontDrive.setDirection(DcMotor.Direction.REVERSE);
-        rightFrontDrive.setDirection(DcMotor.Direction.FORWARD);
-        leftBackDrive.setDirection(DcMotor.Direction.REVERSE);
-        rightBackDrive.setDirection(DcMotor.Direction.FORWARD);
 
-        /*
-         * Here we set our launcher to the RUN_USING_ENCODER runmode.
-         * If you notice that you have no control over the velocity of the motor, it just jumps
-         * right to a number much higher than your set point, make sure that your encoders are plugged
-         * into the port right beside the motor itself. And that the motors polarity is consistent
-         * through any wiring.
-         */
-        launcher.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-        /*
-         * Setting zeroPowerBehavior to BRAKE enables a "brake mode". This causes the motor to
-         * slow down much faster when it is coasting. This creates a much more controllable
-         * drivetrain. As the robot stops much quicker.
-         */
-        leftFrontDrive.setZeroPowerBehavior(BRAKE);
-        rightFrontDrive.setZeroPowerBehavior(BRAKE);
-        leftBackDrive.setZeroPowerBehavior(BRAKE);
-        rightBackDrive.setZeroPowerBehavior(BRAKE);
-        launcher.setZeroPowerBehavior(BRAKE);
-
-        /*
-         * set Feeders to an initial value to initialize the servo controller
-         */
-        leftFeeder.setPower(STOP_SPEED);
-        rightFeeder.setPower(STOP_SPEED);
-
-        launcher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 0, 0, 10));
-
-        /*
-         * Much like our drivetrain motors, we set the left feeder servo to reverse so that they
-         * both work to feed the ball into the robot.
-         */
-        leftFeeder.setDirection(DcMotorSimple.Direction.REVERSE);
 
         /*
          * Tell the driver that initialization is complete.
@@ -223,9 +173,9 @@ public class StarterBotTeleopMecanums extends OpMode {
          * queuing a shot.
          */
         if (gamepad1.y) {
-            launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
+            drive.launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
         } else if (gamepad1.b) { // stop flywheel
-            launcher.setVelocity(STOP_SPEED);
+            drive.launcher.setVelocity(STOP_SPEED);
         }
 
         /*
@@ -237,7 +187,7 @@ public class StarterBotTeleopMecanums extends OpMode {
          * Show the state and motor powers
          */
         telemetry.addData("State", launchState);
-        telemetry.addData("motorSpeed", launcher.getVelocity());
+        telemetry.addData("motorSpeed", drive.launcher.getVelocity());
 
     }
 
@@ -261,10 +211,10 @@ public class StarterBotTeleopMecanums extends OpMode {
         leftBackPower = (forward - strafe + rotate) / denominator;
         rightBackPower = (forward + strafe - rotate) / denominator;
 
-        leftFrontDrive.setPower(leftFrontPower);
-        rightFrontDrive.setPower(rightFrontPower);
-        leftBackDrive.setPower(leftBackPower);
-        rightBackDrive.setPower(rightBackPower);
+        drive.leftFront.setPower(leftFrontPower);
+        drive.rightFront.setPower(rightFrontPower);
+        drive.leftBack.setPower(leftBackPower);
+        drive.rightBack.setPower(rightBackPower);
 
     }
 
@@ -276,22 +226,22 @@ public class StarterBotTeleopMecanums extends OpMode {
                 }
                 break;
             case SPIN_UP:
-                launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
-                if (launcher.getVelocity() > LAUNCHER_MIN_VELOCITY) {
+                drive.launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
+                if (drive.launcher.getVelocity() > LAUNCHER_MIN_VELOCITY) {
                     launchState = LaunchState.LAUNCH;
                 }
                 break;
             case LAUNCH:
-                leftFeeder.setPower(FULL_SPEED);
-                rightFeeder.setPower(FULL_SPEED);
+                drive.leftFeeder.setPower(FULL_SPEED);
+                drive.rightFeeder.setPower(FULL_SPEED);
                 feederTimer.reset();
                 launchState = LaunchState.LAUNCHING;
                 break;
             case LAUNCHING:
                 if (feederTimer.seconds() > FEED_TIME_SECONDS) {
                     launchState = LaunchState.IDLE;
-                    leftFeeder.setPower(STOP_SPEED);
-                    rightFeeder.setPower(STOP_SPEED);
+                    drive.leftFeeder.setPower(STOP_SPEED);
+                    drive.rightFeeder.setPower(STOP_SPEED);
                 }
                 break;
         }

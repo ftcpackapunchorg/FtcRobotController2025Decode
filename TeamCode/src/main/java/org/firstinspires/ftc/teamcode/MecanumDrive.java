@@ -32,11 +32,13 @@ import com.acmerobotics.roadrunner.ftc.PositionVelocityPair;
 import com.acmerobotics.roadrunner.ftc.RawEncoder;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -106,7 +108,9 @@ public final class MecanumDrive {
     public final AccelConstraint defaultAccelConstraint =
             new ProfileAccelConstraint(PARAMS.minProfileAccel, PARAMS.maxProfileAccel);
 
+    public final DcMotorEx  launcher;
     public final DcMotorEx leftFront, leftBack, rightBack, rightFront;
+    public final CRServo leftFeeder, rightFeeder;
 
     public final VoltageSensor voltageSensor;
 
@@ -225,15 +229,48 @@ public final class MecanumDrive {
 
         // TODO: make sure your config has motors with these names (or change them)
         //   see https://ftc-docs.firstinspires.org/en/latest/hardware_and_software_configuration/configuring/index.html
-        leftFront = hardwareMap.get(DcMotorEx.class, "leftFront");
-        leftBack = hardwareMap.get(DcMotorEx.class, "leftBack");
-        rightBack = hardwareMap.get(DcMotorEx.class, "rightBack");
-        rightFront = hardwareMap.get(DcMotorEx.class, "rightFront");
-
+        leftFront = hardwareMap.get(DcMotorEx.class, "frontLeft");
+        leftBack = hardwareMap.get(DcMotorEx.class, "backLeft");
+        launcher= hardwareMap.get(DcMotorEx.class,"launcher");
+        rightBack = hardwareMap.get(DcMotorEx.class, "backRight");
+        rightFront = hardwareMap.get(DcMotorEx.class, "frontRight");
+        leftFeeder = hardwareMap.get(CRServo.class, "leftServo");
+        rightFeeder = hardwareMap.get(CRServo.class, "rightServo");
+        /*
+         * Setting zeroPowerBehavior to BRAKE enables a "brake mode". This causes the motor to
+         * slow down much faster when it is coasting. This creates a much more controllable
+         * drivetrain. As the robot stops much quicker.
+         */
         leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        /*
+         * To drive forward, most robots need the motor on one side to be reversed,
+         * because the axles point in opposite directions. Pushing the left stick forward
+         * MUST make robot go forward. So adjust these two lines based on your first test drive.
+         * Note: The settings here assume direct drive on left and right wheels. Gear
+         * Reduction or 90 Deg drives may require direction flips
+         */
+        leftFront.setDirection(DcMotor.Direction.REVERSE);
+        rightFront.setDirection(DcMotor.Direction.FORWARD);
+        leftBack.setDirection(DcMotor.Direction.REVERSE);
+        rightBack.setDirection(DcMotor.Direction.FORWARD);
+        /*
+         * Here we reset the encoders on our drive motors before we start moving.
+         */
+        leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        /*
+         * Here we set our launcher to the RUN_USING_ENCODER runmode.
+         * If you notice that you have no control over the velocity of the motor, it just jumps
+         * right to a number much higher than your set point, make sure that your encoders are plugged
+         * into the port right beside the motor itself. And that the motors polarity is consistent
+         * through any wiring.
+         */
+        launcher.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // TODO: reverse motor directions if needed
         //   leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -246,6 +283,20 @@ public final class MecanumDrive {
         voltageSensor = hardwareMap.voltageSensor.iterator().next();
 
         localizer = new DriveLocalizer(pose);
+        /*
+         * set Feeders to an initial value to initialize the servo controller
+         */
+        final double STOP_SPEED = 0.0;
+        leftFeeder.setPower(STOP_SPEED);
+        rightFeeder.setPower(STOP_SPEED);
+
+        launcher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 0, 0, 10));
+
+        /*
+         * Much like our drivetrain motors, we set the left feeder servo to reverse so that they
+         * both work to feed the ball into the robot.
+         */
+        leftFeeder.setDirection(DcMotorSimple.Direction.REVERSE);
 
         FlightRecorder.write("MECANUM_PARAMS", PARAMS);
     }
