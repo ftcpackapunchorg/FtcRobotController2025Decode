@@ -64,7 +64,7 @@ import org.firstinspires.ftc.teamcode.MecanumDrive;
  * main robot "loop," continuously checking for conditions that allow us to move to the next step.
  */
 
-@Autonomous(name="StarterBotAuto", group="StarterBot")
+@Autonomous(name="StarterBotAutoWithMecanums", group="StarterBot")
 //@Disabled
 public class StarterBotAutoMecanums extends OpMode
 {
