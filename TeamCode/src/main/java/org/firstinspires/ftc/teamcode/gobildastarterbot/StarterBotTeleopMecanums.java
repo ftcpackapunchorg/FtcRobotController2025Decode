@@ -115,15 +115,12 @@ public class StarterBotTeleopMecanums extends OpMode {
 
         Pose2d initPose = new Pose2d(-43,43,0);
 
-        drive = new MecanumDrive(hardwareMap,initPose);
-
         /*
          * Initialize the hardware variables. Note that the strings used here as parameters
          * to 'get' must correspond to the names assigned during the robot configuration
          * step.
          */
-
-
+        drive = new MecanumDrive(hardwareMap, initPose);
 
         /*
          * Tell the driver that initialization is complete.
@@ -171,6 +168,11 @@ public class StarterBotTeleopMecanums extends OpMode {
             drive.launcher.setVelocity(STOP_SPEED);
         }
 
+//        if (gamepad1.left_stick_button) {
+//            drive.rightBack.setPower(1);
+//            drive.leftBack.setPower(1);
+//        }
+
         /*
          * Now we call our "Launch" function.
          */
@@ -189,26 +191,6 @@ public class StarterBotTeleopMecanums extends OpMode {
      */
     @Override
     public void stop() {
-    }
-
-    void mecanumDrive(double forward, double strafe, double rotate){
-
-        /* the denominator is the largest motor power (absolute value) or 1
-         * This ensures all the powers maintain the same ratio,
-         * but only if at least one is out of the range [-1, 1]
-         */
-        double denominator = Math.max(Math.abs(forward) + Math.abs(strafe) + Math.abs(rotate), 1);
-
-        leftFrontPower = (forward + strafe + rotate) / denominator;
-        rightFrontPower = (forward - strafe - rotate) / denominator;
-        leftBackPower = (forward - strafe + rotate) / denominator;
-        rightBackPower = (forward + strafe - rotate) / denominator;
-
-        drive.leftFront.setPower(leftFrontPower);
-        drive.rightFront.setPower(rightFrontPower);
-        drive.leftBack.setPower(leftBackPower);
-        drive.rightBack.setPower(rightBackPower);
-
     }
 
     void launch(boolean shotRequested) {
@@ -238,5 +220,45 @@ public class StarterBotTeleopMecanums extends OpMode {
                 }
                 break;
         }
+    }
+
+    /*
+     * Remember, Y stick value is reversed
+     * Counteract imperfect strafing
+     *
+     * forward = -gamepad1.left_stick_y
+     * strafe = gamepad1.left_stick_x
+     * rotate = gamepad1.right_stick_x
+     */
+    void mecanumDrive(double forward, double strafe, double rotate){
+
+        /* the denominator is the largest motor power (absolute value) or 1
+         * This ensures all the powers maintain the same ratio,
+         * but only if at least one is out of the range [-1, 1]
+         */
+        double speed = 2.5;
+        if(gamepad1.left_trigger > 0.1){
+            speed = 1.1;
+        }
+
+        double denominator = Math.max(Math.abs(forward) + Math.abs(strafe) + Math.abs(rotate), speed);
+
+        leftFrontPower = (forward + strafe + rotate) / denominator;
+        rightFrontPower = (forward - strafe - rotate) / denominator;
+        leftBackPower = (forward - strafe + rotate) / denominator;
+        rightBackPower = (forward + strafe - rotate) / denominator;
+
+        drive.leftFront.setPower(leftFrontPower);
+        drive.rightFront.setPower(rightFrontPower);
+        drive.leftBack.setPower(leftBackPower);
+        drive.rightBack.setPower(rightBackPower);
+
+//        double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), speed);
+//
+//        double y = Math.pow(-gamepad1.left_stick_y,3); // Remember, Y stick value is reversed
+//        double x = Math.pow(gamepad1.left_stick_x * 1.1,3); // Counteract imperfect strafing
+//        double rx = Math.pow(gamepad1.right_stick_x,3);
+
+
     }
 }
