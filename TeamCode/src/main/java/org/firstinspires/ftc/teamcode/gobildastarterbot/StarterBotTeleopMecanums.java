@@ -32,16 +32,9 @@
 
 package org.firstinspires.ftc.teamcode.gobildastarterbot;
 
-import static com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior.BRAKE;
-
 import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.CRServo;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.MecanumDrive;
@@ -169,9 +162,9 @@ public class StarterBotTeleopMecanums extends OpMode {
          * Here we give the user control of the speed of the launcher motor without automatically
          * queuing a shot.
          */
-        if (gamepad1.y) {
+        if (gamepad2.y) {
             drive.launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
-        } else if (gamepad1.b) { // stop flywheel
+        } else if (gamepad2.b) { // stop flywheel
             drive.launcher.setVelocity(STOP_SPEED);
         }
 
@@ -183,7 +176,7 @@ public class StarterBotTeleopMecanums extends OpMode {
         /*
          * Now we call our "Launch" function.
          */
-        launch(gamepad1.rightBumperWasPressed());
+        launch(gamepad2.rightBumperWasPressed());
 
         /*
          * Show the state and motor powers
