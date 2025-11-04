@@ -168,11 +168,6 @@ public class StarterBotTeleopMecanums extends OpMode {
             drive.launcher.setVelocity(STOP_SPEED);
         }
 
-//        if (gamepad1.left_stick_button) {
-//            drive.rightBack.setPower(1);
-//            drive.leftBack.setPower(1);
-//        }
-
         /*
          * Now we call our "Launch" function.
          */
