@@ -3,7 +3,6 @@ import static com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior.BRAKE;
 
 import android.util.Size;
 
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -32,9 +31,9 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
  * we will also need to adjust the "PIDF" coefficients with some that are a better fit for our application.
  */
 
-@TeleOp(name = "StarterBotTeleopMecanums", group = "StarterBot")
+@TeleOp(name = "NewTeleOp", group = "StarterBot")
 //@Disabled
-class StarterBotTeleopMecanums extends OpMode {
+class NewTeleOp extends OpMode {
     final double FEED_TIME_SECONDS = 0.20; //The feeder servos run this long when a shot is requested.
     final double STOP_SPEED = 0.0; //We send this power to the servos when we want them to stop.
     final double FULL_SPEED = 1.0;
@@ -58,6 +57,68 @@ class StarterBotTeleopMecanums extends OpMode {
     private CRServo rightFeeder = null;
 
     ElapsedTime feederTimer = new ElapsedTime();
+
+    public void runOpMode() throws InterruptedException {
+        AprilTagProcessor tagProcessor = new AprilTagProcessor.Builder()
+                .setDrawAxes(true)
+                .setDrawCubeProjection(true)
+                .setDrawTagID(true)
+                .setDrawTagOutline(true)
+                .build();
+
+        VisionPortal visionPortal = new VisionPortal.Builder()
+                .addProcessor(tagProcessor)
+                .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
+                .setCameraResolution(new Size(640, 480))
+                .build();
+
+        waitForStart();
+
+        while (!(isStopRequested() && opModeIsActive())) {
+
+            if (tagProcessor.getDetections().size() > 0) {
+                AprilTagDetection tag = tagProcessor.getDetections().get(0);
+
+                telemetry.addData("x", tag.ftcPose.x);
+                telemetry.addData("x", tag.ftcPose.y);
+                telemetry.addData("x", tag.ftcPose.z);
+                telemetry.addData("roll", tag.ftcPose.roll);
+                telemetry.addData("pitch", tag.ftcPose.pitch);
+                telemetry.addData("yaw", tag.ftcPose.yaw);
+
+            }
+
+            telemetry.update();
+
+        }
+    }
+
+    private boolean opModeIsActive() {
+        return true;
+    }
+
+    private boolean isStopRequested() {
+        return true;
+    }
+
+    private void waitForStart() {
+    }
+
+    public DcMotor getLeftBackDrive() {
+        return leftBackDrive;
+    }
+
+    public void setLeftBackDrive(DcMotor leftBackDrive) {
+        this.leftBackDrive = leftBackDrive;
+    }
+
+    public DcMotor getRightBackDrive() {
+        return rightBackDrive;
+    }
+
+    public void setRightBackDrive(DcMotor rightBackDrive) {
+        this.rightBackDrive = rightBackDrive;
+    }
 
     /*
      * TECH TIP: State Machines
@@ -271,43 +332,3 @@ class StarterBotTeleopMecanums extends OpMode {
         }
     }
 }
-
-@TeleOp(name = "TestOpenCV", group = "Sensor")
-public class VisionTeleOp extends LinearOpMode {
-    @Override
-    public void runOpMode() throws InterruptedException {
-
-
-        AprilTagProcessor tagProcessor = new AprilTagProcessor.Builder()
-                .setDrawAxes(true)
-                .setDrawCubeProjection(true)
-                .setDrawTagID(true)
-                .setDrawTagOutline(true)
-                .build();
-
-        VisionPortal visionPortal = new VisionPortal.Builder()
-                .addProcessor(tagProcessor)
-                .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))
-                .setCameraResolution(new Size(640, 480))
-                .build();
-
-        waitForStart();
-
-        while (!isStopRequested() && opModeIsActive()) {
-
-            if (tagProcessor.getDetections().size() > 0) {
-                AprilTagDetection tag = tagProcessor.getDetections().get(0);
-
-                telemetry.addData("x", tag.ftcPose.x);
-                telemetry.addData("x", tag.ftcPose.y);
-                telemetry.addData("x", tag.ftcPose.z);
-                telemetry.addData("roll", tag.ftcPose.roll);
-                telemetry.addData("pitch", tag.ftcPose.pitch);
-                telemetry.addData("yaw", tag.ftcPose.yaw);
-
-            }
-
-            telemetry.update();
-
-        }
-    }
