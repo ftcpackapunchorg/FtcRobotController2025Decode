@@ -5,7 +5,9 @@ import androidx.annotation.NonNull;
 import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
-import com.acmerobotics.roadrunner.*;
+import com.acmerobotics.roadrunner.AccelConstraint;
+import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.Actions;
 import com.acmerobotics.roadrunner.AngularVelConstraint;
 import com.acmerobotics.roadrunner.DualNum;
 import com.acmerobotics.roadrunner.HolonomicController;
@@ -14,12 +16,20 @@ import com.acmerobotics.roadrunner.MinVelConstraint;
 import com.acmerobotics.roadrunner.MotorFeedforward;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.Pose2dDual;
+import com.acmerobotics.roadrunner.PoseVelocity2d;
+import com.acmerobotics.roadrunner.PoseVelocity2dDual;
 import com.acmerobotics.roadrunner.ProfileAccelConstraint;
+import com.acmerobotics.roadrunner.ProfileParams;
+import com.acmerobotics.roadrunner.Rotation2d;
 import com.acmerobotics.roadrunner.Time;
 import com.acmerobotics.roadrunner.TimeTrajectory;
 import com.acmerobotics.roadrunner.TimeTurn;
 import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
+import com.acmerobotics.roadrunner.TrajectoryBuilderParams;
 import com.acmerobotics.roadrunner.TurnConstraints;
+import com.acmerobotics.roadrunner.Twist2d;
+import com.acmerobotics.roadrunner.Twist2dDual;
+import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.VelConstraint;
 import com.acmerobotics.roadrunner.ftc.DownsampledWriter;
 import com.acmerobotics.roadrunner.ftc.Encoder;
@@ -34,8 +44,8 @@ import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
@@ -48,13 +58,12 @@ import org.firstinspires.ftc.teamcode.messages.MecanumCommandMessage;
 import org.firstinspires.ftc.teamcode.messages.MecanumLocalizerInputsMessage;
 import org.firstinspires.ftc.teamcode.messages.PoseMessage;
 
-import java.lang.Math;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
 @Config
-public final class MecanumDrive {
+public final class CustomMecanumDrive {
     public static class Params {
         // IMU orientation
         // TODO: fill in these values based on
@@ -66,14 +75,13 @@ public final class MecanumDrive {
 
         // drive model parameters
         public double inPerTick = 0.0019925989;
-        public double lateralInPerTick = 0.0017907115745390422;
-        //0.0017609115382996813
-        public double trackWidthTicks = 6187.887149485748;
+        public double lateralInPerTick = 0.0017686044729066817;
+        public double trackWidthTicks = 6209.081780203246;
 
         // feedforward parameters (in tick units)
-        public double kS = 0.28579037053675194;
-        public double kV = 0.0004285304579137103;
-        public double kA = 0.00011;
+        public double kS = 0.36624827480095945;
+        public double kV = 0.0004202087585865365;
+        public double kA = 0;
 
         // path profile parameters (in inches)
         public double maxWheelVel = 50;
@@ -109,9 +117,9 @@ public final class MecanumDrive {
     public final AccelConstraint defaultAccelConstraint =
             new ProfileAccelConstraint(PARAMS.minProfileAccel, PARAMS.maxProfileAccel);
 
-    public final DcMotorEx  launcher;
+//    public final DcMotorEx  launcher;
     public final DcMotorEx leftFront, leftBack, rightBack, rightFront;
-    public final CRServo leftFeeder, rightFeeder;
+//    public final CRServo leftFeeder, rightFeeder;
 
     public final VoltageSensor voltageSensor;
 
@@ -135,10 +143,10 @@ public final class MecanumDrive {
         private Pose2d pose;
 
         public DriveLocalizer(Pose2d pose) {
-            leftFront = new OverflowEncoder(new RawEncoder(MecanumDrive.this.leftFront));
-            leftBack = new OverflowEncoder(new RawEncoder(MecanumDrive.this.leftBack));
-            rightBack = new OverflowEncoder(new RawEncoder(MecanumDrive.this.rightBack));
-            rightFront = new OverflowEncoder(new RawEncoder(MecanumDrive.this.rightFront));
+            leftFront = new OverflowEncoder(new RawEncoder(CustomMecanumDrive.this.leftFront));
+            leftBack = new OverflowEncoder(new RawEncoder(CustomMecanumDrive.this.leftBack));
+            rightBack = new OverflowEncoder(new RawEncoder(CustomMecanumDrive.this.rightBack));
+            rightFront = new OverflowEncoder(new RawEncoder(CustomMecanumDrive.this.rightFront));
 
             imu = lazyImu.get();
 
@@ -221,7 +229,7 @@ public final class MecanumDrive {
         }
     }
 
-    public MecanumDrive(HardwareMap hardwareMap, Pose2d pose) {
+    public CustomMecanumDrive(HardwareMap hardwareMap, Pose2d pose) {
         LynxFirmware.throwIfModulesAreOutdated(hardwareMap);
 
         for (LynxModule module : hardwareMap.getAll(LynxModule.class)) {
@@ -232,11 +240,11 @@ public final class MecanumDrive {
         //   see https://ftc-docs.firstinspires.org/en/latest/hardware_and_software_configuration/configuring/index.html
         leftFront = hardwareMap.get(DcMotorEx.class, "frontLeft");
         leftBack = hardwareMap.get(DcMotorEx.class, "backLeft");
-        launcher= hardwareMap.get(DcMotorEx.class,"launcher");
+//        launcher= hardwareMap.get(DcMotorEx.class,"launcher");
         rightBack = hardwareMap.get(DcMotorEx.class, "backRight");
         rightFront = hardwareMap.get(DcMotorEx.class, "frontRight");
-        leftFeeder = hardwareMap.get(CRServo.class, "leftServo");
-        rightFeeder = hardwareMap.get(CRServo.class, "rightServo");
+//        leftFeeder = hardwareMap.get(CRServo.class, "leftServo");
+//        rightFeeder = hardwareMap.get(CRServo.class, "rightServo");
         /*
          * Setting zeroPowerBehavior to BRAKE enables a "brake mode". This causes the motor to
          * slow down much faster when it is coasting. This creates a much more controllable
@@ -277,7 +285,7 @@ public final class MecanumDrive {
          * into the port right beside the motor itself. And that the motors polarity is consistent
          * through any wiring.
          */
-        launcher.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//        launcher.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // TODO: reverse motor directions if needed
         //   leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -294,16 +302,16 @@ public final class MecanumDrive {
          * set Feeders to an initial value to initialize the servo controller
          */
         final double STOP_SPEED = 0.0;
-        leftFeeder.setPower(STOP_SPEED);
-        rightFeeder.setPower(STOP_SPEED);
+//        leftFeeder.setPower(STOP_SPEED);
+//        rightFeeder.setPower(STOP_SPEED);
 
-        launcher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 0, 0, 10));
+//        launcher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 0, 0, 10));
 
         /*
          * Much like our drivetrain motors, we set the left feeder servo to reverse so that they
          * both work to feed the ball into the robot.
          */
-        leftFeeder.setDirection(DcMotorSimple.Direction.REVERSE);
+//        leftFeeder.setDirection(DcMotorSimple.Direction.REVERSE);
 
         FlightRecorder.write("MECANUM_PARAMS", PARAMS);
     }
