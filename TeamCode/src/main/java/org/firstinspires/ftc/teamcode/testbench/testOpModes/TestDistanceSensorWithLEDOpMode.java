@@ -30,13 +30,13 @@ public class TestDistanceSensorWithLEDOpMode extends OpMode {
         // Print "Too Close" if the distance is less than 10 cm
         double distance = distanceSensor.getDistance();
 
-        if(distance < 10) {
+        if(distance < 30) {
             testLED.setGreenLED(false);
             testLED.setRedLED(true);
 
             telemetry.addLine("Too close. Turning on red");
 
-        } else if(distance >= 10 && distance <= 25) {
+        } else if(distance >= 30 && distance <= 55) {
 
             testLED.setGreenLED(true);
             testLED.setRedLED(true);

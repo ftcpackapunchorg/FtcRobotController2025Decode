@@ -2,13 +2,14 @@ package org.firstinspires.ftc.teamcode.testbench.testOpModes;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.LED;
 
 
 import org.firstinspires.ftc.teamcode.testbench.sensors.TestLED;
 @TeleOp(name = "DistanceTest", group = "StarterBot")
 public class DistanceTest extends OpMode{
-    TestdistancesensorLedLight bench = new TestdistancesensorLedLight();
+    TestDistanceSensorWithLEDOpMode bench = new TestDistanceSensorWithLEDOpMode;
     double distance;
     TestLED led;
     private LED greenLED;
@@ -17,7 +18,7 @@ public class DistanceTest extends OpMode{
 
     @Override
     public void init() {
-        bench.init(hardwareMap);
+        bench.init(HardwareMap);
         led.init(hardwareMap);
         greenLED = hardwareMap.get(LED.class, "greenLED");
         redLED = hardwareMap.get(LED.class, "redLED");
