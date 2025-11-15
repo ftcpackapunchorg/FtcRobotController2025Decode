@@ -10,7 +10,6 @@ public class TestLED {
 
 
     private LED greenLED;
-
     private LED redLED;
 
     public void init(HardwareMap hardwareMap) {
