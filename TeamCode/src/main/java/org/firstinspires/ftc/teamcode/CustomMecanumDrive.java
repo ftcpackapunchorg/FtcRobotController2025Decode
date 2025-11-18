@@ -117,7 +117,7 @@ public final class CustomMecanumDrive {
     public final AccelConstraint defaultAccelConstraint =
             new ProfileAccelConstraint(PARAMS.minProfileAccel, PARAMS.maxProfileAccel);
 
-//    public final DcMotorEx  launcher;
+  public final DcMotorEx  launcher;
     public final DcMotorEx leftFront, leftBack, rightBack, rightFront;
 //    public final CRServo leftFeeder, rightFeeder;
 
@@ -240,7 +240,7 @@ public final class CustomMecanumDrive {
         //   see https://ftc-docs.firstinspires.org/en/latest/hardware_and_software_configuration/configuring/index.html
         leftFront = hardwareMap.get(DcMotorEx.class, "frontLeft");
         leftBack = hardwareMap.get(DcMotorEx.class, "backLeft");
-//        launcher= hardwareMap.get(DcMotorEx.class,"launcher");
+        launcher= hardwareMap.get(DcMotorEx.class,"launcher");
         rightBack = hardwareMap.get(DcMotorEx.class, "backRight");
         rightFront = hardwareMap.get(DcMotorEx.class, "frontRight");
 //        leftFeeder = hardwareMap.get(CRServo.class, "leftServo");
@@ -285,7 +285,7 @@ public final class CustomMecanumDrive {
          * into the port right beside the motor itself. And that the motors polarity is consistent
          * through any wiring.
          */
-//        launcher.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        launcher.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // TODO: reverse motor directions if needed
         //   leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -305,7 +305,7 @@ public final class CustomMecanumDrive {
 //        leftFeeder.setPower(STOP_SPEED);
 //        rightFeeder.setPower(STOP_SPEED);
 
-//        launcher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 0, 0, 10));
+        launcher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 0, 0, 10));
 
         /*
          * Much like our drivetrain motors, we set the left feeder servo to reverse so that they
