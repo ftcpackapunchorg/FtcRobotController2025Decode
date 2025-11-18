@@ -39,6 +39,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 
 import org.firstinspires.ftc.teamcode.MecanumDrive;
+import org.firstinspires.ftc.teamcode.testbench.sensors.TestDistanceSensor;
+import org.firstinspires.ftc.teamcode.testbench.sensors.TestLED;
 
 /*
  * This file includes a teleop (driver-controlled) file for the goBILDA® StarterBot for the
@@ -107,6 +109,10 @@ public class StarterBotTeleopMecanums extends OpMode {
     double leftBackPower;
     double rightBackPower;
 
+    TestDistanceSensor distanceSensor = new TestDistanceSensor();
+
+    TestLED testLED = new TestLED();
+
     /*
      * Code to run ONCE when the driver hits INIT
      */
@@ -122,11 +128,13 @@ public class StarterBotTeleopMecanums extends OpMode {
          * step.
          */
         drive = new MecanumDrive(hardwareMap, initPose);
-
+        distanceSensor.init(hardwareMap);
+        testLED.init(hardwareMap);
         /*
          * Tell the driver that initialization is complete.
          */
         telemetry.addData("Status", "Initialized");
+
     }
 
     /*
@@ -168,6 +176,35 @@ public class StarterBotTeleopMecanums extends OpMode {
         } else if (gamepad2.b) { // stop flywheel
             drive.launcher.setVelocity(STOP_SPEED);
         }
+
+        telemetry.addData("Distance : ", distanceSensor.getDistance());
+
+        // Print "Too Close" if the distance is less than 10 cm
+        double distance = distanceSensor.getDistance();
+
+        if(distance < 10) {
+            testLED.setGreenLED(false);
+            testLED.setRedLED(true);
+
+            telemetry.addLine("Too close. Turning on red");
+
+        } else if(distance >= 10 && distance <= 25) {
+
+            testLED.setGreenLED(true);
+            testLED.setRedLED(true);
+
+            telemetry.addLine("Be cautious. Turning on yellow");
+
+        }
+        else {
+
+            testLED.setGreenLED(true);
+            testLED.setRedLED(false);
+
+            telemetry.addLine("Safe distance. Turning on green");
+
+        }
+
 
         /*
          * Now we call our "Launch" function.
