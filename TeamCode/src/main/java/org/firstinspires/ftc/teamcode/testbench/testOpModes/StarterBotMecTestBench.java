@@ -6,6 +6,8 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.MecanumDrive;
+import org.firstinspires.ftc.teamcode.gobildastarterbot.mechanicals.StarterBotFeederMechanism;
+import org.firstinspires.ftc.teamcode.gobildastarterbot.mechanicals.StarterBotLaunchMechanism;
 
 
 @TeleOp(name="StarterBotMecTestBench", group="TestBench")
@@ -13,6 +15,10 @@ public class StarterBotMecTestBench extends OpMode {
     double power = 1;
 
     MecanumDrive drive;
+
+    StarterBotLaunchMechanism launchMechanism;
+
+    StarterBotFeederMechanism feederMechanism;
 
     @Override
     public void init() {
@@ -24,6 +30,10 @@ public class StarterBotMecTestBench extends OpMode {
          * step.
          */
         drive = new MecanumDrive(hardwareMap, initPose);
+
+        launchMechanism = new StarterBotLaunchMechanism(hardwareMap, telemetry);
+
+        feederMechanism = new StarterBotFeederMechanism(hardwareMap, telemetry);
 
         /*
          * Tell the driver that initialization is complete.
@@ -53,24 +63,24 @@ public class StarterBotMecTestBench extends OpMode {
 
         if(gamepad1.b) {
 
-            drive.launcher.setPower(.5);
+            launchMechanism.launcher.setPower(.5);
 
         }
 
         if(gamepad1.bWasReleased()) {
 
-            drive.launcher.setPower(0);
+            launchMechanism.launcher.setPower(0);
         }
 
         if(gamepad1.x) {
 
-            drive.leftFeeder.setPower(-.5);
-            drive.rightFeeder.setPower(.5);
+            feederMechanism.leftFeeder.setPower(-.5);
+            feederMechanism.rightFeeder.setPower(.5);
         }
 
         if(gamepad1.xWasReleased()) {
-            drive.leftFeeder.setPower(0);
-            drive.rightFeeder.setPower(0);
+            feederMechanism.leftFeeder.setPower(0);
+            feederMechanism.rightFeeder.setPower(0);
         }
     }
 }

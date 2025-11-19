@@ -1,7 +1,8 @@
-package org.firstinspires.ftc.teamcode.gobildastarterbot;
+package org.firstinspires.ftc.teamcode.gobildastarterbot.opmodes.auto;
 
 import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -9,9 +10,11 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
+import org.firstinspires.ftc.teamcode.gobildastarterbot.mechanicals.StarterBotFeederMechanism;
+import org.firstinspires.ftc.teamcode.gobildastarterbot.mechanicals.StarterBotLaunchMechanism;
 
 @Autonomous
-
+@Disabled
 public class StarterBotAutoMecanumsV1 extends OpMode {
 
     final double FEED_TIME = 0.20;
@@ -30,6 +33,10 @@ public class StarterBotAutoMecanumsV1 extends OpMode {
     double robotRotationAngle = 45;
 
     private MecanumDrive drive;
+
+    private StarterBotLaunchMechanism launchMechanism;
+    private StarterBotFeederMechanism feederMechanism;
+
     private ElapsedTime shotTimer = new ElapsedTime();
     private ElapsedTime feederTimer = new ElapsedTime();
     private ElapsedTime driveTimer = new ElapsedTime();
@@ -62,13 +69,15 @@ public class StarterBotAutoMecanumsV1 extends OpMode {
         launchState = LaunchState.IDLE;
         Pose2d initPose = new Pose2d(-43,43,0);
         drive = new MecanumDrive(hardwareMap, initPose);
+        launchMechanism = new StarterBotLaunchMechanism(hardwareMap, telemetry);
+        feederMechanism = new StarterBotFeederMechanism(hardwareMap, telemetry);
         telemetry.addData("Status", "Initialized");
     }
 
     @Override
     public void init_loop() {
-        drive.rightFeeder.setPower(0);
-        drive.leftFeeder.setPower(0);
+        feederMechanism.rightFeeder.setPower(0);
+        feederMechanism.leftFeeder.setPower(0);
 
         if (gamepad1.b) alliance = Alliance.RED;
         else if (gamepad1.x) alliance = Alliance.BLUE;
@@ -95,7 +104,7 @@ public class StarterBotAutoMecanumsV1 extends OpMode {
                     if (shotsToFire > 0) autonomousState = AutonomousState.LAUNCH;
                     else {
                         resetDriveEncoders();
-                        drive.launcher.setVelocity(0);
+                        launchMechanism.launcher.setVelocity(0);
                         autonomousState = AutonomousState.DRIVING_AWAY_FROM_GOAL;
                     }
                 }
@@ -195,18 +204,18 @@ public class StarterBotAutoMecanumsV1 extends OpMode {
                 }
                 break;
             case PREPARE:
-                drive.launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
-                if (drive.launcher.getVelocity() > LAUNCHER_MIN_VELOCITY) {
+                launchMechanism.launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
+                if (launchMechanism.launcher.getVelocity() > LAUNCHER_MIN_VELOCITY) {
                     launchState = LaunchState.LAUNCH;
-                    drive.leftFeeder.setPower(1);
-                    drive.rightFeeder.setPower(1);
+                    feederMechanism.leftFeeder.setPower(1);
+                    feederMechanism.rightFeeder.setPower(1);
                     feederTimer.reset();
                 }
                 break;
             case LAUNCH:
                 if (feederTimer.seconds() > FEED_TIME) {
-                    drive.leftFeeder.setPower(0);
-                    drive.rightFeeder.setPower(0);
+                    feederMechanism.leftFeeder.setPower(0);
+                    feederMechanism.rightFeeder.setPower(0);
                     if (shotTimer.seconds() > TIME_BETWEEN_SHOTS) {
                         launchState = LaunchState.IDLE;
                         return true;
