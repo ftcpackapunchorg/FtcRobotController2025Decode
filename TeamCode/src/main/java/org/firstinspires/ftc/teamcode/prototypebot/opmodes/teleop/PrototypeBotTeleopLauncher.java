@@ -30,7 +30,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.teamcode.custombot;
+package org.firstinspires.ftc.teamcode.prototypebot.opmodes.teleop;
 
 import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -38,6 +38,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.MecanumDrive;
+import org.firstinspires.ftc.teamcode.prototypebot.mechanicals.PrototypeBotLaunchMechanism;
 
 /*
  * This file includes a teleop (driver-controlled) file for the goBILDA® StarterBot for the
@@ -54,9 +55,9 @@ import org.firstinspires.ftc.teamcode.MecanumDrive;
  * we will also need to adjust the "PIDF" coefficients with some that are a better fit for our application.
  */
 
-@TeleOp(name = "CustomTeleopLauncher", group = "CustomBot")
+@TeleOp(name = "CustomTeleopLauncher", group = "PrototypeBot")
 //@Disabled
-public class CustomTeleopLauncher extends OpMode {
+public class PrototypeBotTeleopLauncher extends OpMode {
     final double FEED_TIME_SECONDS = 0.20; //The feeder servos run this long when a shot is requested.
     final double STOP_SPEED = 0.0; //We send this power to the servos when we want them to stop.
     final double FULL_SPEED = 1.0;
@@ -74,6 +75,8 @@ public class CustomTeleopLauncher extends OpMode {
     ElapsedTime feederTimer = new ElapsedTime();
 
     MecanumDrive drive;
+
+    PrototypeBotLaunchMechanism launchMechanism;
 
     /*
      * TECH TIP: State Machines
@@ -123,6 +126,8 @@ public class CustomTeleopLauncher extends OpMode {
          */
         drive = new MecanumDrive(hardwareMap, initPose);
 
+        launchMechanism = new PrototypeBotLaunchMechanism(hardwareMap, telemetry);
+
         /*
          * Tell the driver that initialization is complete.
          */
@@ -164,9 +169,9 @@ public class CustomTeleopLauncher extends OpMode {
          * queuing a shot.
          */
         if (gamepad2.y) {
-            drive.launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
+            launchMechanism.launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
         } else if (gamepad2.b) { // stop flywheel
-            drive.launcher.setVelocity(STOP_SPEED);
+            launchMechanism.launcher.setVelocity(STOP_SPEED);
         }
 
         /*
@@ -178,7 +183,7 @@ public class CustomTeleopLauncher extends OpMode {
          * Show the state and motor powers
          */
         telemetry.addData("State", launchState);
-        telemetry.addData("motorSpeed", drive.launcher.getVelocity());
+        telemetry.addData("motorSpeed", launchMechanism.launcher.getVelocity());
 
     }
 
@@ -197,8 +202,8 @@ public class CustomTeleopLauncher extends OpMode {
                 }
                 break;
             case SPIN_UP:
-                drive.launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
-                if (drive.launcher.getVelocity() > LAUNCHER_MIN_VELOCITY) {
+                launchMechanism.launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
+                if (launchMechanism.launcher.getVelocity() > LAUNCHER_MIN_VELOCITY) {
                     launchState = LaunchState.LAUNCH;
                 }
                 break;

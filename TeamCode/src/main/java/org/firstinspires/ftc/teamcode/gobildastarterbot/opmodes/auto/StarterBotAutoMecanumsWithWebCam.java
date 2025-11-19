@@ -30,23 +30,21 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.teamcode.gobildastarterbot;
-
-import static com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior.BRAKE;
+package org.firstinspires.ftc.teamcode.gobildastarterbot.opmodes.auto;
 
 import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
+import org.firstinspires.ftc.teamcode.gobildastarterbot.mechanicals.StarterBotFeederMechanism;
+import org.firstinspires.ftc.teamcode.gobildastarterbot.mechanicals.StarterBotLaunchMechanism;
+import org.firstinspires.ftc.teamcode.sensors.WebCamWithVisionPortal;
+import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
 
 /*
@@ -64,13 +62,20 @@ import org.firstinspires.ftc.teamcode.MecanumDrive;
  * main robot "loop," continuously checking for conditions that allow us to move to the next step.
  */
 
-@Autonomous(name="StarterBotAutoWithMecanums", group="StarterBot")
+@Autonomous(name="StarterBotAutoWithWebCam", group="StarterBot")
 //@Disabled
-public class StarterBotAutoMecanums extends OpMode
+public class StarterBotAutoMecanumsWithWebCam extends OpMode
 {
 
     final double FEED_TIME = 0.20; //The feeder servos run this long when a shot is requested.
     MecanumDrive drive;
+
+    private StarterBotLaunchMechanism launchMechanism;
+
+    private StarterBotFeederMechanism feederMechanism;
+
+    private WebCamWithVisionPortal webCamWithVisionPortal = new WebCamWithVisionPortal();
+
 
     /*
      * When we control our launcher motor, we are using encoders. These allow the control system
@@ -164,10 +169,21 @@ public class StarterBotAutoMecanums extends OpMode
         BLUE;
     }
 
+    private enum AssociatedAprilTag {
+        // Red
+        RED_APRIL_TAG_ID,
+        // Blue
+        BLUE_APRIL_TAG_ID ;
+    }
+
     /*
      * When we create the instance of our enum we can also assign a default state.
      */
     private Alliance alliance = Alliance.RED;
+
+    private AssociatedAprilTag associatedAprilTag = AssociatedAprilTag.RED_APRIL_TAG_ID;
+
+    private int allianceAprilTagId = 24;
 
     /*
      * This code runs ONCE when the driver hits INIT.
@@ -185,8 +201,10 @@ public class StarterBotAutoMecanums extends OpMode
 
         drive = new MecanumDrive(hardwareMap,initPose);
 
+        launchMechanism = new StarterBotLaunchMechanism(hardwareMap, telemetry);
+        feederMechanism = new StarterBotFeederMechanism(hardwareMap, telemetry);
 
-
+        webCamWithVisionPortal.initAprilTag(hardwareMap, telemetry);
 
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
@@ -201,8 +219,8 @@ public class StarterBotAutoMecanums extends OpMode
          * We also set the servo power to 0 here to make sure that the servo controller is booted
          * up and ready to go.
          */
-        drive.rightFeeder.setPower(0);
-        drive.leftFeeder.setPower(0);
+        feederMechanism.rightFeeder.setPower(0);
+        feederMechanism.leftFeeder.setPower(0);
 
 
         /*
@@ -210,13 +228,18 @@ public class StarterBotAutoMecanums extends OpMode
          */
         if (gamepad1.b) {
             alliance = Alliance.RED;
+            associatedAprilTag = AssociatedAprilTag.RED_APRIL_TAG_ID;
+            allianceAprilTagId = 24;
         } else if (gamepad1.x) {
             alliance = Alliance.BLUE;
+            associatedAprilTag = AssociatedAprilTag.BLUE_APRIL_TAG_ID;
+            allianceAprilTagId = 20;
         }
 
         telemetry.addData("Press X", "for BLUE");
         telemetry.addData("Press B", "for RED");
         telemetry.addData("Selected Alliance", alliance);
+        telemetry.addData("Selected April Tag ID", allianceAprilTagId);
     }
 
     /*
@@ -231,6 +254,17 @@ public class StarterBotAutoMecanums extends OpMode
      */
     @Override
     public void loop() {
+
+
+        webCamWithVisionPortal.update();
+        AprilTagDetection matchingAprilTag = webCamWithVisionPortal.getTagBySpecificID(allianceAprilTagId);
+        if(matchingAprilTag != null) {
+            webCamWithVisionPortal.displayDetectionTelemetry(matchingAprilTag);
+            telemetry.addData("Matching April Tag Detected : ", matchingAprilTag.toString());
+        } else {
+            telemetry.addData("Matching April Tag : Not Found ", "Not detected");
+        }
+
         /*
          * TECH TIP: Switch Statements
          * switch statements are an excellent way to take advantage of an enum. They work very
@@ -275,7 +309,7 @@ public class StarterBotAutoMecanums extends OpMode
                         drive.rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                         drive.leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                         drive.rightBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                        drive.launcher.setVelocity(0);
+                        launchMechanism.launcher.setVelocity(0);
                         autonomousState = AutonomousState.DRIVING_AWAY_FROM_GOAL;
                     }
                 }
@@ -362,18 +396,18 @@ public class StarterBotAutoMecanums extends OpMode
                 }
                 break;
             case PREPARE:
-                drive.launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
-                if (drive.launcher.getVelocity() > LAUNCHER_MIN_VELOCITY){
+                launchMechanism.launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
+                if (launchMechanism.launcher.getVelocity() > LAUNCHER_MIN_VELOCITY){
                     launchState = LaunchState.LAUNCH;
-                    drive.leftFeeder.setPower(1);
-                    drive.rightFeeder.setPower(1);
+                    feederMechanism.leftFeeder.setPower(1);
+                    feederMechanism.rightFeeder.setPower(1);
                     feederTimer.reset();
                 }
                 break;
             case LAUNCH:
                 if (feederTimer.seconds() > FEED_TIME) {
-                    drive.leftFeeder.setPower(0);
-                    drive.rightFeeder.setPower(0);
+                    feederMechanism.leftFeeder.setPower(0);
+                    feederMechanism.rightFeeder.setPower(0);
 
                     if(shotTimer.seconds() > TIME_BETWEEN_SHOTS){
                         launchState = LaunchState.IDLE;

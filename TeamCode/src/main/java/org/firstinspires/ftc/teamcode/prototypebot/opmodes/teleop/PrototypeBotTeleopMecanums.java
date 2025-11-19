@@ -30,16 +30,14 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.teamcode.gobildastarterbot;
+package org.firstinspires.ftc.teamcode.prototypebot.opmodes.teleop;
 
 import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.teamcode.MecanumDrive;
+import org.firstinspires.ftc.teamcode.PrototypeBotMecanumDrive;
 
 /*
  * This file includes a teleop (driver-controlled) file for the goBILDA® StarterBot for the
@@ -56,9 +54,9 @@ import org.firstinspires.ftc.teamcode.MecanumDrive;
  * we will also need to adjust the "PIDF" coefficients with some that are a better fit for our application.
  */
 
-@TeleOp(name = "StarterBotTeleopMecanumsFieldCentric", group = "StarterBot")
+@TeleOp(name = "PrototypeBotTeleopMecanums", group = "PrototypeBot")
 //@Disabled
-public class StarterBotTeleopMecanumsFieldCentric extends OpMode {
+public class PrototypeBotTeleopMecanums extends OpMode {
     final double FEED_TIME_SECONDS = 0.20; //The feeder servos run this long when a shot is requested.
     final double STOP_SPEED = 0.0; //We send this power to the servos when we want them to stop.
     final double FULL_SPEED = 1.0;
@@ -72,9 +70,10 @@ public class StarterBotTeleopMecanumsFieldCentric extends OpMode {
     final double LAUNCHER_TARGET_VELOCITY = 1125;
     final double LAUNCHER_MIN_VELOCITY = 1075;
 
+
     ElapsedTime feederTimer = new ElapsedTime();
 
-    MecanumDrive drive;
+    PrototypeBotMecanumDrive drive;
 
     /*
      * TECH TIP: State Machines
@@ -121,7 +120,7 @@ public class StarterBotTeleopMecanumsFieldCentric extends OpMode {
          * to 'get' must correspond to the names assigned during the robot configuration
          * step.
          */
-        drive = new MecanumDrive(hardwareMap, initPose);
+        drive = new PrototypeBotMecanumDrive(hardwareMap, initPose);
 
         /*
          * Tell the driver that initialization is complete.
@@ -157,19 +156,17 @@ public class StarterBotTeleopMecanumsFieldCentric extends OpMode {
          * both motors work to rotate the robot. Combinations of these inputs can be used to create
          * more complex maneuvers.
          */
-//        mecanumDrive(-gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
-
-        fieldCentricDrive(-gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
+        mecanumDrive(-gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
 
         /*
          * Here we give the user control of the speed of the launcher motor without automatically
          * queuing a shot.
          */
-        if (gamepad2.y) {
-            drive.launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
-        } else if (gamepad2.b) { // stop flywheel
-            drive.launcher.setVelocity(STOP_SPEED);
-        }
+//        if (gamepad2.y) {
+//            drive.launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
+//        } else if (gamepad2.b) { // stop flywheel
+//            drive.launcher.setVelocity(STOP_SPEED);
+//        }
 
         /*
          * Now we call our "Launch" function.
@@ -180,7 +177,7 @@ public class StarterBotTeleopMecanumsFieldCentric extends OpMode {
          * Show the state and motor powers
          */
         telemetry.addData("State", launchState);
-        telemetry.addData("motorSpeed", drive.launcher.getVelocity());
+//        telemetry.addData("motorSpeed", drive.launcher.getVelocity());
 
     }
 
@@ -199,22 +196,22 @@ public class StarterBotTeleopMecanumsFieldCentric extends OpMode {
                 }
                 break;
             case SPIN_UP:
-                drive.launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
-                if (drive.launcher.getVelocity() > LAUNCHER_MIN_VELOCITY) {
-                    launchState = LaunchState.LAUNCH;
-                }
+//                drive.launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
+//                if (drive.launcher.getVelocity() > LAUNCHER_MIN_VELOCITY) {
+//                    launchState = LaunchState.LAUNCH;
+//                }
                 break;
             case LAUNCH:
-                drive.leftFeeder.setPower(FULL_SPEED);
-                drive.rightFeeder.setPower(FULL_SPEED);
+//                drive.leftFeeder.setPower(FULL_SPEED);
+//                drive.rightFeeder.setPower(FULL_SPEED);
                 feederTimer.reset();
                 launchState = LaunchState.LAUNCHING;
                 break;
             case LAUNCHING:
                 if (feederTimer.seconds() > FEED_TIME_SECONDS) {
                     launchState = LaunchState.IDLE;
-                    drive.leftFeeder.setPower(STOP_SPEED);
-                    drive.rightFeeder.setPower(STOP_SPEED);
+//                    drive.leftFeeder.setPower(STOP_SPEED);
+//                    drive.rightFeeder.setPower(STOP_SPEED);
                 }
                 break;
         }
@@ -257,22 +254,6 @@ public class StarterBotTeleopMecanumsFieldCentric extends OpMode {
 //        double x = Math.pow(gamepad1.left_stick_x * 1.1,3); // Counteract imperfect strafing
 //        double rx = Math.pow(gamepad1.right_stick_x,3);
 
-
-    }
-
-    void fieldCentricDrive(double forward, double strafe, double rotate) {
-
-        double theta = Math.atan2(forward, strafe);
-        double r = Math.hypot(forward, strafe);
-
-        IMU imu = drive.lazyImu.get();
-
-        theta = AngleUnit.normalizeRadians(theta - imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS));
-
-        double newForward = r * Math.sin(theta);
-        double newStrafe = r * Math.cos(theta);
-
-        mecanumDrive(newForward, newStrafe, rotate);
 
     }
 }

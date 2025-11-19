@@ -1,32 +1,69 @@
-package org.firstinspires.ftc.teamcode.gobildastarterbot;
+/*
+ * Copyright (c) 2025 FIRST
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without modification,
+ * are permitted (subject to the limitations in the disclaimer below) provided that
+ * the following conditions are met:
+ *
+ * Redistributions of source code must retain the above copyright notice, this list
+ * of conditions and the following disclaimer.
+ *
+ * Redistributions in binary form must reproduce the above copyright notice, this
+ * list of conditions and the following disclaimer in the documentation and/or
+ * other materials provided with the distribution.
+ *
+ * Neither the name of FIRST nor the names of its contributors may be used to
+ * endorse or promote products derived from this software without specific prior
+ * written permission.
+ *
+ * NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE GRANTED BY THIS
+ * LICENSE. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
+ * TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+package org.firstinspires.ftc.teamcode.gobildastarterbot.opmodes.teleop;
 
 import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.Position;
-import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
-import org.firstinspires.ftc.teamcode.utils.CameraConfigAndControls;
-import org.firstinspires.ftc.vision.VisionPortal;
-import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
-import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
+import org.firstinspires.ftc.teamcode.gobildastarterbot.mechanicals.StarterBotFeederMechanism;
+import org.firstinspires.ftc.teamcode.gobildastarterbot.mechanicals.StarterBotLaunchMechanism;
 
-import java.util.List;
+/*
+ * This file includes a teleop (driver-controlled) file for the goBILDA® StarterBot for the
+ * 2025-2026 FIRST® Tech Challenge season DECODE™. It leverages a differential/Skid-Steer
+ * system for robot mobility, one high-speed motor driving two "launcher wheels", and two servos
+ * which feed that launcher.
+ *
+ * Likely the most niche concept we'll use in this example is closed-loop motor velocity control.
+ * This control method reads the current speed as reported by the motor's encoder and applies a varying
+ * amount of power to reach, and then hold a target velocity. The FTC SDK calls this control method
+ * "RUN_USING_ENCODER". This contrasts to the default "RUN_WITHOUT_ENCODER" where you control the power
+ * applied to the motor directly.
+ * Since the dynamics of a launcher wheel system varies greatly from those of most other FTC mechanisms,
+ * we will also need to adjust the "PIDF" coefficients with some that are a better fit for our application.
+ */
 
-@TeleOp(name = "StarterBotTeleopWithAprilTag", group = "StarterBot")
-public class StarterBotTeleopWithAprilTag extends OpMode {
+@TeleOp(name = "StarterBotTeleopMecanumsFieldCentric", group = "StarterBot")
+//@Disabled
+public class StarterBotTeleopMecanumsFieldCentric extends OpMode {
     final double FEED_TIME_SECONDS = 0.20; //The feeder servos run this long when a shot is requested.
     final double STOP_SPEED = 0.0; //We send this power to the servos when we want them to stop.
     final double FULL_SPEED = 1.0;
-
-
-    private CameraConfigAndControls cameraConfigAndControls = new CameraConfigAndControls();
 
     /*
      * When we control our launcher motor, we are using encoders. These allow the control system
@@ -37,10 +74,13 @@ public class StarterBotTeleopWithAprilTag extends OpMode {
     final double LAUNCHER_TARGET_VELOCITY = 1125;
     final double LAUNCHER_MIN_VELOCITY = 1075;
 
-
     ElapsedTime feederTimer = new ElapsedTime();
 
     MecanumDrive drive;
+
+    StarterBotLaunchMechanism launchMechanism;
+
+    StarterBotFeederMechanism feederMechanism;
 
     /*
      * TECH TIP: State Machines
@@ -65,7 +105,7 @@ public class StarterBotTeleopWithAprilTag extends OpMode {
         LAUNCHING,
     }
 
-    private StarterBotTeleopWithAprilTag.LaunchState launchState;
+    private LaunchState launchState;
 
     // Setup a variable for each drive wheel to save power level for telemetry
     double leftFrontPower;
@@ -78,10 +118,7 @@ public class StarterBotTeleopWithAprilTag extends OpMode {
      */
     @Override
     public void init() {
-
-        cameraConfigAndControls.initAprilTag(hardwareMap);
-
-        launchState = StarterBotTeleopWithAprilTag.LaunchState.IDLE;
+        launchState = LaunchState.IDLE;
 
         Pose2d initPose = new Pose2d(-43,43,0);
 
@@ -92,15 +129,13 @@ public class StarterBotTeleopWithAprilTag extends OpMode {
          */
         drive = new MecanumDrive(hardwareMap, initPose);
 
+        launchMechanism = new StarterBotLaunchMechanism(hardwareMap, telemetry);
+        feederMechanism = new StarterBotFeederMechanism(hardwareMap, telemetry);
+
         /*
          * Tell the driver that initialization is complete.
          */
         telemetry.addData("Status", "Initialized");
-
-        // Wait for the DS start button to be touched.
-        telemetry.addData("DS preview on/off", "3 dots, Camera Stream");
-        telemetry.addData(">", "Touch START to start OpMode");
-        telemetry.update();
     }
 
     /*
@@ -131,22 +166,19 @@ public class StarterBotTeleopWithAprilTag extends OpMode {
          * both motors work to rotate the robot. Combinations of these inputs can be used to create
          * more complex maneuvers.
          */
-        mecanumDrive(-gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
+//        mecanumDrive(-gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
+
+        fieldCentricDrive(-gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
 
         /*
          * Here we give the user control of the speed of the launcher motor without automatically
          * queuing a shot.
          */
         if (gamepad2.y) {
-            drive.launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
+            launchMechanism.launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
         } else if (gamepad2.b) { // stop flywheel
-            drive.launcher.setVelocity(STOP_SPEED);
+            launchMechanism.launcher.setVelocity(STOP_SPEED);
         }
-
-//        if (gamepad1.left_stick_button) {
-//            drive.rightBack.setPower(1);
-//            drive.leftBack.setPower(1);
-//        }
 
         /*
          * Now we call our "Launch" function.
@@ -157,7 +189,7 @@ public class StarterBotTeleopWithAprilTag extends OpMode {
          * Show the state and motor powers
          */
         telemetry.addData("State", launchState);
-        telemetry.addData("motorSpeed", drive.launcher.getVelocity());
+        telemetry.addData("motorSpeed", launchMechanism.launcher.getVelocity());
 
     }
 
@@ -172,26 +204,26 @@ public class StarterBotTeleopWithAprilTag extends OpMode {
         switch (launchState) {
             case IDLE:
                 if (shotRequested) {
-                    launchState = StarterBotTeleopWithAprilTag.LaunchState.SPIN_UP;
+                    launchState = LaunchState.SPIN_UP;
                 }
                 break;
             case SPIN_UP:
-                drive.launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
-                if (drive.launcher.getVelocity() > LAUNCHER_MIN_VELOCITY) {
-                    launchState = StarterBotTeleopWithAprilTag.LaunchState.LAUNCH;
+                launchMechanism.launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
+                if (launchMechanism.launcher.getVelocity() > LAUNCHER_MIN_VELOCITY) {
+                    launchState = LaunchState.LAUNCH;
                 }
                 break;
             case LAUNCH:
-                drive.leftFeeder.setPower(FULL_SPEED);
-                drive.rightFeeder.setPower(FULL_SPEED);
+                feederMechanism.leftFeeder.setPower(FULL_SPEED);
+                feederMechanism.rightFeeder.setPower(FULL_SPEED);
                 feederTimer.reset();
-                launchState = StarterBotTeleopWithAprilTag.LaunchState.LAUNCHING;
+                launchState = LaunchState.LAUNCHING;
                 break;
             case LAUNCHING:
                 if (feederTimer.seconds() > FEED_TIME_SECONDS) {
-                    launchState = StarterBotTeleopWithAprilTag.LaunchState.IDLE;
-                    drive.leftFeeder.setPower(STOP_SPEED);
-                    drive.rightFeeder.setPower(STOP_SPEED);
+                    launchState = LaunchState.IDLE;
+                    feederMechanism.leftFeeder.setPower(STOP_SPEED);
+                    feederMechanism.rightFeeder.setPower(STOP_SPEED);
                 }
                 break;
         }
@@ -228,6 +260,28 @@ public class StarterBotTeleopWithAprilTag extends OpMode {
         drive.leftBack.setPower(leftBackPower);
         drive.rightBack.setPower(rightBackPower);
 
+//        double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), speed);
+//
+//        double y = Math.pow(-gamepad1.left_stick_y,3); // Remember, Y stick value is reversed
+//        double x = Math.pow(gamepad1.left_stick_x * 1.1,3); // Counteract imperfect strafing
+//        double rx = Math.pow(gamepad1.right_stick_x,3);
+
+
     }
 
+    void fieldCentricDrive(double forward, double strafe, double rotate) {
+
+        double theta = Math.atan2(forward, strafe);
+        double r = Math.hypot(forward, strafe);
+
+        IMU imu = drive.lazyImu.get();
+
+        theta = AngleUnit.normalizeRadians(theta - imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS));
+
+        double newForward = r * Math.sin(theta);
+        double newStrafe = r * Math.cos(theta);
+
+        mecanumDrive(newForward, newStrafe, rotate);
+
+    }
 }

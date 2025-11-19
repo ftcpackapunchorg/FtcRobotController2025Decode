@@ -30,15 +30,17 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.teamcode.custombot;
+package org.firstinspires.ftc.teamcode.gobildastarterbot.opmodes.teleop;
 
 import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.CustomMecanumDrive;
+
 import org.firstinspires.ftc.teamcode.MecanumDrive;
+import org.firstinspires.ftc.teamcode.gobildastarterbot.mechanicals.StarterBotFeederMechanism;
+import org.firstinspires.ftc.teamcode.gobildastarterbot.mechanicals.StarterBotLaunchMechanism;
 
 /*
  * This file includes a teleop (driver-controlled) file for the goBILDA® StarterBot for the
@@ -55,9 +57,9 @@ import org.firstinspires.ftc.teamcode.MecanumDrive;
  * we will also need to adjust the "PIDF" coefficients with some that are a better fit for our application.
  */
 
-@TeleOp(name = "CustomBotTeleopMecanums", group = "StarterBot")
+@TeleOp(name = "StarterBotTeleopMecanums", group = "StarterBot")
 //@Disabled
-public class CustomTeleopMecanums extends OpMode {
+public class StarterBotTeleopMecanums extends OpMode {
     final double FEED_TIME_SECONDS = 0.20; //The feeder servos run this long when a shot is requested.
     final double STOP_SPEED = 0.0; //We send this power to the servos when we want them to stop.
     final double FULL_SPEED = 1.0;
@@ -74,7 +76,11 @@ public class CustomTeleopMecanums extends OpMode {
 
     ElapsedTime feederTimer = new ElapsedTime();
 
-    CustomMecanumDrive drive;
+    MecanumDrive drive;
+
+    StarterBotLaunchMechanism launchMechanism;
+
+    StarterBotFeederMechanism feederMechanism;
 
     /*
      * TECH TIP: State Machines
@@ -121,7 +127,9 @@ public class CustomTeleopMecanums extends OpMode {
          * to 'get' must correspond to the names assigned during the robot configuration
          * step.
          */
-        drive = new CustomMecanumDrive(hardwareMap, initPose);
+        drive = new MecanumDrive(hardwareMap, initPose);
+        launchMechanism = new StarterBotLaunchMechanism(hardwareMap, telemetry);
+        feederMechanism = new StarterBotFeederMechanism(hardwareMap, telemetry);
 
         /*
          * Tell the driver that initialization is complete.
@@ -163,11 +171,11 @@ public class CustomTeleopMecanums extends OpMode {
          * Here we give the user control of the speed of the launcher motor without automatically
          * queuing a shot.
          */
-//        if (gamepad2.y) {
-//            drive.launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
-//        } else if (gamepad2.b) { // stop flywheel
-//            drive.launcher.setVelocity(STOP_SPEED);
-//        }
+        if (gamepad2.y) {
+            launchMechanism.launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
+        } else if (gamepad2.b) { // stop flywheel
+            launchMechanism.launcher.setVelocity(STOP_SPEED);
+        }
 
         /*
          * Now we call our "Launch" function.
@@ -178,7 +186,7 @@ public class CustomTeleopMecanums extends OpMode {
          * Show the state and motor powers
          */
         telemetry.addData("State", launchState);
-//        telemetry.addData("motorSpeed", drive.launcher.getVelocity());
+        telemetry.addData("motorSpeed", launchMechanism.launcher.getVelocity());
 
     }
 
@@ -197,22 +205,22 @@ public class CustomTeleopMecanums extends OpMode {
                 }
                 break;
             case SPIN_UP:
-//                drive.launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
-//                if (drive.launcher.getVelocity() > LAUNCHER_MIN_VELOCITY) {
-//                    launchState = LaunchState.LAUNCH;
-//                }
+                launchMechanism.launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
+                if (launchMechanism.launcher.getVelocity() > LAUNCHER_MIN_VELOCITY) {
+                    launchState = LaunchState.LAUNCH;
+                }
                 break;
             case LAUNCH:
-//                drive.leftFeeder.setPower(FULL_SPEED);
-//                drive.rightFeeder.setPower(FULL_SPEED);
+                feederMechanism.leftFeeder.setPower(FULL_SPEED);
+                feederMechanism.rightFeeder.setPower(FULL_SPEED);
                 feederTimer.reset();
                 launchState = LaunchState.LAUNCHING;
                 break;
             case LAUNCHING:
                 if (feederTimer.seconds() > FEED_TIME_SECONDS) {
                     launchState = LaunchState.IDLE;
-//                    drive.leftFeeder.setPower(STOP_SPEED);
-//                    drive.rightFeeder.setPower(STOP_SPEED);
+                    feederMechanism.leftFeeder.setPower(STOP_SPEED);
+                    feederMechanism.rightFeeder.setPower(STOP_SPEED);
                 }
                 break;
         }
@@ -228,6 +236,8 @@ public class CustomTeleopMecanums extends OpMode {
      */
     void mecanumDrive(double forward, double strafe, double rotate){
 
+        telemetry.addData("gamepad1.left_trigger", gamepad1.left_trigger);
+
         /* the denominator is the largest motor power (absolute value) or 1
          * This ensures all the powers maintain the same ratio,
          * but only if at least one is out of the range [-1, 1]
@@ -238,6 +248,13 @@ public class CustomTeleopMecanums extends OpMode {
         }
 
         double denominator = Math.max(Math.abs(forward) + Math.abs(strafe) + Math.abs(rotate), speed);
+
+        telemetry.addData("speed : ", speed);
+        telemetry.addData("denominator", denominator);
+        telemetry.addData("forward : ", forward);
+        telemetry.addData("strafe : ", strafe);
+        telemetry.addData("rotate : ", rotate);
+        telemetry.update();
 
         leftFrontPower = (forward + strafe + rotate) / denominator;
         rightFrontPower = (forward - strafe - rotate) / denominator;
