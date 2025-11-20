@@ -16,7 +16,7 @@ public class TestDistanceSensorWithLEDOpMode extends OpMode {
     @Override
     public void init() {
 
-        distanceSensor.init(hardwareMap);
+        distanceSensor.init(hardwareMap,"");
         testLED.init(hardwareMap);
 
     }
