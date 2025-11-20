@@ -10,9 +10,9 @@ public class TestDistanceSensor {
 
     private DistanceSensor distanceSensor;
 
-    public void init(HardwareMap hardwareMap) {
+    public void init(HardwareMap hardwareMap, String name) {
 
-        distanceSensor = hardwareMap.get(DistanceSensor.class, "distanceSensor2m");
+        distanceSensor = hardwareMap.get(DistanceSensor.class, name);
 
     }
 

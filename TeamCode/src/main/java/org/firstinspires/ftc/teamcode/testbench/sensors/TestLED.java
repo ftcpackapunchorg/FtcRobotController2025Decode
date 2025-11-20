@@ -9,14 +9,22 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 public class TestLED {
 
 
-    private LED greenLED;
-    private LED redLED;
+    private LED leftGreenLED;
+
+    private LED leftRedLED;
+    private LED rightGreenLED;
+
+    private LED rightRedLED;
 
     public void init(HardwareMap hardwareMap) {
 
-        greenLED = hardwareMap.get(LED.class, "greenLED");
+        leftGreenLED = hardwareMap.get(LED.class, "leftGreenLED");
 
-        redLED = hardwareMap.get(LED.class, "redLED");
+        leftRedLED = hardwareMap.get(LED.class, "leftRedLED");
+
+        rightGreenLED = hardwareMap.get(LED.class, "rightGreenLED");
+
+        rightRedLED = hardwareMap.get(LED.class, "rightRedLED");
 
         setRedLED(false);
         setGreenLED(false);
@@ -26,18 +34,18 @@ public class TestLED {
     public void setRedLED(boolean turnOn) {
 
         if(turnOn) {
-            redLED.on();
+            leftRedLED.on();
         } else {
-            redLED.off();
+            leftRedLED.off();
         }
     }
 
     public void setGreenLED(boolean turnOn) {
 
         if(turnOn) {
-            greenLED.on();
+            leftGreenLED.on();
         } else {
-            greenLED.off();
+            leftGreenLED.off();
         }
     }
 }
