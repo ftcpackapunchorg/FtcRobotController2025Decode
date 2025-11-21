@@ -1,18 +1,17 @@
 package org.firstinspires.ftc.teamcode.testbench.sensors;
 
-import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
-public class TestDistanceSensor {
+public class DistanceSensor {
 
 
-    private DistanceSensor distanceSensor;
+    private com.qualcomm.robotcore.hardware.DistanceSensor distanceSensor;
 
     public void init(HardwareMap hardwareMap, String name) {
 
-        distanceSensor = hardwareMap.get(DistanceSensor.class, name);
+        distanceSensor = hardwareMap.get(com.qualcomm.robotcore.hardware.DistanceSensor.class, name);
 
     }
 
