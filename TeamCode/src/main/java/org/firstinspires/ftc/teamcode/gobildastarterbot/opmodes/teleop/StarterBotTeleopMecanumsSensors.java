@@ -32,18 +32,15 @@
 
 package org.firstinspires.ftc.teamcode.gobildastarterbot.opmodes.teleop;
 
-import com.acmerobotics.roadrunner.Pose2d;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.util.ElapsedTime;
+        import com.acmerobotics.roadrunner.Pose2d;
+        import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+        import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-
-import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.MecanumDrive;
-import org.firstinspires.ftc.teamcode.gobildastarterbot.mechanicals.StarterBotFeederMechanism;
-import org.firstinspires.ftc.teamcode.gobildastarterbot.mechanicals.StarterBotLaunchMechanism;
-import org.firstinspires.ftc.teamcode.testbench.sensors.DistanceSensor;
-import org.firstinspires.ftc.teamcode.gobildastarterbot.mechanicals.SimpleLEDLight;
+        import org.firstinspires.ftc.robotcore.external.Telemetry;
+        import org.firstinspires.ftc.teamcode.MecanumDrive;
+        import org.firstinspires.ftc.teamcode.gobildastarterbot.sensors.SimpleLEDLight;
+        import org.firstinspires.ftc.teamcode.gobildastarterbot.mechanicals.StarterBotLaunchMechanism;
+        import org.firstinspires.ftc.teamcode.testbench.sensors.TestDistanceSensor;
 
 /*
  * This file includes a teleop (driver-controlled) file for the goBILDA® StarterBot for the
@@ -63,52 +60,12 @@ import org.firstinspires.ftc.teamcode.gobildastarterbot.mechanicals.SimpleLEDLig
 @TeleOp(name = "StarterBotTeleopMecanumsSensors", group = "StarterBot")
 //@Disabled
 public class StarterBotTeleopMecanumsSensors extends OpMode {
-    final double FEED_TIME_SECONDS = 0.20; //The feeder servos run this long when a shot is requested.
-    final double STOP_SPEED = 0.0; //We send this power to the servos when we want them to stop.
-    final double FULL_SPEED = 1.0;
 
-    /*
-     * When we control our launcher motor, we are using encoders. These allow the control system
-     * to read the current speed of the motor and apply more or less power to keep it at a constant
-     * velocity. Here we are setting the target, and minimum velocity that the launcher should run
-     * at. The minimum velocity is a threshold for determining when to fire.
-     */
-    final double LAUNCHER_TARGET_VELOCITY = 1125;
-    final double LAUNCHER_MIN_VELOCITY = 1075;
-
-
-    ElapsedTime feederTimer = new ElapsedTime();
 
     MecanumDrive drive;
 
-    /*
-     * TECH TIP: State Machines
-     * We use a "state machine" to control our launcher motor and feeder servos in this program.
-     * The first step of a state machine is creating an enum that captures the different "states"
-     * that our code can be in.
-     * The core advantage of a state machine is that it allows us to continue to loop through all
-     * of our code while only running specific code when it's necessary. We can continuously check
-     * what "State" our machine is in, run the associated code, and when we are done with that step
-     * move on to the next state.
-     * This enum is called the "LaunchState". It reflects the current condition of the shooter
-     * motor and we move through the enum when the user asks our code to fire a shot.
-     * It starts at idle, when the user requests a launch, we enter SPIN_UP where we get the
-     * motor up to speed, once it meets a minimum speed then it starts and then ends the launch process.
-     * We can use higher level code to cycle through these states. But this allows us to write
-     * functions and autonomous routines in a way that avoids loops within loops, and "waits".
-     */
-    private enum LaunchState {
-        IDLE,
-        SPIN_UP,
-        LAUNCH,
-        LAUNCHING,
-    }
-
-    private LaunchState launchState;
 
     StarterBotLaunchMechanism launchMechanism;
-
-    StarterBotFeederMechanism feederMechanism;
 
     // Setup a variable for each drive wheel to save power level for telemetry
     double leftFrontPower;
@@ -116,8 +73,8 @@ public class StarterBotTeleopMecanumsSensors extends OpMode {
     double leftBackPower;
     double rightBackPower;
 
-    DistanceSensor leftDistanceSensor = new DistanceSensor();
-    DistanceSensor rightDistanceSensor = new DistanceSensor();
+    TestDistanceSensor leftDistanceSensor = new TestDistanceSensor();
+    TestDistanceSensor rightDistanceSensor = new TestDistanceSensor();
 
 
     SimpleLEDLight rightLED = new SimpleLEDLight();
@@ -127,7 +84,7 @@ public class StarterBotTeleopMecanumsSensors extends OpMode {
      */
     @Override
     public void init() {
-        launchState = LaunchState.IDLE;
+
         leftDistanceSensor.init(hardwareMap, "leftDistanceSensor");
         rightDistanceSensor.init(hardwareMap, "rightDistanceSensor");
         rightLED.init(hardwareMap);
@@ -146,7 +103,6 @@ public class StarterBotTeleopMecanumsSensors extends OpMode {
          */
         drive = new MecanumDrive(hardwareMap, initPose);
         launchMechanism = new StarterBotLaunchMechanism(hardwareMap, telemetry);
-        feederMechanism = new StarterBotFeederMechanism(hardwareMap, telemetry);
 
         /*
          * Tell the driver that initialization is complete.
@@ -189,9 +145,9 @@ public class StarterBotTeleopMecanumsSensors extends OpMode {
          * queuing a shot.
          */
         if (gamepad2.y) {
-            launchMechanism.launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
+            launchMechanism.startLauncher();
         } else if (gamepad2.b) { // stop flywheel
-            launchMechanism.launcher.setVelocity(STOP_SPEED);
+            launchMechanism.stopLauncher();
         }
 
         telemetry.addData("Distance : ", leftDistanceSensor.getDistance());
@@ -208,12 +164,12 @@ public class StarterBotTeleopMecanumsSensors extends OpMode {
         /*
          * Now we call our "Launch" function.
          */
-        launch(gamepad2.rightBumperWasPressed());
+        launchMechanism.launch(gamepad2.rightBumperWasPressed());
 
         /*
          * Show the state and motor powers
          */
-        telemetry.addData("State", launchState);
+        telemetry.addData("State", launchMechanism.getLaunchState());
         telemetry.addData("motorSpeed", launchMechanism.launcher.getVelocity());
 
     }
@@ -250,34 +206,6 @@ public class StarterBotTeleopMecanumsSensors extends OpMode {
     public void stop() {
     }
 
-    void launch(boolean shotRequested) {
-        switch (launchState) {
-            case IDLE:
-                if (shotRequested) {
-                    launchState = LaunchState.SPIN_UP;
-                }
-                break;
-            case SPIN_UP:
-                launchMechanism.launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
-                if (launchMechanism.launcher.getVelocity() > LAUNCHER_MIN_VELOCITY) {
-                    launchState = LaunchState.LAUNCH;
-                }
-                break;
-            case LAUNCH:
-                feederMechanism.leftFeeder.setPower(FULL_SPEED);
-                feederMechanism.rightFeeder.setPower(FULL_SPEED);
-                feederTimer.reset();
-                launchState = LaunchState.LAUNCHING;
-                break;
-            case LAUNCHING:
-                if (feederTimer.seconds() > FEED_TIME_SECONDS) {
-                    launchState = LaunchState.IDLE;
-                    feederMechanism.leftFeeder.setPower(STOP_SPEED);
-                    feederMechanism.rightFeeder.setPower(STOP_SPEED);
-                }
-                break;
-        }
-    }
 
     /*
      * Remember, Y stick value is reversed

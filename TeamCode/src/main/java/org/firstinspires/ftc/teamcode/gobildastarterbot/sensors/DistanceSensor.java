@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.testbench.sensors;
+package org.firstinspires.ftc.teamcode.gobildastarterbot.sensors;
 
 import com.qualcomm.robotcore.hardware.HardwareMap;
 

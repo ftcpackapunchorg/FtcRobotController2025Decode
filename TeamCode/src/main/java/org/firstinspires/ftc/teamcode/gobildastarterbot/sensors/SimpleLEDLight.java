@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.gobildastarterbot.mechanicals;
+package org.firstinspires.ftc.teamcode.gobildastarterbot.sensors;
 
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.LED;

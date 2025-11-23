@@ -35,11 +35,8 @@ package org.firstinspires.ftc.teamcode.gobildastarterbot.opmodes.teleop;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.util.ElapsedTime;
-
 
 import org.firstinspires.ftc.teamcode.MecanumDrive;
-import org.firstinspires.ftc.teamcode.gobildastarterbot.mechanicals.StarterBotFeederMechanism;
 import org.firstinspires.ftc.teamcode.gobildastarterbot.mechanicals.StarterBotLaunchMechanism;
 
 /*
@@ -60,27 +57,9 @@ import org.firstinspires.ftc.teamcode.gobildastarterbot.mechanicals.StarterBotLa
 @TeleOp(name = "StarterBotTeleopMecanums", group = "StarterBot")
 //@Disabled
 public class StarterBotTeleopMecanums extends OpMode {
-    final double FEED_TIME_SECONDS = 0.20; //The feeder servos run this long when a shot is requested.
-    final double STOP_SPEED = 0.0; //We send this power to the servos when we want them to stop.
-    final double FULL_SPEED = 1.0;
-
-    /*
-     * When we control our launcher motor, we are using encoders. These allow the control system
-     * to read the current speed of the motor and apply more or less power to keep it at a constant
-     * velocity. Here we are setting the target, and minimum velocity that the launcher should run
-     * at. The minimum velocity is a threshold for determining when to fire.
-     */
-    final double LAUNCHER_TARGET_VELOCITY = 1125;
-    final double LAUNCHER_MIN_VELOCITY = 1075;
-
-
-    ElapsedTime feederTimer = new ElapsedTime();
-
     MecanumDrive drive;
 
     StarterBotLaunchMechanism launchMechanism;
-
-    StarterBotFeederMechanism feederMechanism;
 
     /*
      * TECH TIP: State Machines
@@ -98,14 +77,6 @@ public class StarterBotTeleopMecanums extends OpMode {
      * We can use higher level code to cycle through these states. But this allows us to write
      * functions and autonomous routines in a way that avoids loops within loops, and "waits".
      */
-    private enum LaunchState {
-        IDLE,
-        SPIN_UP,
-        LAUNCH,
-        LAUNCHING,
-    }
-
-    private LaunchState launchState;
 
     // Setup a variable for each drive wheel to save power level for telemetry
     double leftFrontPower;
@@ -118,7 +89,6 @@ public class StarterBotTeleopMecanums extends OpMode {
      */
     @Override
     public void init() {
-        launchState = LaunchState.IDLE;
 
         Pose2d initPose = new Pose2d(-43,43,0);
 
@@ -129,7 +99,6 @@ public class StarterBotTeleopMecanums extends OpMode {
          */
         drive = new MecanumDrive(hardwareMap, initPose);
         launchMechanism = new StarterBotLaunchMechanism(hardwareMap, telemetry);
-        feederMechanism = new StarterBotFeederMechanism(hardwareMap, telemetry);
 
         /*
          * Tell the driver that initialization is complete.
@@ -172,20 +141,20 @@ public class StarterBotTeleopMecanums extends OpMode {
          * queuing a shot.
          */
         if (gamepad2.y) {
-            launchMechanism.launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
+            launchMechanism.startLauncher();
         } else if (gamepad2.b) { // stop flywheel
-            launchMechanism.launcher.setVelocity(STOP_SPEED);
+            launchMechanism.stopLauncher();
         }
 
         /*
          * Now we call our "Launch" function.
          */
-        launch(gamepad2.rightBumperWasPressed());
+        launchMechanism.launch(gamepad2.rightBumperWasPressed());
 
         /*
          * Show the state and motor powers
          */
-        telemetry.addData("State", launchState);
+        telemetry.addData("State", launchMechanism.getLaunchState());
         telemetry.addData("motorSpeed", launchMechanism.launcher.getVelocity());
 
     }
@@ -195,35 +164,6 @@ public class StarterBotTeleopMecanums extends OpMode {
      */
     @Override
     public void stop() {
-    }
-
-    void launch(boolean shotRequested) {
-        switch (launchState) {
-            case IDLE:
-                if (shotRequested) {
-                    launchState = LaunchState.SPIN_UP;
-                }
-                break;
-            case SPIN_UP:
-                launchMechanism.launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
-                if (launchMechanism.launcher.getVelocity() > LAUNCHER_MIN_VELOCITY) {
-                    launchState = LaunchState.LAUNCH;
-                }
-                break;
-            case LAUNCH:
-                feederMechanism.leftFeeder.setPower(FULL_SPEED);
-                feederMechanism.rightFeeder.setPower(FULL_SPEED);
-                feederTimer.reset();
-                launchState = LaunchState.LAUNCHING;
-                break;
-            case LAUNCHING:
-                if (feederTimer.seconds() > FEED_TIME_SECONDS) {
-                    launchState = LaunchState.IDLE;
-                    feederMechanism.leftFeeder.setPower(STOP_SPEED);
-                    feederMechanism.rightFeeder.setPower(STOP_SPEED);
-                }
-                break;
-        }
     }
 
     /*

@@ -41,7 +41,6 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
-import org.firstinspires.ftc.teamcode.gobildastarterbot.mechanicals.StarterBotFeederMechanism;
 import org.firstinspires.ftc.teamcode.gobildastarterbot.mechanicals.StarterBotLaunchMechanism;
 import org.firstinspires.ftc.teamcode.sensors.WebCamWithVisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
@@ -71,8 +70,6 @@ public class StarterBotAutoMecanumsWithWebCam extends OpMode
     MecanumDrive drive;
 
     private StarterBotLaunchMechanism launchMechanism;
-
-    private StarterBotFeederMechanism feederMechanism;
 
     private WebCamWithVisionPortal webCamWithVisionPortal = new WebCamWithVisionPortal();
 
@@ -113,39 +110,7 @@ public class StarterBotAutoMecanumsWithWebCam extends OpMode
 
     double robotRotationAngle = 45;
 
-    /*
-     * Here we create three timers which we use in different parts of our code. Each of these is an
-     * "object," so even though they are all an instance of ElapsedTime(), they count independently
-     * from each other.
-     */
-    private ElapsedTime shotTimer = new ElapsedTime();
-    private ElapsedTime feederTimer = new ElapsedTime();
     private ElapsedTime driveTimer = new ElapsedTime();
-
-
-    /*
-     * TECH TIP: State Machines
-     * We use "state machines" in a few different ways in this auto. The first step of a state
-     * machine is creating an enum that captures the different "states" that our code can be in.
-     * The core advantage of a state machine is that it allows us to continue to loop through code,
-     * and only run the bits of code we need to at different times. This state machine is called the
-     * "LaunchState." It reflects the current condition of the shooter motor when we request a shot.
-     * It starts at IDLE. When a shot is requested from the user, it'll move into PREPARE then LAUNCH.
-     * We can use higher level code to cycle through these states, but this allows us to write
-     * functions and autonomous routines in a way that avoids loops within loops, and "waits."
-     */
-    private enum LaunchState {
-        IDLE,
-        PREPARE,
-        LAUNCH,
-    }
-
-    /*
-     * Here we create the instance of LaunchState that we use in code. This creates a unique object
-     * which can store the current condition of the shooter. In other applications, you may have
-     * multiple copies of the same enum which have different names. Here we just have one.
-     */
-    private LaunchState launchState;
 
     /*
      * Here is our auto state machine enum. This captures each action we'd like to do in auto.
@@ -196,13 +161,11 @@ public class StarterBotAutoMecanumsWithWebCam extends OpMode
          * We do the same for our launcher state machine, setting it to IDLE before we use it later.
          */
         autonomousState = AutonomousState.LAUNCH;
-        launchState = LaunchState.IDLE;
         Pose2d initPose = new Pose2d(-43,43,0);
 
         drive = new MecanumDrive(hardwareMap,initPose);
 
         launchMechanism = new StarterBotLaunchMechanism(hardwareMap, telemetry);
-        feederMechanism = new StarterBotFeederMechanism(hardwareMap, telemetry);
 
         webCamWithVisionPortal.initAprilTag(hardwareMap, telemetry);
 
@@ -219,8 +182,8 @@ public class StarterBotAutoMecanumsWithWebCam extends OpMode
          * We also set the servo power to 0 here to make sure that the servo controller is booted
          * up and ready to go.
          */
-        feederMechanism.rightFeeder.setPower(0);
-        feederMechanism.leftFeeder.setPower(0);
+        launchMechanism.getFeederMechanism().rightFeeder.setPower(0);
+        launchMechanism.getFeederMechanism().leftFeeder.setPower(0);
 
 
         /*
@@ -284,7 +247,7 @@ public class StarterBotAutoMecanumsWithWebCam extends OpMode
              * allowing it to cycle through and continue the process of launching the first ball.
              */
             case LAUNCH:
-                launch(true);
+                launchMechanism.launchForAuto(true);
                 autonomousState = AutonomousState.WAIT_FOR_LAUNCH;
                 break;
 
@@ -300,7 +263,7 @@ public class StarterBotAutoMecanumsWithWebCam extends OpMode
                  * state on our state machine. Otherwise, we reset the encoders on our drive motors
                  * and move onto the next state.
                  */
-                if(launch(false)) {
+                if(launchMechanism.launchForAuto(false)) {
                     shotsToFire -= 1;
                     if(shotsToFire > 0) {
                         autonomousState = AutonomousState.LAUNCH;
@@ -362,7 +325,7 @@ public class StarterBotAutoMecanumsWithWebCam extends OpMode
          * "copy-and-paste" that non-state machine autonomous routines fall into.
          */
         telemetry.addData("AutoState", autonomousState);
-        telemetry.addData("LauncherState", launchState);
+        telemetry.addData("LauncherState", launchMechanism.getAutoLaunchState());
         telemetry.addData("Motor Current Positions", "left (%d), right (%d)",
                 drive.leftFront.getCurrentPosition(), drive.rightFront.getCurrentPosition(),
                 drive.leftBack.getCurrentPosition(), drive.rightBack.getCurrentPosition());
@@ -377,45 +340,6 @@ public class StarterBotAutoMecanumsWithWebCam extends OpMode
      */
     @Override
     public void stop() {
-    }
-
-    /**
-     * Launches one ball, when a shot is requested spins up the motor and once it is above a minimum
-     * velocity, runs the feeder servos for the right amount of time to feed the next ball.
-     * @param shotRequested "true" if the user would like to fire a new shot, and "false" if a shot
-     *                      has already been requested and we need to continue to move through the
-     *                      state machine and launch the ball.
-     * @return "true" for one cycle after a ball has been successfully launched, "false" otherwise.
-     */
-    boolean launch(boolean shotRequested){
-        switch (launchState) {
-            case IDLE:
-                if (shotRequested) {
-                    launchState = LaunchState.PREPARE;
-                    shotTimer.reset();
-                }
-                break;
-            case PREPARE:
-                launchMechanism.launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
-                if (launchMechanism.launcher.getVelocity() > LAUNCHER_MIN_VELOCITY){
-                    launchState = LaunchState.LAUNCH;
-                    feederMechanism.leftFeeder.setPower(1);
-                    feederMechanism.rightFeeder.setPower(1);
-                    feederTimer.reset();
-                }
-                break;
-            case LAUNCH:
-                if (feederTimer.seconds() > FEED_TIME) {
-                    feederMechanism.leftFeeder.setPower(0);
-                    feederMechanism.rightFeeder.setPower(0);
-
-                    if(shotTimer.seconds() > TIME_BETWEEN_SHOTS){
-                        launchState = LaunchState.IDLE;
-                        return true;
-                    }
-                }
-        }
-        return false;
     }
 
     /**

@@ -1,19 +1,19 @@
 package org.firstinspires.ftc.teamcode.testbench.testOpModes;
-import com.qualcomm.robotcore.hardware.DistanceSensor;
+
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.teamcode.testbench.sensors.TestDistanceSensor;
 
 public class TestdistancesensorLedLight {
 
-    private DistanceSensor distance;
+    private TestDistanceSensor distance;
 
     public void init(HardwareMap hwMap) {
-        distance = hwMap.get(DistanceSensor.class, "rightDistanceSensor");
+        distance = hwMap.get(TestDistanceSensor.class, "rightDistanceSensor");
     }
 
 
     public double getdistance(){
-        return distance.getDistance(DistanceUnit.CM);
+        return distance.getDistance();
     }
-    }
+}
