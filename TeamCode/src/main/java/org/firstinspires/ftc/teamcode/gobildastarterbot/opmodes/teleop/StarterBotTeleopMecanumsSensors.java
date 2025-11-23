@@ -38,11 +38,12 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.gobildastarterbot.mechanicals.StarterBotFeederMechanism;
 import org.firstinspires.ftc.teamcode.gobildastarterbot.mechanicals.StarterBotLaunchMechanism;
 import org.firstinspires.ftc.teamcode.testbench.sensors.DistanceSensor;
-import org.firstinspires.ftc.teamcode.testbench.sensors.TeleopLED;
+import org.firstinspires.ftc.teamcode.gobildastarterbot.mechanicals.SimpleLEDLight;
 
 /*
  * This file includes a teleop (driver-controlled) file for the goBILDA® StarterBot for the
@@ -119,8 +120,8 @@ public class StarterBotTeleopMecanumsSensors extends OpMode {
     DistanceSensor rightDistanceSensor = new DistanceSensor();
 
 
-    TeleopLED rightLED = new TeleopLED();
-    TeleopLED leftLED = new TeleopLED();
+    SimpleLEDLight rightLED = new SimpleLEDLight();
+    SimpleLEDLight leftLED = new SimpleLEDLight();
     /*
      * Code to run ONCE when the driver hits INIT
      */
@@ -131,7 +132,10 @@ public class StarterBotTeleopMecanumsSensors extends OpMode {
         rightDistanceSensor.init(hardwareMap, "rightDistanceSensor");
         rightLED.init(hardwareMap);
         leftLED.init(hardwareMap);
-
+        rightLED.setNameOfLED("Right LED");
+        leftLED.setNameOfLED("Left LED");
+        rightLED.turnLEDOff();
+        leftLED.turnLEDOff();
 
         Pose2d initPose = new Pose2d(-43,43,0);
 
@@ -195,57 +199,11 @@ public class StarterBotTeleopMecanumsSensors extends OpMode {
         // Print "Too Close" if the distance is less than 10 cm
         double leftDistance = leftDistanceSensor.getDistance();
 
-        if(leftDistance < 30) {
-            leftLED.setGreenLED(false, "left");
-            leftLED.setRedLED(true, "left");
-
-            telemetry.addLine("Too close");
-
-        } else if(leftDistance >= 30 && leftDistance <= 55) {
-
-            leftLED.setGreenLED(true, "left");
-            leftLED.setRedLED(true, "left");
-
-            telemetry.addLine("Watch out");
-
-        }
-        else {
-
-            leftLED.setGreenLED(true, "left");
-            leftLED.setRedLED(false, "left");
-
-            telemetry.addLine("Safe distance");
-
-        }
+        lightUpDistanceBasedLEDs(leftLED, telemetry, leftDistance);
 
         telemetry.addData("Distance : ", rightDistanceSensor.getDistance());
 
-
-        double rightDistance = rightDistanceSensor.getDistance();
-
-        if(rightDistance < 30) {
-            rightLED.setGreenLED(false, "right");
-            rightLED.setRedLED(true, "right");
-
-            telemetry.addLine("Too close");
-
-        } else if(rightDistance >= 30 && rightDistance <= 55) {
-
-            rightLED.setGreenLED(true, "right");
-            rightLED.setRedLED(true, "right");
-
-            telemetry.addLine("Watch out");
-
-        }
-        else {
-
-            rightLED.setGreenLED(true, "right");
-            rightLED.setRedLED(false, "right");
-
-            telemetry.addLine("Safe distance");
-
-        }
-
+        lightUpDistanceBasedLEDs(rightLED, telemetry, leftDistance);
 
         /*
          * Now we call our "Launch" function.
@@ -257,6 +215,31 @@ public class StarterBotTeleopMecanumsSensors extends OpMode {
          */
         telemetry.addData("State", launchState);
         telemetry.addData("motorSpeed", launchMechanism.launcher.getVelocity());
+
+    }
+
+    private void lightUpDistanceBasedLEDs(SimpleLEDLight ledInput, Telemetry telemetry, double leftDistance) {
+
+        if(leftDistance < 30) {
+
+            leftLED.turnLEDToRed();
+
+            telemetry.addData("Too close", ledInput.getNameOfLED());
+
+        } else if(leftDistance >= 30 && leftDistance <= 55) {
+
+            leftLED.turnLEDToAmber();
+
+            telemetry.addData("Watch out", ledInput.getNameOfLED());
+
+        }
+        else {
+
+            leftLED.turnLEDToGreen();
+
+            telemetry.addData("Safe distance", ledInput.getNameOfLED());
+
+        }
 
     }
 
