@@ -98,65 +98,9 @@ public class StarterBotAutoMecanumsV1 extends OpMode {
                 break;
 
             case DRIVING_AWAY_FROM_GOAL:
-                if (drive(DRIVE_SPEED, -12, DistanceUnit.INCH, 1)) {
+                if (drive(DRIVE_SPEED, -146, DistanceUnit.INCH, 30)) {
                     resetDriveEncoders();
                     autonomousState = AutonomousState.ROTATING;
-                }
-                break;
-
-            case ROTATING:
-                robotRotationAngle = (alliance == Alliance.RED) ? 45 : -45;
-                if (rotate(ROTATE_SPEED, robotRotationAngle, AngleUnit.DEGREES, 1)) {
-                    resetDriveEncoders();
-                    autonomousState = AutonomousState.DRIVING_OFF_LINE;
-                }
-                break;
-
-            case DRIVING_OFF_LINE:
-                if (drive(DRIVE_SPEED, -38, DistanceUnit.INCH, 1)) {
-                    resetDriveEncoders();
-                    autonomousState = AutonomousState.STRAFE_RIGHT_4;
-                }
-                break;
-
-            case STRAFE_RIGHT_4:
-                if (drive(DRIVE_SPEED, 4, DistanceUnit.INCH, 1, true)) {
-                    resetDriveEncoders();
-                    autonomousState = AutonomousState.ROTATE_NEG_90;
-                }
-                break;
-
-            case ROTATE_NEG_90:
-                if (rotate(ROTATE_SPEED, -90, AngleUnit.DEGREES, 1)) {
-                    resetDriveEncoders();
-                    autonomousState = AutonomousState.DRIVE_FORWARD_5;
-                }
-                break;
-
-            case DRIVE_FORWARD_5:
-                if (drive(DRIVE_SPEED, 5, DistanceUnit.INCH, 1)) {
-                    resetDriveEncoders();
-                    autonomousState = AutonomousState.DRIVE_BACK_5;
-                }
-                break;
-
-            case DRIVE_BACK_5:
-                if (drive(DRIVE_SPEED, -5, DistanceUnit.INCH, 1)) {
-                    resetDriveEncoders();
-                    autonomousState = AutonomousState.ROTATE_NEG_80;
-                }
-                break;
-
-            case ROTATE_NEG_80:
-                if (rotate(ROTATE_SPEED, -80, AngleUnit.DEGREES, 1)) {
-                    resetDriveEncoders();
-                    autonomousState = AutonomousState.DRIVE_FORWARD_5_FINAL;
-                }
-                break;
-
-            case DRIVE_FORWARD_5_FINAL:
-                if (drive(DRIVE_SPEED, 5, DistanceUnit.INCH, 1)) {
-                    autonomousState = AutonomousState.COMPLETE;
                 }
                 break;
 
