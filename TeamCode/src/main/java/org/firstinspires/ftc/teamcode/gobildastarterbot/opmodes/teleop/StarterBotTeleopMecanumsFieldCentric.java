@@ -35,9 +35,7 @@ package org.firstinspires.ftc.teamcode.gobildastarterbot.opmodes.teleop;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.IMU;
 
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.gobildastarterbot.mechanicals.StarterBotLaunchMechanism;
 
@@ -80,12 +78,6 @@ public class StarterBotTeleopMecanumsFieldCentric extends OpMode {
      * We can use higher level code to cycle through these states. But this allows us to write
      * functions and autonomous routines in a way that avoids loops within loops, and "waits".
      */
-
-    // Setup a variable for each drive wheel to save power level for telemetry
-    double leftFrontPower;
-    double rightFrontPower;
-    double leftBackPower;
-    double rightBackPower;
 
     /*
      * Code to run ONCE when the driver hits INIT
@@ -141,7 +133,7 @@ public class StarterBotTeleopMecanumsFieldCentric extends OpMode {
          */
 //        mecanumDrive(-gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
 
-        fieldCentricDrive(-gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
+        drive.fieldCentricDrive(-gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x, gamepad1.left_trigger, telemetry);
 
         /*
          * Here we give the user control of the speed of the launcher motor without automatically
@@ -171,61 +163,5 @@ public class StarterBotTeleopMecanumsFieldCentric extends OpMode {
      */
     @Override
     public void stop() {
-    }
-
-    /*
-     * Remember, Y stick value is reversed
-     * Counteract imperfect strafing
-     *
-     * forward = -gamepad1.left_stick_y
-     * strafe = gamepad1.left_stick_x
-     * rotate = gamepad1.right_stick_x
-     */
-    void mecanumDrive(double forward, double strafe, double rotate){
-
-        /* the denominator is the largest motor power (absolute value) or 1
-         * This ensures all the powers maintain the same ratio,
-         * but only if at least one is out of the range [-1, 1]
-         */
-        double speed = 2.5;
-        if(gamepad1.left_trigger > 0.1){
-            speed = 1.1;
-        }
-
-        double denominator = Math.max(Math.abs(forward) + Math.abs(strafe) + Math.abs(rotate), speed);
-
-        leftFrontPower = (forward + strafe + rotate) / denominator;
-        rightFrontPower = (forward - strafe - rotate) / denominator;
-        leftBackPower = (forward - strafe + rotate) / denominator;
-        rightBackPower = (forward + strafe - rotate) / denominator;
-
-        drive.leftFront.setPower(leftFrontPower);
-        drive.rightFront.setPower(rightFrontPower);
-        drive.leftBack.setPower(leftBackPower);
-        drive.rightBack.setPower(rightBackPower);
-
-//        double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), speed);
-//
-//        double y = Math.pow(-gamepad1.left_stick_y,3); // Remember, Y stick value is reversed
-//        double x = Math.pow(gamepad1.left_stick_x * 1.1,3); // Counteract imperfect strafing
-//        double rx = Math.pow(gamepad1.right_stick_x,3);
-
-
-    }
-
-    void fieldCentricDrive(double forward, double strafe, double rotate) {
-
-        double theta = Math.atan2(forward, strafe);
-        double r = Math.hypot(forward, strafe);
-
-        IMU imu = drive.lazyImu.get();
-
-        theta = AngleUnit.normalizeRadians(theta - imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS));
-
-        double newForward = r * Math.sin(theta);
-        double newStrafe = r * Math.cos(theta);
-
-        mecanumDrive(newForward, newStrafe, rotate);
-
     }
 }

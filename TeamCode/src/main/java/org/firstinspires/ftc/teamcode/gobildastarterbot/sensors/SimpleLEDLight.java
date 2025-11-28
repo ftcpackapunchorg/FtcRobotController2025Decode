@@ -12,11 +12,22 @@ public class SimpleLEDLight {
 
     private String name;
 
-    public void init(HardwareMap hardwareMap) {
+    public void init(HardwareMap hardwareMap, String robotSideName) {
 
-        greenLED = hardwareMap.get(LED.class, "greenLED");
+        String greenLEDName = "greenLED";
 
-        redLED = hardwareMap.get(LED.class, "redLED");
+        String redLEDName = "redLED";
+
+        if(robotSideName != null && !robotSideName.trim().isEmpty()) {
+
+            greenLEDName = robotSideName + "GreenLED";
+            redLEDName = robotSideName + "RedLED";
+
+        }
+
+        greenLED = hardwareMap.get(LED.class, greenLEDName);
+
+        redLED = hardwareMap.get(LED.class, redLEDName);
 
         redLED.off();
         greenLED.off();

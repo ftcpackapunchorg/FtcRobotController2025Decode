@@ -61,7 +61,7 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
  * main robot "loop," continuously checking for conditions that allow us to move to the next step.
  */
 
-@Autonomous(name="StarterBotAutoWithWebCam", group="StarterBot")
+@Autonomous(name="StarterBotAutoMecanumsWithWebCam", group="StarterBot")
 //@Disabled
 public class StarterBotAutoMecanumsWithWebCam extends OpMode
 {
@@ -218,12 +218,12 @@ public class StarterBotAutoMecanumsWithWebCam extends OpMode
     @Override
     public void loop() {
 
-
         webCamWithVisionPortal.update();
         AprilTagDetection matchingAprilTag = webCamWithVisionPortal.getTagBySpecificID(allianceAprilTagId);
         if(matchingAprilTag != null) {
             webCamWithVisionPortal.displayDetectionTelemetry(matchingAprilTag);
-            telemetry.addData("Matching April Tag Detected : ", matchingAprilTag.toString());
+            telemetry.addData("Matching April Tag Detected : ", matchingAprilTag.toString()
+            + " Position : " + matchingAprilTag.robotPose.getPosition());
         } else {
             telemetry.addData("Matching April Tag : Not Found ", "Not detected");
         }
@@ -237,7 +237,7 @@ public class StarterBotAutoMecanumsWithWebCam extends OpMode
          * of the members of the enum for a match, since if we find the "break" line in one case,
          * we know our enum isn't reflecting a different state.
          */
-        switch (autonomousState){
+        switch (autonomousState) {
             /*
              * Since the first state of our auto is LAUNCH, this is the first "case" we encounter.
              * This case is very simple. We call our .launch() function with "true" in the parameter.
@@ -268,8 +268,8 @@ public class StarterBotAutoMecanumsWithWebCam extends OpMode
                     if(shotsToFire > 0) {
                         autonomousState = AutonomousState.LAUNCH;
                     } else {
-                        drive.leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                        drive.rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//                        drive.leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//                        drive.rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                         drive.leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                         drive.rightBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                         launchMechanism.launcher.setVelocity(0);
@@ -284,9 +284,9 @@ public class StarterBotAutoMecanumsWithWebCam extends OpMode
                  * the robot has been within a tolerance of the target position for "holdSeconds."
                  * Once the function returns "true" we reset the encoders again and move on.
                  */
-                if(drive(DRIVE_SPEED, -4, DistanceUnit.INCH, 1)){
-                    drive.leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    drive.rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                if(drive.drive(DRIVE_SPEED, -4, DistanceUnit.INCH, 1)){
+//                    drive.leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//                    drive.rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     drive.leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     drive.rightBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     autonomousState = AutonomousState.ROTATING;
@@ -300,9 +300,9 @@ public class StarterBotAutoMecanumsWithWebCam extends OpMode
                     robotRotationAngle = -45;
                 }
 
-                if(rotate(ROTATE_SPEED, robotRotationAngle, AngleUnit.DEGREES,1)){
-                    drive.leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    drive.rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                if(drive.rotate(ROTATE_SPEED, robotRotationAngle, AngleUnit.DEGREES,1)){
+//                    drive.leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//                    drive.rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     drive.leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     drive.rightBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     autonomousState = AutonomousState.DRIVING_OFF_LINE;
@@ -310,7 +310,7 @@ public class StarterBotAutoMecanumsWithWebCam extends OpMode
                 break;
 
             case DRIVING_OFF_LINE:
-                if(drive(DRIVE_SPEED, -26, DistanceUnit.INCH, 1)){
+                if(drive.drive(DRIVE_SPEED, -26, DistanceUnit.INCH, 1)){
                     autonomousState = AutonomousState.COMPLETE;
                 }
                 break;
@@ -340,107 +340,6 @@ public class StarterBotAutoMecanumsWithWebCam extends OpMode
      */
     @Override
     public void stop() {
-    }
-
-    /**
-     * @param speed From 0-1
-     * @param distance In specified unit
-     * @param distanceUnit the unit of measurement for distance
-     * @param holdSeconds the number of seconds to wait at position before returning true.
-     * @return "true" if the motors are within tolerance of the target position for more than
-     * holdSeconds. "false" otherwise.
-     */
-    boolean drive(double speed, double distance, DistanceUnit distanceUnit, double holdSeconds) {
-        final double TOLERANCE_MM = 10;
-        /*
-         * In this function we use a DistanceUnits. This is a class that the FTC SDK implements
-         * which allows us to accept different input units depending on the user's preference.
-         * To use these, put both a double and a DistanceUnit as parameters in a function and then
-         * call distanceUnit.toMm(distance). This will return the number of mm that are equivalent
-         * to whatever distance in the unit specified. We are working in mm for this, so that's the
-         * unit we request from distanceUnit. But if we want to use inches in our function, we could
-         * use distanceUnit.toInches() instead!
-         */
-        double targetPosition = (distanceUnit.toMm(distance) * TICKS_PER_MM);
-
-        drive.leftFront.setTargetPosition((int) targetPosition);
-        drive.rightFront.setTargetPosition((int) targetPosition);
-        drive.leftBack.setTargetPosition((int) targetPosition);
-        drive.rightBack.setTargetPosition((int) targetPosition);
-
-        drive.leftFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        drive.rightFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        drive.leftBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        drive.rightBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-        drive.leftFront.setPower(speed);
-        drive.rightFront.setPower(speed);
-        drive.leftBack.setPower(speed);
-        drive.rightBack.setPower(speed);
-
-        /*
-         * Here we check if we are within tolerance of our target position or not. We calculate the
-         * absolute error (distance from our setpoint regardless of if it is positive or negative)
-         * and compare that to our tolerance. If we have not reached our target yet, then we reset
-         * the driveTimer. Only after we reach the target can the timer count higher than our
-         * holdSeconds variable.
-         */
-        if(Math.abs(targetPosition - drive.leftFront.getCurrentPosition()) > (TOLERANCE_MM * TICKS_PER_MM)){
-            driveTimer.reset();
-        }
-
-        return (driveTimer.seconds() > holdSeconds);
-    }
-
-    /**
-     * @param speed From 0-1
-     * @param angle the amount that the robot should rotate
-     * @param angleUnit the unit that angle is in
-     * @param holdSeconds the number of seconds to wait at position before returning true.
-     * @return True if the motors are within tolerance of the target position for more than
-     *         holdSeconds. False otherwise.
-     */
-    boolean rotate(double speed, double angle, AngleUnit angleUnit, double holdSeconds){
-        final double TOLERANCE_MM = 10;
-
-        /*
-         * Here we establish the number of mm that our drive wheels need to cover to create the
-         * requested angle. We use radians here because it makes the math much easier.
-         * Our robot will have rotated one radian when the wheels of the robot have driven
-         * 1/2 of the track width of our robot in a circle. This is also the radius of the circle
-         * that the robot tracks when it is rotating. So, to find the number of mm that our wheels
-         * need to travel, we just need to multiply the requested angle in radians by the radius
-         * of our turning circle.
-         */
-        double targetMm = angleUnit.toRadians(angle)*(TRACK_WIDTH_MM/2);
-
-        /*
-         * We need to set the left motor to the inverse of the target so that we rotate instead
-         * of driving straight.
-         */
-        double leftTargetPosition = -(targetMm*TICKS_PER_MM);
-        double rightTargetPosition = targetMm*TICKS_PER_MM;
-
-        drive.leftFront.setTargetPosition((int) leftTargetPosition);
-        drive.rightFront.setTargetPosition((int) rightTargetPosition);
-        drive.leftBack.setTargetPosition((int) leftTargetPosition);
-        drive.rightBack.setTargetPosition((int) rightTargetPosition);
-
-        drive.leftFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        drive.rightFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        drive.leftBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        drive.rightBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-        drive.leftFront.setPower(speed);
-        drive.rightFront.setPower(speed);
-        drive.leftBack.setPower(speed);
-        drive.rightBack.setPower(speed);
-
-        if((Math.abs(leftTargetPosition - drive.leftFront.getCurrentPosition())) > (TOLERANCE_MM * TICKS_PER_MM)){
-            driveTimer.reset();
-        }
-
-        return (driveTimer.seconds() > holdSeconds);
     }
 }
 

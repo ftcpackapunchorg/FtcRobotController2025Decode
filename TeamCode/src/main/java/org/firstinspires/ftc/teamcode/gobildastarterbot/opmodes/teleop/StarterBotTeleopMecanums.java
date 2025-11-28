@@ -78,12 +78,6 @@ public class StarterBotTeleopMecanums extends OpMode {
      * functions and autonomous routines in a way that avoids loops within loops, and "waits".
      */
 
-    // Setup a variable for each drive wheel to save power level for telemetry
-    double leftFrontPower;
-    double rightFrontPower;
-    double leftBackPower;
-    double rightBackPower;
-
     /*
      * Code to run ONCE when the driver hits INIT
      */
@@ -134,7 +128,9 @@ public class StarterBotTeleopMecanums extends OpMode {
          * both motors work to rotate the robot. Combinations of these inputs can be used to create
          * more complex maneuvers.
          */
-        mecanumDrive(-gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
+        telemetry.addData("gamepad1.left_trigger : ", gamepad1.left_trigger);
+
+        drive.mecanumDrive(-gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x, gamepad1.left_trigger, telemetry);
 
         /*
          * Here we give the user control of the speed of the launcher motor without automatically
@@ -174,44 +170,5 @@ public class StarterBotTeleopMecanums extends OpMode {
      * strafe = gamepad1.left_stick_x
      * rotate = gamepad1.right_stick_x
      */
-    void mecanumDrive(double forward, double strafe, double rotate){
 
-        telemetry.addData("gamepad1.left_trigger", gamepad1.left_trigger);
-
-        /* the denominator is the largest motor power (absolute value) or 1
-         * This ensures all the powers maintain the same ratio,
-         * but only if at least one is out of the range [-1, 1]
-         */
-        double speed = 2.5;
-        if(gamepad1.left_trigger > 0.1){
-            speed = 1.1;
-        }
-
-        double denominator = Math.max(Math.abs(forward) + Math.abs(strafe) + Math.abs(rotate), speed);
-
-        telemetry.addData("speed : ", speed);
-        telemetry.addData("denominator", denominator);
-        telemetry.addData("forward : ", forward);
-        telemetry.addData("strafe : ", strafe);
-        telemetry.addData("rotate : ", rotate);
-        telemetry.update();
-
-        leftFrontPower = (forward + strafe + rotate) / denominator;
-        rightFrontPower = (forward - strafe - rotate) / denominator;
-        leftBackPower = (forward - strafe + rotate) / denominator;
-        rightBackPower = (forward + strafe - rotate) / denominator;
-
-        drive.leftFront.setPower(leftFrontPower);
-        drive.rightFront.setPower(rightFrontPower);
-        drive.leftBack.setPower(leftBackPower);
-        drive.rightBack.setPower(rightBackPower);
-
-//        double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), speed);
-//
-//        double y = Math.pow(-gamepad1.left_stick_y,3); // Remember, Y stick value is reversed
-//        double x = Math.pow(gamepad1.left_stick_x * 1.1,3); // Counteract imperfect strafing
-//        double rx = Math.pow(gamepad1.right_stick_x,3);
-
-
-    }
 }

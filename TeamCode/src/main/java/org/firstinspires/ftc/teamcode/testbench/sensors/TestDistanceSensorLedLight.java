@@ -1,10 +1,8 @@
-package org.firstinspires.ftc.teamcode.testbench.testOpModes;
+package org.firstinspires.ftc.teamcode.testbench.sensors;
 
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
-import org.firstinspires.ftc.teamcode.testbench.sensors.TestDistanceSensor;
-
-public class TestdistancesensorLedLight {
+public class TestDistanceSensorLedLight {
 
     private TestDistanceSensor distance;
 
