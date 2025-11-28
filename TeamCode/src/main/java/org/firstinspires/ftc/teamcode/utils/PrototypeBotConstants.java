@@ -7,6 +7,7 @@ public class PrototypeBotConstants {
     public static final String BACK_RIGHT_WHEEL_MOTOR_NAME = "backRight";
     public static final String FRONT_RIGHT_WHEEL_MOTOR_NAME = "frontRight";
     public static final String LAUNCHER_ONE_TO_ONE_RATIO_MOTOR_NAME = "launcher";
+    public static final String INTAKE_ONE_TO_ONE_RATIO_MOTOR_NAME = "intake";
     public static final String LEFT_FEEDER_CRSERVO_NAME = "leftServo";
     public static final String RIGHT_FEEDER_CRSERVO_NAME = "rightServo";
 
