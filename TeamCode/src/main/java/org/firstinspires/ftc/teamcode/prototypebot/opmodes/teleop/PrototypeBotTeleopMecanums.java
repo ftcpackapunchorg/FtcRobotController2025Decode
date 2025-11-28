@@ -35,7 +35,6 @@ package org.firstinspires.ftc.teamcode.prototypebot.opmodes.teleop;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.PrototypeBotMecanumDrive;
 
@@ -57,48 +56,8 @@ import org.firstinspires.ftc.teamcode.PrototypeBotMecanumDrive;
 @TeleOp(name = "PrototypeBotTeleopMecanums", group = "PrototypeBot")
 //@Disabled
 public class PrototypeBotTeleopMecanums extends OpMode {
-    final double FEED_TIME_SECONDS = 0.20; //The feeder servos run this long when a shot is requested.
-    final double STOP_SPEED = 0.0; //We send this power to the servos when we want them to stop.
-    final double FULL_SPEED = 1.0;
-
-    /*
-     * When we control our launcher motor, we are using encoders. These allow the control system
-     * to read the current speed of the motor and apply more or less power to keep it at a constant
-     * velocity. Here we are setting the target, and minimum velocity that the launcher should run
-     * at. The minimum velocity is a threshold for determining when to fire.
-     */
-    final double LAUNCHER_TARGET_VELOCITY = 1125;
-    final double LAUNCHER_MIN_VELOCITY = 1075;
-
-
-    ElapsedTime feederTimer = new ElapsedTime();
 
     PrototypeBotMecanumDrive drive;
-
-    /*
-     * TECH TIP: State Machines
-     * We use a "state machine" to control our launcher motor and feeder servos in this program.
-     * The first step of a state machine is creating an enum that captures the different "states"
-     * that our code can be in.
-     * The core advantage of a state machine is that it allows us to continue to loop through all
-     * of our code while only running specific code when it's necessary. We can continuously check
-     * what "State" our machine is in, run the associated code, and when we are done with that step
-     * move on to the next state.
-     * This enum is called the "LaunchState". It reflects the current condition of the shooter
-     * motor and we move through the enum when the user asks our code to fire a shot.
-     * It starts at idle, when the user requests a launch, we enter SPIN_UP where we get the
-     * motor up to speed, once it meets a minimum speed then it starts and then ends the launch process.
-     * We can use higher level code to cycle through these states. But this allows us to write
-     * functions and autonomous routines in a way that avoids loops within loops, and "waits".
-     */
-    private enum LaunchState {
-        IDLE,
-        SPIN_UP,
-        LAUNCH,
-        LAUNCHING,
-    }
-
-    private LaunchState launchState;
 
     // Setup a variable for each drive wheel to save power level for telemetry
     double leftFrontPower;
@@ -111,7 +70,7 @@ public class PrototypeBotTeleopMecanums extends OpMode {
      */
     @Override
     public void init() {
-        launchState = LaunchState.IDLE;
+
 
         Pose2d initPose = new Pose2d(-43,43,0);
 
@@ -169,14 +128,8 @@ public class PrototypeBotTeleopMecanums extends OpMode {
 //        }
 
         /*
-         * Now we call our "Launch" function.
-         */
-        launch(gamepad2.rightBumperWasPressed());
-
-        /*
          * Show the state and motor powers
          */
-        telemetry.addData("State", launchState);
 //        telemetry.addData("motorSpeed", drive.launcher.getVelocity());
 
     }
@@ -186,35 +139,6 @@ public class PrototypeBotTeleopMecanums extends OpMode {
      */
     @Override
     public void stop() {
-    }
-
-    void launch(boolean shotRequested) {
-        switch (launchState) {
-            case IDLE:
-                if (shotRequested) {
-                    launchState = LaunchState.SPIN_UP;
-                }
-                break;
-            case SPIN_UP:
-//                drive.launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
-//                if (drive.launcher.getVelocity() > LAUNCHER_MIN_VELOCITY) {
-//                    launchState = LaunchState.LAUNCH;
-//                }
-                break;
-            case LAUNCH:
-//                drive.leftFeeder.setPower(FULL_SPEED);
-//                drive.rightFeeder.setPower(FULL_SPEED);
-                feederTimer.reset();
-                launchState = LaunchState.LAUNCHING;
-                break;
-            case LAUNCHING:
-                if (feederTimer.seconds() > FEED_TIME_SECONDS) {
-                    launchState = LaunchState.IDLE;
-//                    drive.leftFeeder.setPower(STOP_SPEED);
-//                    drive.rightFeeder.setPower(STOP_SPEED);
-                }
-                break;
-        }
     }
 
     /*

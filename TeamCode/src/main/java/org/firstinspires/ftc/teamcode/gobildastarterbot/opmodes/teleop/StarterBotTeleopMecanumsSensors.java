@@ -32,17 +32,15 @@
 
 package org.firstinspires.ftc.teamcode.gobildastarterbot.opmodes.teleop;
 
-import com.acmerobotics.roadrunner.Pose2d;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.util.ElapsedTime;
+        import com.acmerobotics.roadrunner.Pose2d;
+        import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+        import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-
-import org.firstinspires.ftc.teamcode.MecanumDrive;
-import org.firstinspires.ftc.teamcode.gobildastarterbot.mechanicals.StarterBotFeederMechanism;
-import org.firstinspires.ftc.teamcode.gobildastarterbot.mechanicals.StarterBotLaunchMechanism;
-import org.firstinspires.ftc.teamcode.testbench.sensors.DistanceSensor;
-import org.firstinspires.ftc.teamcode.testbench.sensors.TeleopLED;
+        import org.firstinspires.ftc.robotcore.external.Telemetry;
+        import org.firstinspires.ftc.teamcode.MecanumDrive;
+        import org.firstinspires.ftc.teamcode.gobildastarterbot.sensors.SimpleLEDLight;
+        import org.firstinspires.ftc.teamcode.gobildastarterbot.mechanicals.StarterBotLaunchMechanism;
+        import org.firstinspires.ftc.teamcode.testbench.sensors.TestDistanceSensor;
 
 /*
  * This file includes a teleop (driver-controlled) file for the goBILDA® StarterBot for the
@@ -62,76 +60,33 @@ import org.firstinspires.ftc.teamcode.testbench.sensors.TeleopLED;
 @TeleOp(name = "StarterBotTeleopMecanumsSensors", group = "StarterBot")
 //@Disabled
 public class StarterBotTeleopMecanumsSensors extends OpMode {
-    final double FEED_TIME_SECONDS = 0.20; //The feeder servos run this long when a shot is requested.
-    final double STOP_SPEED = 0.0; //We send this power to the servos when we want them to stop.
-    final double FULL_SPEED = 1.0;
 
-    /*
-     * When we control our launcher motor, we are using encoders. These allow the control system
-     * to read the current speed of the motor and apply more or less power to keep it at a constant
-     * velocity. Here we are setting the target, and minimum velocity that the launcher should run
-     * at. The minimum velocity is a threshold for determining when to fire.
-     */
-    final double LAUNCHER_TARGET_VELOCITY = 1125;
-    final double LAUNCHER_MIN_VELOCITY = 1075;
-
-
-    ElapsedTime feederTimer = new ElapsedTime();
 
     MecanumDrive drive;
 
-    /*
-     * TECH TIP: State Machines
-     * We use a "state machine" to control our launcher motor and feeder servos in this program.
-     * The first step of a state machine is creating an enum that captures the different "states"
-     * that our code can be in.
-     * The core advantage of a state machine is that it allows us to continue to loop through all
-     * of our code while only running specific code when it's necessary. We can continuously check
-     * what "State" our machine is in, run the associated code, and when we are done with that step
-     * move on to the next state.
-     * This enum is called the "LaunchState". It reflects the current condition of the shooter
-     * motor and we move through the enum when the user asks our code to fire a shot.
-     * It starts at idle, when the user requests a launch, we enter SPIN_UP where we get the
-     * motor up to speed, once it meets a minimum speed then it starts and then ends the launch process.
-     * We can use higher level code to cycle through these states. But this allows us to write
-     * functions and autonomous routines in a way that avoids loops within loops, and "waits".
-     */
-    private enum LaunchState {
-        IDLE,
-        SPIN_UP,
-        LAUNCH,
-        LAUNCHING,
-    }
-
-    private LaunchState launchState;
 
     StarterBotLaunchMechanism launchMechanism;
 
-    StarterBotFeederMechanism feederMechanism;
-
-    // Setup a variable for each drive wheel to save power level for telemetry
-    double leftFrontPower;
-    double rightFrontPower;
-    double leftBackPower;
-    double rightBackPower;
-
-    DistanceSensor leftDistanceSensor = new DistanceSensor();
-    DistanceSensor rightDistanceSensor = new DistanceSensor();
+    TestDistanceSensor leftDistanceSensor = new TestDistanceSensor();
+    TestDistanceSensor rightDistanceSensor = new TestDistanceSensor();
 
 
-    TeleopLED rightLED = new TeleopLED();
-    TeleopLED leftLED = new TeleopLED();
+    SimpleLEDLight rightLED = new SimpleLEDLight();
+    SimpleLEDLight leftLED = new SimpleLEDLight();
     /*
      * Code to run ONCE when the driver hits INIT
      */
     @Override
     public void init() {
-        launchState = LaunchState.IDLE;
+
         leftDistanceSensor.init(hardwareMap, "leftDistanceSensor");
         rightDistanceSensor.init(hardwareMap, "rightDistanceSensor");
-        rightLED.init(hardwareMap);
-        leftLED.init(hardwareMap);
-
+        rightLED.init(hardwareMap, "right");
+        leftLED.init(hardwareMap, "left");
+        rightLED.setNameOfLED("Right LED");
+        leftLED.setNameOfLED("Left LED");
+        rightLED.turnLEDOff();
+        leftLED.turnLEDOff();
 
         Pose2d initPose = new Pose2d(-43,43,0);
 
@@ -142,7 +97,6 @@ public class StarterBotTeleopMecanumsSensors extends OpMode {
          */
         drive = new MecanumDrive(hardwareMap, initPose);
         launchMechanism = new StarterBotLaunchMechanism(hardwareMap, telemetry);
-        feederMechanism = new StarterBotFeederMechanism(hardwareMap, telemetry);
 
         /*
          * Tell the driver that initialization is complete.
@@ -178,16 +132,16 @@ public class StarterBotTeleopMecanumsSensors extends OpMode {
          * both motors work to rotate the robot. Combinations of these inputs can be used to create
          * more complex maneuvers.
          */
-        mecanumDrive(-gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
+        drive.mecanumDrive(-gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x, gamepad1.left_trigger, telemetry);
 
         /*
          * Here we give the user control of the speed of the launcher motor without automatically
          * queuing a shot.
          */
         if (gamepad2.y) {
-            launchMechanism.launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
+            launchMechanism.startLauncher();
         } else if (gamepad2.b) { // stop flywheel
-            launchMechanism.launcher.setVelocity(STOP_SPEED);
+            launchMechanism.stopLauncher();
         }
 
         telemetry.addData("Distance : ", leftDistanceSensor.getDistance());
@@ -195,68 +149,49 @@ public class StarterBotTeleopMecanumsSensors extends OpMode {
         // Print "Too Close" if the distance is less than 10 cm
         double leftDistance = leftDistanceSensor.getDistance();
 
-        if(leftDistance < 30) {
-            leftLED.setGreenLED(false, "left");
-            leftLED.setRedLED(true, "left");
-
-            telemetry.addLine("Too close");
-
-        } else if(leftDistance >= 30 && leftDistance <= 55) {
-
-            leftLED.setGreenLED(true, "left");
-            leftLED.setRedLED(true, "left");
-
-            telemetry.addLine("Watch out");
-
-        }
-        else {
-
-            leftLED.setGreenLED(true, "left");
-            leftLED.setRedLED(false, "left");
-
-            telemetry.addLine("Safe distance");
-
-        }
-
-        telemetry.addData("Distance : ", rightDistanceSensor.getDistance());
-
+        lightUpDistanceBasedLEDs(leftLED, telemetry, leftDistance);
 
         double rightDistance = rightDistanceSensor.getDistance();
 
-        if(rightDistance < 30) {
-            rightLED.setGreenLED(false, "right");
-            rightLED.setRedLED(true, "right");
+        telemetry.addData("Distance : ", rightDistanceSensor.getDistance());
 
-            telemetry.addLine("Too close");
-
-        } else if(rightDistance >= 30 && rightDistance <= 55) {
-
-            rightLED.setGreenLED(true, "right");
-            rightLED.setRedLED(true, "right");
-
-            telemetry.addLine("Watch out");
-
-        }
-        else {
-
-            rightLED.setGreenLED(true, "right");
-            rightLED.setRedLED(false, "right");
-
-            telemetry.addLine("Safe distance");
-
-        }
-
+        lightUpDistanceBasedLEDs(rightLED, telemetry, rightDistance);
 
         /*
          * Now we call our "Launch" function.
          */
-        launch(gamepad2.rightBumperWasPressed());
+        launchMechanism.launch(gamepad2.rightBumperWasPressed());
 
         /*
          * Show the state and motor powers
          */
-        telemetry.addData("State", launchState);
+        telemetry.addData("State", launchMechanism.getLaunchState());
         telemetry.addData("motorSpeed", launchMechanism.launcher.getVelocity());
+
+    }
+
+    private void lightUpDistanceBasedLEDs(SimpleLEDLight ledInput, Telemetry telemetry, double distance) {
+
+        if(distance < 30) {
+
+            ledInput.turnLEDToRed();
+
+            telemetry.addData("Too close", ledInput.getNameOfLED());
+
+        } else if(distance >= 30 && distance <= 55) {
+
+            ledInput.turnLEDToAmber();
+
+            telemetry.addData("Watch out", ledInput.getNameOfLED());
+
+        }
+        else {
+
+            ledInput.turnLEDToGreen();
+
+            telemetry.addData("Safe distance", ledInput.getNameOfLED());
+
+        }
 
     }
 
@@ -265,75 +200,6 @@ public class StarterBotTeleopMecanumsSensors extends OpMode {
      */
     @Override
     public void stop() {
-    }
-
-    void launch(boolean shotRequested) {
-        switch (launchState) {
-            case IDLE:
-                if (shotRequested) {
-                    launchState = LaunchState.SPIN_UP;
-                }
-                break;
-            case SPIN_UP:
-                launchMechanism.launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
-                if (launchMechanism.launcher.getVelocity() > LAUNCHER_MIN_VELOCITY) {
-                    launchState = LaunchState.LAUNCH;
-                }
-                break;
-            case LAUNCH:
-                feederMechanism.leftFeeder.setPower(FULL_SPEED);
-                feederMechanism.rightFeeder.setPower(FULL_SPEED);
-                feederTimer.reset();
-                launchState = LaunchState.LAUNCHING;
-                break;
-            case LAUNCHING:
-                if (feederTimer.seconds() > FEED_TIME_SECONDS) {
-                    launchState = LaunchState.IDLE;
-                    feederMechanism.leftFeeder.setPower(STOP_SPEED);
-                    feederMechanism.rightFeeder.setPower(STOP_SPEED);
-                }
-                break;
-        }
-    }
-
-    /*
-     * Remember, Y stick value is reversed
-     * Counteract imperfect strafing
-     *
-     * forward = -gamepad1.left_stick_y
-     * strafe = gamepad1.left_stick_x
-     * rotate = gamepad1.right_stick_x
-     */
-    void mecanumDrive(double forward, double strafe, double rotate){
-
-        /* the denominator is the largest motor power (absolute value) or 1
-         * This ensures all the powers maintain the same ratio,
-         * but only if at least one is out of the range [-1, 1]
-         */
-        double speed = 2.5;
-        if(gamepad1.left_trigger > 0.1){
-            speed = 1.1;
-        }
-
-        double denominator = Math.max(Math.abs(forward) + Math.abs(strafe) + Math.abs(rotate), speed);
-
-        leftFrontPower = (forward + strafe + rotate) / denominator;
-        rightFrontPower = (forward - strafe - rotate) / denominator;
-        leftBackPower = (forward - strafe + rotate) / denominator;
-        rightBackPower = (forward + strafe - rotate) / denominator;
-
-        drive.leftFront.setPower(leftFrontPower);
-        drive.rightFront.setPower(rightFrontPower);
-        drive.leftBack.setPower(leftBackPower);
-        drive.rightBack.setPower(rightBackPower);
-
-//        double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), speed);
-//
-//        double y = Math.pow(-gamepad1.left_stick_y,3); // Remember, Y stick value is reversed
-//        double x = Math.pow(gamepad1.left_stick_x * 1.1,3); // Counteract imperfect strafing
-//        double rx = Math.pow(gamepad1.right_stick_x,3);
-
-
     }
 }
 
