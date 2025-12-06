@@ -10,5 +10,8 @@ public class PrototypeBotConstants {
     public static final String INTAKE_ONE_TO_ONE_RATIO_MOTOR_NAME = "intake";
     public static final String LEFT_FEEDER_CRSERVO_NAME = "leftServo";
     public static final String RIGHT_FEEDER_CRSERVO_NAME = "rightServo";
+    public static int BLUE_INIT_POSE_X = -48;
+    public static int BLUE_INIT_POSE_Y = -48;
+    public static int BLUE_INIT_POSE_HEADING_DEGREES = -135;
 
 }

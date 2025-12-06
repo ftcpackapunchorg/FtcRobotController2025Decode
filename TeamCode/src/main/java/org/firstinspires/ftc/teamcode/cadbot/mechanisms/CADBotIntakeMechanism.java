@@ -1,21 +1,22 @@
-package org.firstinspires.ftc.teamcode.prototypebot.mechanicals;
+package org.firstinspires.ftc.teamcode.cadbot.mechanisms;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.utils.PrototypeBotConstants;
 
-public final class PrototypeBotIntakeMechanism {
+public final class CADBotIntakeMechanism {
 
     public final DcMotorEx intake;
 
-    final double FEED_TIME_SECONDS = 0.20; //The feeder servos run this long when a shot is requested.
-    final double STOP_SPEED = 0.0; //We send this power to the servos when we want them to stop.
-    final double FULL_SPEED = 1.0;
+    private CADBotIntakeFeederMechanism cadBotIntakeFeederMechanism;
+
+    final double INTAKE_FEED_TIME_SECONDS = 5.0; //The feeder servos run this long when a shot is requested.
 
     final double MIN_INTAKE_POWER = 0.0;
 
@@ -30,11 +31,11 @@ public final class PrototypeBotIntakeMechanism {
     final double INTAKE_TARGET_VELOCITY = 1125;
     final double INTAKE_MIN_VELOCITY = 1075;
 
-    ElapsedTime feederTimer = new ElapsedTime();
+    ElapsedTime intakeFeedTimer = new ElapsedTime();
 
     /** Auto related **/
 
-    final double FEED_TIME = 0.20;
+    final double INTAKE_TIME = 3.0;
     final double TIME_BETWEEN_SHOTS = 2;
 
     /*
@@ -55,13 +56,17 @@ public final class PrototypeBotIntakeMechanism {
      */
 
     private enum IntakeState {
-        ON,
-        OFF;
+        IDLE,
+        GET_READY,
+        INTAKE,
+        INTAKE_IN_PROGRESS;
     }
 
     private enum AutoIntakeState {
-        ON,
-        OFF;
+        IDLE,
+        GET_READY,
+        INTAKE,
+        INTAKE_IN_PROGRESS;
     }
 
     /*
@@ -69,10 +74,10 @@ public final class PrototypeBotIntakeMechanism {
      * "object," so even though they are all an instance of ElapsedTime(), they count independently
      * from each other.
      */
-    private ElapsedTime shotTimer = new ElapsedTime();
-    private ElapsedTime autoFeederTimer = new ElapsedTime();
+    private ElapsedTime intakeTimer = new ElapsedTime();
+    private ElapsedTime autoIntakeFeederTimer = new ElapsedTime();
 
-    private IntakeState intakeState = IntakeState.OFF;
+    private IntakeState intakeState = IntakeState.IDLE;
 
     public IntakeState getIntakeState() {
         return intakeState;
@@ -82,15 +87,13 @@ public final class PrototypeBotIntakeMechanism {
         return autoIntakeState;
     }
 
-    private AutoIntakeState autoIntakeState;
+    private AutoIntakeState autoIntakeState = AutoIntakeState.IDLE;
 
-    public PrototypeBotIntakeMechanism(HardwareMap hardwareMap, Telemetry telemetry) {
+    public CADBotIntakeMechanism(HardwareMap hardwareMap, Telemetry telemetry) {
 
         intake = hardwareMap.get(DcMotorEx.class, PrototypeBotConstants.INTAKE_ONE_TO_ONE_RATIO_MOTOR_NAME);
 
-        intakeState = IntakeState.OFF;
-
-        autoIntakeState = AutoIntakeState.OFF;
+        cadBotIntakeFeederMechanism = new CADBotIntakeFeederMechanism(hardwareMap, telemetry);
 
         /*
          * Here we set our intake to the RUN_USING_ENCODER runmode.
@@ -104,20 +107,34 @@ public final class PrototypeBotIntakeMechanism {
 
         intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-//        intake.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 0, 0, 10));
+        intake.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 0, 0, 10));
 
     }
 
     public void intakeAction(boolean intakeRequested) {
-        switch (intakeState){
-            case ON:
-                intakeState = IntakeState.OFF;
-                stopIntake();
+        switch (intakeState) {
+            case IDLE:
+                if (intakeRequested) {
+                    intakeState = IntakeState.GET_READY;
+                }
                 break;
-            case OFF:
-                intakeState = IntakeState.ON;
-                startIntake();
+            case GET_READY:
+                intakeFeedTimer.reset();
+                cadBotIntakeFeederMechanism.startIntakeFeeders();
+                intakeState = IntakeState.INTAKE;
                 break;
+            case INTAKE:
+                intake.setVelocity(MAX_INTAKE_POWER);
+                if (intake.getVelocity() > INTAKE_MIN_VELOCITY) {
+                    intakeState = IntakeState.INTAKE_IN_PROGRESS;
+                }
+                break;
+            case INTAKE_IN_PROGRESS:
+                if (intakeFeedTimer.seconds() > INTAKE_FEED_TIME_SECONDS) {
+                    intake.setVelocity(MIN_INTAKE_POWER);
+                    intakeState = IntakeState.IDLE;
+                    cadBotIntakeFeederMechanism.stopIntakeFeeders();
+                }
         }
     }
 
@@ -131,34 +148,43 @@ public final class PrototypeBotIntakeMechanism {
      */
     public boolean intakeForAuto(boolean autoIntakeRequested){
         switch (autoIntakeState) {
-            case OFF:
-//                stopIntake();
+            case IDLE:
                 if (autoIntakeRequested) {
-                    autoIntakeState = AutoIntakeState.ON;
+                    autoIntakeState = AutoIntakeState.GET_READY;
 //                    shotTimer.reset();
                 }
                 break;
-            case ON:
-//                intake.setVelocity(INTAKE_TARGET_VELOCITY);
-                startIntake();
-                if (intake.getVelocity() > INTAKE_MIN_VELOCITY){
-                    autoIntakeState = AutoIntakeState.OFF;
-//                    feederMechanism.leftFeeder.setPower(1);
-//                    feederMechanism.rightFeeder.setPower(1);
-//                    autoFeederTimer.reset();
+            case GET_READY:
+                autoIntakeFeederTimer.reset();
+                cadBotIntakeFeederMechanism.startIntakeFeeders();
+                autoIntakeState = AutoIntakeState.INTAKE;
+                break;
+            case INTAKE:
+                intake.setVelocity(MAX_INTAKE_POWER);
+                if (intake.getVelocity() > INTAKE_MIN_VELOCITY) {
+                    autoIntakeState = AutoIntakeState.INTAKE_IN_PROGRESS;
                 }
                 break;
+            case INTAKE_IN_PROGRESS:
+                if (autoIntakeFeederTimer.seconds() > INTAKE_FEED_TIME_SECONDS) {
+                    intake.setVelocity(MIN_INTAKE_POWER);
+                    autoIntakeState = AutoIntakeState.IDLE;
+                    cadBotIntakeFeederMechanism.stopIntakeFeeders();
+                }
         }
         return false;
     }
 
     public void startIntake() {
 
-        intake.setPower(MAX_INTAKE_POWER);
+        cadBotIntakeFeederMechanism.startIntakeFeeders();
+
+        intake.setVelocity(MAX_INTAKE_POWER);
     }
 
     public void stopIntake() {
 
-        intake.setPower(MIN_INTAKE_POWER);
+        cadBotIntakeFeederMechanism.stopIntakeFeeders();
+        intake.setVelocity(MIN_INTAKE_POWER);
     }
 }

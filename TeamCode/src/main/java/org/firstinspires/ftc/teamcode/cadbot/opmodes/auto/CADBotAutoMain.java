@@ -30,22 +30,18 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.teamcode.gobildastarterbot.opmodes.auto;
+package org.firstinspires.ftc.teamcode.cadbot.opmodes.auto;
 
 import com.acmerobotics.roadrunner.Pose2d;
-import com.acmerobotics.roadrunner.PoseVelocity2d;
-import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
-import com.acmerobotics.roadrunner.Vector2d;
-import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.teamcode.MecanumDrive;
-import org.firstinspires.ftc.teamcode.gobildastarterbot.mechanicals.StarterBotLaunchMechanism;
-import org.firstinspires.ftc.teamcode.utils.StarterBotConstants;
+import org.firstinspires.ftc.teamcode.cadbot.mechanisms.CADBotIntakeMechanism;
+import org.firstinspires.ftc.teamcode.cadbot.mechanisms.CADBotLaunchMechanism;
+import org.firstinspires.ftc.teamcode.cadbot.mechanisms.CADBotMecanumDrive;
 
 
 /*
@@ -63,12 +59,14 @@ import org.firstinspires.ftc.teamcode.utils.StarterBotConstants;
  * main robot "loop," continuously checking for conditions that allow us to move to the next step.
  */
 
-@Autonomous(name="StarterBotRRBlueAuto", group="StarterBot")
-public class StarterBotRRBlueAuto extends OpMode
+@Autonomous(name="CADBot Auto Main", group="CADBot")
+public class CADBotAutoMain extends OpMode
 {
-    MecanumDrive drive;
+    CADBotMecanumDrive drive;
 
-    StarterBotLaunchMechanism launchMechanism;
+    CADBotLaunchMechanism launchMechanism;
+
+    CADBotIntakeMechanism intakeMechanism;
 
     /*
      * The number of seconds that we wait between each of our 3 shots from the launcher. This
@@ -103,7 +101,6 @@ public class StarterBotRRBlueAuto extends OpMode
         DRIVING_AWAY_FROM_GOAL,
         ROTATING,
         DRIVING_OFF_LINE,
-        DRIVE_TO_LEAVE_POS,
         COMPLETE
     }
 
@@ -122,10 +119,6 @@ public class StarterBotRRBlueAuto extends OpMode
      */
     private Alliance alliance = Alliance.RED;
 
-    Pose2d initPose;
-
-    TrajectoryActionBuilder goToLeaveZone;
-
     /*
      * This code runs ONCE when the driver hits INIT.
      */
@@ -137,20 +130,10 @@ public class StarterBotRRBlueAuto extends OpMode
          * We do the same for our launcher state machine, setting it to IDLE before we use it later.
          */
         autonomousState = AutonomousState.LAUNCH;
-        initPose = new Pose2d(StarterBotConstants.BLUE_INIT_POSE_X,StarterBotConstants.BLUE_INIT_POSE_Y, Math.toRadians(StarterBotConstants.BLUE_INIT_POSE_HEADING_DEGREES));
+        Pose2d initPose = new Pose2d(-43,43,0);
 
-        drive = new MecanumDrive(hardwareMap,initPose);
-        launchMechanism = new StarterBotLaunchMechanism(hardwareMap, telemetry);
-
-        PoseVelocity2d currentPoseVel = drive.updatePoseEstimate();
-
-        Pose2d currentPose = new Pose2d(currentPoseVel.component1(), currentPoseVel.component2());
-
-        goToLeaveZone = drive.actionBuilder(currentPose)
-                .strafeTo(new Vector2d(-24, -24))
-                .turn(Math.toRadians(-55))
-                .strafeTo(new Vector2d(58, -24))
-                .strafeTo(new Vector2d(58, -33 ));
+        drive = new CADBotMecanumDrive(hardwareMap,initPose);
+        launchMechanism = new CADBotLaunchMechanism(hardwareMap, telemetry);
 
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
@@ -165,8 +148,8 @@ public class StarterBotRRBlueAuto extends OpMode
          * We also set the servo power to 0 here to make sure that the servo controller is booted
          * up and ready to go.
          */
-        launchMechanism.getFeederMechanism().rightFeeder.setPower(0);
-        launchMechanism.getFeederMechanism().leftFeeder.setPower(0);
+//        launchMechanism.getFeederMechanism().rightFeeder.setPower(0);
+//        launchMechanism.getFeederMechanism().leftFeeder.setPower(0);
 
         /*
          * Here we allow the driver to select which alliance we are on using the gamepad.
@@ -234,28 +217,15 @@ public class StarterBotRRBlueAuto extends OpMode
                     if(shotsToFire > 0) {
                         autonomousState = AutonomousState.LAUNCH;
                     } else {
+                        drive.leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                        drive.rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                         drive.leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                         drive.rightBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                         launchMechanism.launcher.setVelocity(0);
-//                        autonomousState = AutonomousState.DRIVING_AWAY_FROM_GOAL;
-                        autonomousState = AutonomousState.DRIVE_TO_LEAVE_POS;
+                        autonomousState = AutonomousState.DRIVING_AWAY_FROM_GOAL;
                     }
                 }
                 break;
-
-//            case DRIVING_AWAY_FROM_GOAL:
-//                /*
-//                 * This is another function that returns a boolean. This time we return "true" if
-//                 * the robot has been within a tolerance of the target position for "holdSeconds."
-//                 * Once the function returns "true" we reset the encoders again and move on.
-//                 */
-//                if(drive.drive(DRIVE_SPEED, -4, DistanceUnit.INCH, 1)){
-//                    drive.leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-//                    drive.rightBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-//                    autonomousState = AutonomousState.ROTATING;
-//                }
-//
-//                break;
 
             case DRIVING_AWAY_FROM_GOAL:
                 /*
@@ -263,14 +233,13 @@ public class StarterBotRRBlueAuto extends OpMode
                  * the robot has been within a tolerance of the target position for "holdSeconds."
                  * Once the function returns "true" we reset the encoders again and move on.
                  */
-//                if(drive.drive(DRIVE_SPEED, -4, DistanceUnit.INCH, 1)){
-//                    drive.leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-//                    drive.rightBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-//                    autonomousState = AutonomousState.ROTATING;
-//                }
-
-                Actions.runBlocking(goToLeaveZone.build());
-                autonomousState = AutonomousState.COMPLETE;
+                if(drive.driveForAutonomous(DRIVE_SPEED, -4, DistanceUnit.INCH, 1)){
+                    drive.leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    drive.rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    drive.leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    drive.rightBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    autonomousState = AutonomousState.ROTATING;
+                }
                 break;
 
             case ROTATING:
@@ -281,6 +250,8 @@ public class StarterBotRRBlueAuto extends OpMode
                 }
 
                 if(drive.rotate(ROTATE_SPEED, robotRotationAngle, AngleUnit.DEGREES,1)){
+                    drive.leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    drive.rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     drive.leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     drive.rightBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     autonomousState = AutonomousState.DRIVING_OFF_LINE;
@@ -292,22 +263,6 @@ public class StarterBotRRBlueAuto extends OpMode
                     autonomousState = AutonomousState.COMPLETE;
                 }
                 break;
-            case DRIVE_TO_LEAVE_POS:
-                telemetry.addData("Current Pos X : ", drive.localizer.getPose().position.x);
-                telemetry.addData("Current Pos Y : ", drive.localizer.getPose().position.y);
-                telemetry.addData("Current Pos Heading : ", drive.localizer.getPose().heading);
-//                telemetry.update();
-
-                Actions.runBlocking(goToLeaveZone
-                        .build());
-                autonomousState = AutonomousState.COMPLETE;
-
-                telemetry.addData("Target Pos X : ", drive.localizer.getPose().position.x);
-                telemetry.addData("Target Pos Y : ", drive.localizer.getPose().position.y);
-                telemetry.addData("Target Pos Heading : ", drive.localizer.getPose().heading);
-                telemetry.update();
-                break;
-
         }
 
         /*
@@ -325,9 +280,6 @@ public class StarterBotRRBlueAuto extends OpMode
         telemetry.addData("Motor Target Positions", "left (%d), right (%d)",
                 drive.leftFront.getTargetPosition(), drive.rightFront.getTargetPosition(),
                 drive.leftBack.getTargetPosition(), drive.rightBack.getTargetPosition());
-        telemetry.addData("Target Pos X : ", drive.updatePoseEstimate().component1().x);
-        telemetry.addData("Target Pos Y : ", drive.updatePoseEstimate().component1().y);
-        telemetry.addData("Target Pos Heading : ", drive.updatePoseEstimate().component2());
         telemetry.update();
     }
 
