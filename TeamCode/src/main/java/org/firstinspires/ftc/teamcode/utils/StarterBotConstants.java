@@ -12,4 +12,8 @@ public class StarterBotConstants {
     public static int BLUE_INIT_POSE_X = -48;
     public static int BLUE_INIT_POSE_Y = -48;
     public static int BLUE_INIT_POSE_HEADING_DEGREES = -135;
+
+    public static int BLUE_FAR_POSE_X = 56;
+    public static int BLUE_FAR_POSE_Y = -16;
+    public static int BLUE_FAR_POSE_HEADING_DEGREES = 180;
 }
