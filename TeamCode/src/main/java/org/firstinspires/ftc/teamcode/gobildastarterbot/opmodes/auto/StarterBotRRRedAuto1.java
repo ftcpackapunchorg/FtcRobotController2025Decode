@@ -62,8 +62,7 @@ import org.firstinspires.ftc.teamcode.gobildastarterbot.mechanicals.StarterBotLa
  * main robot "loop," continuously checking for conditions that allow us to move to the next step.
  */
 
-@Autonomous(name="StarterBotRRRedAuto", group="StarterBot")
-@Disabled
+@Autonomous(name="StarterBotRRRedAuto1", group="StarterBot")
 public class StarterBotRRRedAuto1 extends OpMode
 {
     MecanumDrive drive;
@@ -76,7 +75,7 @@ public class StarterBotRRRedAuto1 extends OpMode
      * that each shot will score.
      */
 
-    int shotsToFire = 3; //The number of shots to fire in this auto.
+    int shotsToFire = 0; //The number of shots to fire in this auto.
 
     double robotRotationAngle = 45;
 
@@ -135,17 +134,16 @@ public class StarterBotRRRedAuto1 extends OpMode
          * Later in our code, we will progress through the state machine by moving to other enum members.
          * We do the same for our launcher state machine, setting it to IDLE before we use it later.
          */
-        autonomousState = AutonomousState.LAUNCH;
-        initPose = new Pose2d(-48,48, Math.toRadians(135));
+        autonomousState = AutonomousState.DRIVING_AWAY_FROM_GOAL;
+        initPose = new Pose2d(-56,12, Math.toRadians(180));
 
         drive = new MecanumDrive(hardwareMap,initPose);
         launchMechanism = new StarterBotLaunchMechanism(hardwareMap, telemetry);
 
         goToLeaveZone = drive.actionBuilder(initPose)
                 .waitSeconds(1)
-                .strafeTo(new Vector2d(-28, 52))
-                .waitSeconds(1)
-                .turn(Math.toRadians(30));
+                .strafeTo(new Vector2d(-64, 35))
+                .waitSeconds(1);
 
 
         // Tell the driver that initialization is complete.

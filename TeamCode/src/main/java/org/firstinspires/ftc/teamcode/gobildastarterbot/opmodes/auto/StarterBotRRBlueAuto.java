@@ -134,21 +134,15 @@ public class StarterBotRRBlueAuto extends OpMode
          * We do the same for our launcher state machine, setting it to IDLE before we use it later.
          */
         autonomousState = AutonomousState.LAUNCH;
-        initPose = new Pose2d(-43,43, Math.toRadians(-135));
+        initPose = new Pose2d(-48,-48, Math.toRadians(-135));
 
         drive = new MecanumDrive(hardwareMap,initPose);
         launchMechanism = new StarterBotLaunchMechanism(hardwareMap, telemetry);
 
         goToLeaveZone = drive.actionBuilder(initPose)
                 .waitSeconds(1)
-                .turn(Math.toRadians(135))
-                .waitSeconds(2)
-                .strafeTo(new Vector2d(-24, -24))
-                .waitSeconds(1)
-                .strafeTo(new Vector2d(58, -24))
-                .waitSeconds(1)
-                .strafeTo(new Vector2d(58, -33 ))
-                .waitSeconds(2);
+                .strafeTo(new Vector2d(-28, -52))
+                .turn(Math.toRadians(60));
 
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
@@ -253,6 +247,7 @@ public class StarterBotRRBlueAuto extends OpMode
 //                }
 
                 Actions.runBlocking(goToLeaveZone.build());
+                autonomousState = StarterBotRRBlueAuto.AutonomousState.COMPLETE;
                 break;
 
             case ROTATING:
