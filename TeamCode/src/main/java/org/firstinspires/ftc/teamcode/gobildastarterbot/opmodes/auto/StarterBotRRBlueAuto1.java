@@ -37,6 +37,7 @@ import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
@@ -61,8 +62,8 @@ import org.firstinspires.ftc.teamcode.gobildastarterbot.mechanicals.StarterBotLa
  * main robot "loop," continuously checking for conditions that allow us to move to the next step.
  */
 
-@Autonomous(name="StarterBotRRBlueAuto", group="StarterBot")
-public class StarterBotRRBlueAuto extends OpMode
+@Autonomous(name="StarterBotRRBlueAuto1", group="StarterBot")
+public class StarterBotRRBlueAuto1 extends OpMode
 {
     MecanumDrive drive;
 
@@ -74,7 +75,7 @@ public class StarterBotRRBlueAuto extends OpMode
      * that each shot will score.
      */
 
-    int shotsToFire = 3; //The number of shots to fire in this auto.
+    int shotsToFire = 1; //The number of shots to fire in this auto.
 
     double robotRotationAngle = 45;
 
@@ -133,16 +134,16 @@ public class StarterBotRRBlueAuto extends OpMode
          * Later in our code, we will progress through the state machine by moving to other enum members.
          * We do the same for our launcher state machine, setting it to IDLE before we use it later.
          */
-        autonomousState = AutonomousState.LAUNCH;
-        initPose = new Pose2d(-48,-48, Math.toRadians(-135));
+        autonomousState = AutonomousState.DRIVING_AWAY_FROM_GOAL;
+        initPose = new Pose2d(64,-8, Math.toRadians(180));
 
         drive = new MecanumDrive(hardwareMap,initPose);
         launchMechanism = new StarterBotLaunchMechanism(hardwareMap, telemetry);
 
         goToLeaveZone = drive.actionBuilder(initPose)
                 .waitSeconds(1)
-                .strafeTo(new Vector2d(-28, -52))
-                .turn(Math.toRadians(60));
+                .strafeTo(new Vector2d(64, -35));
+
 
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
@@ -247,7 +248,7 @@ public class StarterBotRRBlueAuto extends OpMode
 //                }
 
                 Actions.runBlocking(goToLeaveZone.build());
-                autonomousState = StarterBotRRBlueAuto.AutonomousState.COMPLETE;
+                autonomousState = AutonomousState.COMPLETE;
                 break;
 
             case ROTATING:
@@ -279,6 +280,15 @@ public class StarterBotRRBlueAuto extends OpMode
          * after the last "case" that runs every loop. This means we can avoid a lot of
          * "copy-and-paste" that non-state machine autonomous routines fall into.
          */
+        telemetry.addData("AutoState", autonomousState);
+        telemetry.addData("Motor Current Positions", "left (%d), right (%d)",
+                drive.leftFront.getCurrentPosition(), drive.rightFront.getCurrentPosition(),
+                drive.leftBack.getCurrentPosition(), drive.rightBack.getCurrentPosition());
+        telemetry.addData("Motor Target Positions", "left (%d), right (%d)",
+                drive.leftFront.getTargetPosition(), drive.rightFront.getTargetPosition(),
+                drive.leftBack.getTargetPosition(), drive.rightBack.getTargetPosition());
+        telemetry.update();
+
         telemetry.addData("AutoState", autonomousState);
         telemetry.addData("Motor Current Positions", "left (%d), right (%d)",
                 drive.leftFront.getCurrentPosition(), drive.rightFront.getCurrentPosition(),
