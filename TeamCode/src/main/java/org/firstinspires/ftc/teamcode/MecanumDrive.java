@@ -662,7 +662,7 @@ public final class MecanumDrive {
          * but only if at least one is out of the range [-1, 1]
          */
         double speed = 2.5;
-        if(turboSpeed > 0.1){
+        if(turboSpeed > 0.1) {
             speed = 1.1;
         }
 

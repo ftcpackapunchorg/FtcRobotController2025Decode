@@ -47,8 +47,11 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.messages.DriveCommandMessage;
 import org.firstinspires.ftc.teamcode.messages.MecanumCommandMessage;
@@ -98,6 +101,11 @@ public final class PrototypeBotMecanumDrive {
         public double axialVelGain = 0.0;
         public double lateralVelGain = 0.0;
         public double headingVelGain = 0.0; // shared with turn
+
+        final double WHEEL_DIAMETER_MM = 96;
+        final double ENCODER_TICKS_PER_REV = 537.7;
+        final double TICKS_PER_MM = (ENCODER_TICKS_PER_REV / (WHEEL_DIAMETER_MM * Math.PI));
+        final double TRACK_WIDTH_MM = 404;
     }
 
     public static Params PARAMS = new Params();
@@ -129,6 +137,14 @@ public final class PrototypeBotMecanumDrive {
     private final DownsampledWriter targetPoseWriter = new DownsampledWriter("TARGET_POSE", 50_000_000);
     private final DownsampledWriter driveCommandWriter = new DownsampledWriter("DRIVE_COMMAND", 50_000_000);
     private final DownsampledWriter mecanumCommandWriter = new DownsampledWriter("MECANUM_COMMAND", 50_000_000);
+
+    private ElapsedTime driveTimer = new ElapsedTime();
+
+    // Setup a variable for each drive wheel to save power level for telemetry
+    double leftFrontPower;
+    double rightFrontPower;
+    double leftBackPower;
+    double rightBackPower;
 
     public class DriveLocalizer implements Localizer {
         public final Encoder leftFront, leftBack, rightBack, rightFront;
@@ -547,4 +563,213 @@ public final class PrototypeBotMecanumDrive {
                 defaultVelConstraint, defaultAccelConstraint
         );
     }
+
+    /**
+     * @param speed From 0-1
+     * @param distance In specified unit
+     * @param distanceUnit the unit of measurement for distance
+     * @param holdSeconds the number of seconds to wait at position before returning true.
+     * @return "true" if the motors are within tolerance of the target position for more than
+     * holdSeconds. "false" otherwise.
+     */
+    public boolean drive(double speed, double distance, DistanceUnit distanceUnit, double holdSeconds) {
+        final double TOLERANCE_MM = 10;
+        /*
+         * In this function we use a DistanceUnits. This is a class that the FTC SDK implements
+         * which allows us to accept different input units depending on the user's preference.
+         * To use these, put both a double and a DistanceUnit as parameters in a function and then
+         * call distanceUnit.toMm(distance). This will return the number of mm that are equivalent
+         * to whatever distance in the unit specified. We are working in mm for this, so that's the
+         * unit we request from distanceUnit. But if we want to use inches in our function, we could
+         * use distanceUnit.toInches() instead!
+         */
+        double targetPosition = (distanceUnit.toMm(distance) * PARAMS.TICKS_PER_MM);
+
+        leftFront.setTargetPosition((int) targetPosition);
+        rightFront.setTargetPosition((int) targetPosition);
+        leftBack.setTargetPosition((int) targetPosition);
+        rightBack.setTargetPosition((int) targetPosition);
+
+        leftFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        rightFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        leftBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        rightBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        leftFront.setPower(speed);
+        rightFront.setPower(speed);
+        leftBack.setPower(speed);
+        rightBack.setPower(speed);
+
+        /*
+         * Here we check if we are within tolerance of our target position or not. We calculate the
+         * absolute error (distance from our setpoint regardless of if it is positive or negative)
+         * and compare that to our tolerance. If we have not reached our target yet, then we reset
+         * the driveTimer. Only after we reach the target can the timer count higher than our
+         * holdSeconds variable.
+         */
+        if(Math.abs(targetPosition - leftFront.getCurrentPosition()) > (TOLERANCE_MM * PARAMS.TICKS_PER_MM)){
+            driveTimer.reset();
+        }
+
+        return (driveTimer.seconds() > holdSeconds);
+    }
+
+    /**
+     * @param speed From 0-1
+     * @param angle the amount that the robot should rotate
+     * @param angleUnit the unit that angle is in
+     * @param holdSeconds the number of seconds to wait at position before returning true.
+     * @return True if the motors are within tolerance of the target position for more than
+     *         holdSeconds. False otherwise.
+     */
+    public boolean rotate(double speed, double angle, AngleUnit angleUnit, double holdSeconds){
+        final double TOLERANCE_MM = 10;
+
+        /*
+         * Here we establish the number of mm that our drive wheels need to cover to create the
+         * requested angle. We use radians here because it makes the math much easier.
+         * Our robot will have rotated one radian when the wheels of the robot have driven
+         * 1/2 of the track width of our robot in a circle. This is also the radius of the circle
+         * that the robot tracks when it is rotating. So, to find the number of mm that our wheels
+         * need to travel, we just need to multiply the requested angle in radians by the radius
+         * of our turning circle.
+         */
+        double targetMm = angleUnit.toRadians(angle)*(PARAMS.TRACK_WIDTH_MM/2);
+
+        /*
+         * We need to set the left motor to the inverse of the target so that we rotate instead
+         * of driving straight.
+         */
+        double leftTargetPosition = -(targetMm*PARAMS.TICKS_PER_MM);
+        double rightTargetPosition = targetMm*PARAMS.TICKS_PER_MM;
+
+        leftFront.setTargetPosition((int) leftTargetPosition);
+        rightFront.setTargetPosition((int) rightTargetPosition);
+        leftBack.setTargetPosition((int) leftTargetPosition);
+        rightBack.setTargetPosition((int) rightTargetPosition);
+
+        leftFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        rightFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        leftBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        rightBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        leftFront.setPower(speed);
+        rightFront.setPower(speed);
+        leftBack.setPower(speed);
+        rightBack.setPower(speed);
+
+        if((Math.abs(leftTargetPosition - leftFront.getCurrentPosition())) > (TOLERANCE_MM * PARAMS.TICKS_PER_MM)){
+            driveTimer.reset();
+        }
+
+        return (driveTimer.seconds() > holdSeconds);
+    }
+
+    public void mecanumDrive(double forward, double strafe, double rotate, float turboSpeed, Telemetry telemetry){
+
+        telemetry.addData("turboSpeed", turboSpeed);
+
+        /* the denominator is the largest motor power (absolute value) or 1
+         * This ensures all the powers maintain the same ratio,
+         * but only if at least one is out of the range [-1, 1]
+         */
+        double speed = 2.5;
+        if(turboSpeed > 0.1){
+            speed = 1.1;
+        }
+
+        double denominator = Math.max(Math.abs(forward) + Math.abs(strafe) + Math.abs(rotate), speed);
+
+        telemetry.addData("speed : ", speed);
+        telemetry.addData("denominator", denominator);
+        telemetry.addData("forward : ", forward);
+        telemetry.addData("strafe : ", strafe);
+        telemetry.addData("rotate : ", rotate);
+        telemetry.update();
+
+        leftFrontPower = (forward + strafe + rotate) / denominator;
+        rightFrontPower = (forward - strafe - rotate) / denominator;
+        leftBackPower = (forward - strafe + rotate) / denominator;
+        rightBackPower = (forward + strafe - rotate) / denominator;
+
+        leftFront.setPower(leftFrontPower);
+        rightFront.setPower(rightFrontPower);
+        leftBack.setPower(leftBackPower);
+        rightBack.setPower(rightBackPower);
+
+//        double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), speed);
+//
+//        double y = Math.pow(-gamepad1.left_stick_y,3); // Remember, Y stick value is reversed
+//        double x = Math.pow(gamepad1.left_stick_x * 1.1,3); // Counteract imperfect strafing
+//        double rx = Math.pow(gamepad1.right_stick_x,3);
+
+
+    }
+
+    public void fieldCentricDrive(double forward, double strafe, double rotate, float turboSpeed, Telemetry telemetry) {
+
+        double theta = Math.atan2(forward, strafe);
+        double r = Math.hypot(forward, strafe);
+
+        IMU imu = lazyImu.get();
+
+        theta = AngleUnit.normalizeRadians(theta - imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS));
+
+        double newForward = r * Math.sin(theta);
+        double newStrafe = r * Math.cos(theta);
+
+        mecanumDrive(newForward, newStrafe, rotate, turboSpeed, telemetry);
+
+    }
+
+    /**
+     * @param speed From 0-1
+     * @param distance In specified unit
+     * @param distanceUnit the unit of measurement for distance
+     * @param holdSeconds the number of seconds to wait at position before returning true.
+     * @return "true" if the motors are within tolerance of the target position for more than
+     * holdSeconds. "false" otherwise.
+     */
+    public boolean driveForAutonomous(double speed, double distance, DistanceUnit distanceUnit, double holdSeconds) {
+        final double TOLERANCE_MM = 10;
+        /*
+         * In this function we use a DistanceUnits. This is a class that the FTC SDK implements
+         * which allows us to accept different input units depending on the user's preference.
+         * To use these, put both a double and a DistanceUnit as parameters in a function and then
+         * call distanceUnit.toMm(distance). This will return the number of mm that are equivalent
+         * to whatever distance in the unit specified. We are working in mm for this, so that's the
+         * unit we request from distanceUnit. But if we want to use inches in our function, we could
+         * use distanceUnit.toInches() instead!
+         */
+        double targetPosition = (distanceUnit.toMm(distance) * PARAMS.TICKS_PER_MM);
+
+        leftFront.setTargetPosition((int) targetPosition);
+        rightFront.setTargetPosition((int) targetPosition);
+        leftBack.setTargetPosition((int) targetPosition);
+        rightBack.setTargetPosition((int) targetPosition);
+
+        leftFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        rightFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        leftBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        rightBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        leftFront.setPower(speed);
+        rightFront.setPower(speed);
+        leftBack.setPower(speed);
+        rightBack.setPower(speed);
+
+        /*
+         * Here we check if we are within tolerance of our target position or not. We calculate the
+         * absolute error (distance from our setpoint regardless of if it is positive or negative)
+         * and compare that to our tolerance. If we have not reached our target yet, then we reset
+         * the driveTimer. Only after we reach the target can the timer count higher than our
+         * holdSeconds variable.
+         */
+        if(Math.abs(targetPosition - leftFront.getCurrentPosition()) > (TOLERANCE_MM * PARAMS.TICKS_PER_MM)){
+            driveTimer.reset();
+        }
+
+        return (driveTimer.seconds() > holdSeconds);
+    }
+
 }

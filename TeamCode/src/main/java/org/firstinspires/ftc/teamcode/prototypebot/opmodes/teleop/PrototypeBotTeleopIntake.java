@@ -36,8 +36,9 @@ import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.MecanumDrive;
+import org.firstinspires.ftc.teamcode.PrototypeBotMecanumDrive;
 import org.firstinspires.ftc.teamcode.prototypebot.mechanicals.PrototypeBotIntakeMechanism;
+import org.firstinspires.ftc.teamcode.utils.PrototypeBotConstants;
 
 /*
  * This file includes a teleop (driver-controlled) file for the goBILDA® StarterBot for the
@@ -58,7 +59,7 @@ import org.firstinspires.ftc.teamcode.prototypebot.mechanicals.PrototypeBotIntak
 //@Disabled
 public class PrototypeBotTeleopIntake extends OpMode {
 
-    MecanumDrive drive;
+    PrototypeBotMecanumDrive drive;
 
     PrototypeBotIntakeMechanism intakeMechanism;
 
@@ -74,14 +75,14 @@ public class PrototypeBotTeleopIntake extends OpMode {
     public void init() {
 
 
-        Pose2d initPose = new Pose2d(-43,43,0);
+        Pose2d initPose = new Pose2d(PrototypeBotConstants.BLUE_INIT_POSE_X, PrototypeBotConstants.BLUE_INIT_POSE_Y, Math.toRadians(PrototypeBotConstants.BLUE_INIT_POSE_HEADING_DEGREES));
 
         /*
          * Initialize the hardware variables. Note that the strings used here as parameters
          * to 'get' must correspond to the names assigned during the robot configuration
          * step.
          */
-        drive = new MecanumDrive(hardwareMap, initPose);
+        drive = new PrototypeBotMecanumDrive(hardwareMap, initPose);
 
         intakeMechanism = new PrototypeBotIntakeMechanism(hardwareMap, telemetry);
 
@@ -167,7 +168,7 @@ public class PrototypeBotTeleopIntake extends OpMode {
          * but only if at least one is out of the range [-1, 1]
          */
         double speed = 2.5;
-        if(gamepad1.left_trigger > 0.1){
+        if(gamepad1.left_trigger > 0.1) {
             speed = 1.1;
         }
 

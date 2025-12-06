@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.prototypebot.mechanicals;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -99,6 +100,7 @@ public final class PrototypeBotIntakeMechanism {
          * through any wiring.
          */
         intake.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        intake.setDirection(DcMotorSimple.Direction.REVERSE);
 
         intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
@@ -122,7 +124,7 @@ public final class PrototypeBotIntakeMechanism {
     /**
      * Launches one ball, when a shot is requested spins up the motor and once it is above a minimum
      * velocity, runs the feeder servos for the right amount of time to feed the next ball.
-     * @param intakeRequested "true" if the user would like to fire a new shot, and "false" if a shot
+     * @param autoIntakeRequested "true" if the user would like to fire a new shot, and "false" if a shot
      *                      has already been requested and we need to continue to move through the
      *                      state machine and launch the ball.
      * @return "true" for one cycle after a ball has been successfully launched, "false" otherwise.
