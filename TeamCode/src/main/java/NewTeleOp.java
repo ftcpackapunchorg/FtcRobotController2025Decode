@@ -143,7 +143,7 @@ class NewTeleOp extends OpMode {
         LAUNCHING,
     }
 
-    private org.firstinspires.ftc.teamcode.gobildastarterbot.StarterBotTeleopMecanums.LaunchState launchState;
+    private LaunchState launchState;
 
     // Setup a variable for each drive wheel to save power level for telemetry
     double leftFrontPower;
@@ -156,7 +156,7 @@ class NewTeleOp extends OpMode {
      */
     @Override
     public void init() {
-        launchState = org.firstinspires.ftc.teamcode.gobildastarterbot.StarterBotTeleopMecanums.LaunchState.IDLE;
+        launchState = LaunchState.IDLE;
 
         /*
          * Initialize the hardware variables. Note that the strings used here as parameters
@@ -307,24 +307,24 @@ class NewTeleOp extends OpMode {
         switch (launchState) {
             case IDLE:
                 if (shotRequested) {
-                    launchState = org.firstinspires.ftc.teamcode.gobildastarterbot.StarterBotTeleopMecanums.LaunchState.SPIN_UP;
+                    launchState = LaunchState.SPIN_UP;
                 }
                 break;
             case SPIN_UP:
                 launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
                 if (launcher.getVelocity() > LAUNCHER_MIN_VELOCITY) {
-                    launchState = org.firstinspires.ftc.teamcode.gobildastarterbot.StarterBotTeleopMecanums.LaunchState.LAUNCH;
+                    launchState = LaunchState.LAUNCH;
                 }
                 break;
             case LAUNCH:
                 leftFeeder.setPower(FULL_SPEED);
                 rightFeeder.setPower(FULL_SPEED);
                 feederTimer.reset();
-                launchState = org.firstinspires.ftc.teamcode.gobildastarterbot.StarterBotTeleopMecanums.LaunchState.LAUNCHING;
+                launchState = LaunchState.LAUNCHING;
                 break;
             case LAUNCHING:
                 if (feederTimer.seconds() > FEED_TIME_SECONDS) {
-                    launchState = org.firstinspires.ftc.teamcode.gobildastarterbot.StarterBotTeleopMecanums.LaunchState.IDLE;
+                    launchState = LaunchState.IDLE;
                     leftFeeder.setPower(STOP_SPEED);
                     rightFeeder.setPower(STOP_SPEED);
                 }

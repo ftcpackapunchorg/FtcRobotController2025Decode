@@ -96,6 +96,7 @@ public class StarterBotRRBlueAuto extends OpMode
      * Here is our auto state machine enum. This captures each action we'd like to do in auto.
      */
     private enum AutonomousState {
+        BEFORE_LAUNCH,
         LAUNCH,
         WAIT_FOR_LAUNCH,
         DRIVING_AWAY_FROM_GOAL,
@@ -122,6 +123,7 @@ public class StarterBotRRBlueAuto extends OpMode
     Pose2d initPose;
 
     TrajectoryActionBuilder goToLeaveZone;
+    TrajectoryActionBuilder moveToLaunchPosition;
 
     /*
      * This code runs ONCE when the driver hits INIT.
@@ -133,16 +135,18 @@ public class StarterBotRRBlueAuto extends OpMode
          * Later in our code, we will progress through the state machine by moving to other enum members.
          * We do the same for our launcher state machine, setting it to IDLE before we use it later.
          */
-        autonomousState = AutonomousState.LAUNCH;
-        initPose = new Pose2d(-48,-48, Math.toRadians(-135));
+        autonomousState = AutonomousState.BEFORE_LAUNCH;
+        initPose = new Pose2d(-52,-48, Math.toRadians(-135));
 
         drive = new MecanumDrive(hardwareMap,initPose);
         launchMechanism = new StarterBotLaunchMechanism(hardwareMap, telemetry);
 
-        goToLeaveZone = drive.actionBuilder(initPose)
+        goToLeaveZone = drive.actionBuilder(new Pose2d(-52,-48,Math.toRadians(-135)))
                 .waitSeconds(1)
                 .strafeTo(new Vector2d(-28, -52))
                 .turn(Math.toRadians(60));
+        moveToLaunchPosition = drive.actionBuilder(initPose)
+                .strafeTo(new Vector2d(-48,-48));
 
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
@@ -196,6 +200,9 @@ public class StarterBotRRBlueAuto extends OpMode
          * we know our enum isn't reflecting a different state.
          */
         switch (autonomousState){
+            case BEFORE_LAUNCH:
+                Actions.runBlocking(moveToLaunchPosition.build());
+                autonomousState = AutonomousState.LAUNCH;
             /*
              * Since the first state of our auto is LAUNCH, this is the first "case" we encounter.
              * This case is very simple. We call our .launch() function with "true" in the parameter.

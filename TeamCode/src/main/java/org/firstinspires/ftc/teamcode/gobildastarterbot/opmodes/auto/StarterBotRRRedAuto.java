@@ -122,6 +122,7 @@ public class StarterBotRRRedAuto extends OpMode
     Pose2d initPose;
 
     TrajectoryActionBuilder goToLeaveZone;
+    TrajectoryActionBuilder moveToLaunchPosition;
 
     /*
      * This code runs ONCE when the driver hits INIT.
@@ -134,16 +135,19 @@ public class StarterBotRRRedAuto extends OpMode
          * We do the same for our launcher state machine, setting it to IDLE before we use it later.
          */
         autonomousState = AutonomousState.LAUNCH;
-        initPose = new Pose2d(-48,48, Math.toRadians(135));
+        initPose = new Pose2d(-48,52, Math.toRadians(135));
 
         drive = new MecanumDrive(hardwareMap,initPose);
         launchMechanism = new StarterBotLaunchMechanism(hardwareMap, telemetry);
 
-        goToLeaveZone = drive.actionBuilder(initPose)
+        goToLeaveZone = drive.actionBuilder(new Pose2d(-48,48,Math.toRadians(135)))
                 .waitSeconds(1)
                 .strafeTo(new Vector2d(-28, 52))
                 .waitSeconds(1)
                 .turn(Math.toRadians(30));
+        moveToLaunchPosition = drive.actionBuilder(initPose)
+                .strafeTo(new Vector2d(-48,48));
+
 
 
         // Tell the driver that initialization is complete.
@@ -207,6 +211,7 @@ public class StarterBotRRRedAuto extends OpMode
              * allowing it to cycle through and continue the process of launching the first ball.
              */
             case LAUNCH:
+                Actions.runBlocking(moveToLaunchPosition.build());
                 launchMechanism.launchForAuto(true);
                 autonomousState = AutonomousState.WAIT_FOR_LAUNCH;
                 break;

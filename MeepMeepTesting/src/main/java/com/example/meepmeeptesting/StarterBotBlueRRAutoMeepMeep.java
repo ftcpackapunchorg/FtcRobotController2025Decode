@@ -15,7 +15,7 @@ public class StarterBotBlueRRAutoMeepMeep {
                 .setConstraints(60, 60, Math.toRadians(180), Math.toRadians(180), 15)
                 .build();
 
-        myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(-48, -48, Math.toRadians(-135)))
+        myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(-50, -48, Math.toRadians(-135)))
                         .waitSeconds(1)
                         .strafeTo(new Vector2d(-24, -24))
                         .turn(Math.toRadians(-55))
