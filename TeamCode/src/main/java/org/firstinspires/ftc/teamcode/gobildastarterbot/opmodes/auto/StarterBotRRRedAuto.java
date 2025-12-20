@@ -33,6 +33,9 @@
 package org.firstinspires.ftc.teamcode.gobildastarterbot.opmodes.auto;
 
 import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
+import com.acmerobotics.roadrunner.Vector2d;
+import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -58,9 +61,8 @@ import org.firstinspires.ftc.teamcode.gobildastarterbot.mechanicals.StarterBotLa
  * main robot "loop," continuously checking for conditions that allow us to move to the next step.
  */
 
-@Autonomous(name="StarterBotAutoWithMecanums", group="StarterBot")
-//@Disabled
-public class StarterBotAutoMecanums extends OpMode
+@Autonomous(name="StarterBotRRRedAuto", group="StarterBot")
+public class StarterBotRRRedAuto extends OpMode
 {
     MecanumDrive drive;
 
@@ -117,6 +119,10 @@ public class StarterBotAutoMecanums extends OpMode
      */
     private Alliance alliance = Alliance.RED;
 
+    Pose2d initPose;
+
+    TrajectoryActionBuilder goToLeaveZone;
+
     /*
      * This code runs ONCE when the driver hits INIT.
      */
@@ -128,10 +134,17 @@ public class StarterBotAutoMecanums extends OpMode
          * We do the same for our launcher state machine, setting it to IDLE before we use it later.
          */
         autonomousState = AutonomousState.LAUNCH;
-        Pose2d initPose = new Pose2d(-43,43,0);
+        initPose = new Pose2d(-48,48, Math.toRadians(135));
 
         drive = new MecanumDrive(hardwareMap,initPose);
         launchMechanism = new StarterBotLaunchMechanism(hardwareMap, telemetry);
+
+        goToLeaveZone = drive.actionBuilder(initPose)
+                .waitSeconds(1)
+                .strafeTo(new Vector2d(-28, 52))
+                .waitSeconds(1)
+                .turn(Math.toRadians(30));
+
 
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
@@ -215,8 +228,6 @@ public class StarterBotAutoMecanums extends OpMode
                     if(shotsToFire > 0) {
                         autonomousState = AutonomousState.LAUNCH;
                     } else {
-                        drive.leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                        drive.rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                         drive.leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                         drive.rightBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                         launchMechanism.launcher.setVelocity(0);
@@ -231,13 +242,14 @@ public class StarterBotAutoMecanums extends OpMode
                  * the robot has been within a tolerance of the target position for "holdSeconds."
                  * Once the function returns "true" we reset the encoders again and move on.
                  */
-                if(drive.drive(DRIVE_SPEED, -4, DistanceUnit.INCH, 1)){
-                    drive.leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    drive.rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    drive.leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    drive.rightBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    autonomousState = AutonomousState.ROTATING;
-                }
+//                if(drive.drive(DRIVE_SPEED, -4, DistanceUnit.INCH, 1)){
+//                    drive.leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//                    drive.rightBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//                    autonomousState = AutonomousState.ROTATING;
+//                }
+
+                Actions.runBlocking(goToLeaveZone.build());
+                autonomousState = AutonomousState.COMPLETE;
                 break;
 
             case ROTATING:
@@ -248,8 +260,6 @@ public class StarterBotAutoMecanums extends OpMode
                 }
 
                 if(drive.rotate(ROTATE_SPEED, robotRotationAngle, AngleUnit.DEGREES,1)){
-                    drive.leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    drive.rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     drive.leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     drive.rightBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     autonomousState = AutonomousState.DRIVING_OFF_LINE;
@@ -271,6 +281,15 @@ public class StarterBotAutoMecanums extends OpMode
          * after the last "case" that runs every loop. This means we can avoid a lot of
          * "copy-and-paste" that non-state machine autonomous routines fall into.
          */
+        telemetry.addData("AutoState", autonomousState);
+        telemetry.addData("Motor Current Positions", "left (%d), right (%d)",
+                drive.leftFront.getCurrentPosition(), drive.rightFront.getCurrentPosition(),
+                drive.leftBack.getCurrentPosition(), drive.rightBack.getCurrentPosition());
+        telemetry.addData("Motor Target Positions", "left (%d), right (%d)",
+                drive.leftFront.getTargetPosition(), drive.rightFront.getTargetPosition(),
+                drive.leftBack.getTargetPosition(), drive.rightBack.getTargetPosition());
+        telemetry.update();
+
         telemetry.addData("AutoState", autonomousState);
         telemetry.addData("Motor Current Positions", "left (%d), right (%d)",
                 drive.leftFront.getCurrentPosition(), drive.rightFront.getCurrentPosition(),

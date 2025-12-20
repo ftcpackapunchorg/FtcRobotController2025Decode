@@ -35,11 +35,8 @@ package org.firstinspires.ftc.teamcode.gobildastarterbot.opmodes.teleop;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.util.ElapsedTime;
-
 
 import org.firstinspires.ftc.teamcode.MecanumDrive;
-import org.firstinspires.ftc.teamcode.gobildastarterbot.mechanicals.StarterBotFeederMechanism;
 import org.firstinspires.ftc.teamcode.gobildastarterbot.mechanicals.StarterBotLaunchMechanism;
 
 /*
@@ -60,27 +57,9 @@ import org.firstinspires.ftc.teamcode.gobildastarterbot.mechanicals.StarterBotLa
 @TeleOp(name = "StarterBotTeleopMecanums", group = "StarterBot")
 //@Disabled
 public class StarterBotTeleopMecanums extends OpMode {
-    final double FEED_TIME_SECONDS = 0.20; //The feeder servos run this long when a shot is requested.
-    final double STOP_SPEED = 0.0; //We send this power to the servos when we want them to stop.
-    final double FULL_SPEED = 1.0;
-
-    /*
-     * When we control our launcher motor, we are using encoders. These allow the control system
-     * to read the current speed of the motor and apply more or less power to keep it at a constant
-     * velocity. Here we are setting the target, and minimum velocity that the launcher should run
-     * at. The minimum velocity is a threshold for determining when to fire.
-     */
-    final double LAUNCHER_TARGET_VELOCITY = 1125;
-    final double LAUNCHER_MIN_VELOCITY = 1075;
-
-
-    ElapsedTime feederTimer = new ElapsedTime();
-
     MecanumDrive drive;
 
     StarterBotLaunchMechanism launchMechanism;
-
-    StarterBotFeederMechanism feederMechanism;
 
     /*
      * TECH TIP: State Machines
@@ -98,27 +77,12 @@ public class StarterBotTeleopMecanums extends OpMode {
      * We can use higher level code to cycle through these states. But this allows us to write
      * functions and autonomous routines in a way that avoids loops within loops, and "waits".
      */
-    private enum LaunchState {
-        IDLE,
-        SPIN_UP,
-        LAUNCH,
-        LAUNCHING,
-    }
-
-    private LaunchState launchState;
-
-    // Setup a variable for each drive wheel to save power level for telemetry
-    double leftFrontPower;
-    double rightFrontPower;
-    double leftBackPower;
-    double rightBackPower;
 
     /*
      * Code to run ONCE when the driver hits INIT
      */
     @Override
     public void init() {
-        launchState = LaunchState.IDLE;
 
         Pose2d initPose = new Pose2d(-43,43,0);
 
@@ -129,7 +93,6 @@ public class StarterBotTeleopMecanums extends OpMode {
          */
         drive = new MecanumDrive(hardwareMap, initPose);
         launchMechanism = new StarterBotLaunchMechanism(hardwareMap, telemetry);
-        feederMechanism = new StarterBotFeederMechanism(hardwareMap, telemetry);
 
         /*
          * Tell the driver that initialization is complete.
@@ -165,27 +128,29 @@ public class StarterBotTeleopMecanums extends OpMode {
          * both motors work to rotate the robot. Combinations of these inputs can be used to create
          * more complex maneuvers.
          */
-        mecanumDrive(-gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
+        telemetry.addData("gamepad1.left_trigger : ", gamepad1.left_trigger);
+
+        drive.mecanumDrive(-gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x, gamepad1.left_trigger, telemetry);
 
         /*
          * Here we give the user control of the speed of the launcher motor without automatically
          * queuing a shot.
          */
         if (gamepad2.y) {
-            launchMechanism.launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
+            launchMechanism.startLauncher();
         } else if (gamepad2.b) { // stop flywheel
-            launchMechanism.launcher.setVelocity(STOP_SPEED);
+            launchMechanism.stopLauncher();
         }
 
         /*
          * Now we call our "Launch" function.
          */
-        launch(gamepad2.rightBumperWasPressed());
+        launchMechanism.launch(gamepad2.rightBumperWasPressed());
 
         /*
          * Show the state and motor powers
          */
-        telemetry.addData("State", launchState);
+        telemetry.addData("State", launchMechanism.getLaunchState());
         telemetry.addData("motorSpeed", launchMechanism.launcher.getVelocity());
 
     }
@@ -197,35 +162,6 @@ public class StarterBotTeleopMecanums extends OpMode {
     public void stop() {
     }
 
-    void launch(boolean shotRequested) {
-        switch (launchState) {
-            case IDLE:
-                if (shotRequested) {
-                    launchState = LaunchState.SPIN_UP;
-                }
-                break;
-            case SPIN_UP:
-                launchMechanism.launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
-                if (launchMechanism.launcher.getVelocity() > LAUNCHER_MIN_VELOCITY) {
-                    launchState = LaunchState.LAUNCH;
-                }
-                break;
-            case LAUNCH:
-                feederMechanism.leftFeeder.setPower(FULL_SPEED);
-                feederMechanism.rightFeeder.setPower(FULL_SPEED);
-                feederTimer.reset();
-                launchState = LaunchState.LAUNCHING;
-                break;
-            case LAUNCHING:
-                if (feederTimer.seconds() > FEED_TIME_SECONDS) {
-                    launchState = LaunchState.IDLE;
-                    feederMechanism.leftFeeder.setPower(STOP_SPEED);
-                    feederMechanism.rightFeeder.setPower(STOP_SPEED);
-                }
-                break;
-        }
-    }
-
     /*
      * Remember, Y stick value is reversed
      * Counteract imperfect strafing
@@ -234,44 +170,5 @@ public class StarterBotTeleopMecanums extends OpMode {
      * strafe = gamepad1.left_stick_x
      * rotate = gamepad1.right_stick_x
      */
-    void mecanumDrive(double forward, double strafe, double rotate){
 
-        telemetry.addData("gamepad1.left_trigger", gamepad1.left_trigger);
-
-        /* the denominator is the largest motor power (absolute value) or 1
-         * This ensures all the powers maintain the same ratio,
-         * but only if at least one is out of the range [-1, 1]
-         */
-        double speed = 2.5;
-        if(gamepad1.left_trigger > 0.1){
-            speed = 1.1;
-        }
-
-        double denominator = Math.max(Math.abs(forward) + Math.abs(strafe) + Math.abs(rotate), speed);
-
-        telemetry.addData("speed : ", speed);
-        telemetry.addData("denominator", denominator);
-        telemetry.addData("forward : ", forward);
-        telemetry.addData("strafe : ", strafe);
-        telemetry.addData("rotate : ", rotate);
-        telemetry.update();
-
-        leftFrontPower = (forward + strafe + rotate) / denominator;
-        rightFrontPower = (forward - strafe - rotate) / denominator;
-        leftBackPower = (forward - strafe + rotate) / denominator;
-        rightBackPower = (forward + strafe - rotate) / denominator;
-
-        drive.leftFront.setPower(leftFrontPower);
-        drive.rightFront.setPower(rightFrontPower);
-        drive.leftBack.setPower(leftBackPower);
-        drive.rightBack.setPower(rightBackPower);
-
-//        double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), speed);
-//
-//        double y = Math.pow(-gamepad1.left_stick_y,3); // Remember, Y stick value is reversed
-//        double x = Math.pow(gamepad1.left_stick_x * 1.1,3); // Counteract imperfect strafing
-//        double rx = Math.pow(gamepad1.right_stick_x,3);
-
-
-    }
 }

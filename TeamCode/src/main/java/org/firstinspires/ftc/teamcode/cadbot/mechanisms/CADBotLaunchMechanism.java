@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.gobildastarterbot.mechanicals;
+package org.firstinspires.ftc.teamcode.cadbot.mechanisms;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -7,9 +7,11 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.utils.StarterBotConstants;
+import org.firstinspires.ftc.teamcode.utils.PrototypeBotConstants;
 
-public final class StarterBotLaunchMechanism {
+public final class CADBotLaunchMechanism {
+
+    public final DcMotorEx launcher;
 
     final double FEED_TIME_SECONDS = 0.20; //The feeder servos run this long when a shot is requested.
     final double STOP_SPEED = 0.0; //We send this power to the servos when we want them to stop.
@@ -31,20 +33,6 @@ public final class StarterBotLaunchMechanism {
     final double FEED_TIME = 0.20;
     final double TIME_BETWEEN_SHOTS = 2;
 
-
-
-    /*
-     * Here we create three timers which we use in different parts of our code. Each of these is an
-     * "object," so even though they are all an instance of ElapsedTime(), they count independently
-     * from each other.
-     */
-    private ElapsedTime shotTimer = new ElapsedTime();
-    private ElapsedTime autoFeederTimer = new ElapsedTime();
-
-    private enum AutoLaunchState { IDLE, PREPARE, LAUNCH }
-
-    /** Auto related **/
-
     /*
      * TECH TIP: State Machines
      * We use a "state machine" to control our launcher motor and feeder servos in this program.
@@ -61,6 +49,7 @@ public final class StarterBotLaunchMechanism {
      * We can use higher level code to cycle through these states. But this allows us to write
      * functions and autonomous routines in a way that avoids loops within loops, and "waits".
      */
+
     private enum LaunchState {
         IDLE,
         SPIN_UP,
@@ -68,11 +57,21 @@ public final class StarterBotLaunchMechanism {
         LAUNCHING,
     }
 
+    /*
+     * Here we create three timers which we use in different parts of our code. Each of these is an
+     * "object," so even though they are all an instance of ElapsedTime(), they count independently
+     * from each other.
+     */
+    private ElapsedTime shotTimer = new ElapsedTime();
+    private ElapsedTime autoFeederTimer = new ElapsedTime();
+
+    private enum AutoLaunchState { IDLE, PREPARE, LAUNCH }
+
+    private LaunchState launchState;
+
     public LaunchState getLaunchState() {
         return launchState;
     }
-
-    private LaunchState launchState;
 
     public AutoLaunchState getAutoLaunchState() {
         return autoLaunchState;
@@ -80,20 +79,12 @@ public final class StarterBotLaunchMechanism {
 
     private AutoLaunchState autoLaunchState;
 
-    public final DcMotorEx launcher;
+    public CADBotLaunchMechanism(HardwareMap hardwareMap, Telemetry telemetry) {
 
-    public StarterBotFeederMechanism getFeederMechanism() {
-        return feederMechanism;
-    }
-
-    StarterBotFeederMechanism feederMechanism;
-
-    public StarterBotLaunchMechanism(HardwareMap hardwareMap, Telemetry telemetry) {
-
-        launcher = hardwareMap.get(DcMotorEx.class, StarterBotConstants.LAUNCHER_ONE_TO_ONE_RATIO_MOTOR_NAME);
-        feederMechanism = new StarterBotFeederMechanism(hardwareMap, telemetry);
+        launcher = hardwareMap.get(DcMotorEx.class, PrototypeBotConstants.LAUNCHER_ONE_TO_ONE_RATIO_MOTOR_NAME);
 
         launchState = LaunchState.IDLE;
+
         autoLaunchState = AutoLaunchState.IDLE;
 
         /*
@@ -125,16 +116,16 @@ public final class StarterBotLaunchMechanism {
                 }
                 break;
             case LAUNCH:
-                feederMechanism.leftFeeder.setPower(FULL_SPEED);
-                feederMechanism.rightFeeder.setPower(FULL_SPEED);
+                //         drive.leftFeeder.setPower(FULL_SPEED);
+                //         drive.rightFeeder.setPower(FULL_SPEED);
                 feederTimer.reset();
                 launchState = LaunchState.LAUNCHING;
                 break;
             case LAUNCHING:
                 if (feederTimer.seconds() > FEED_TIME_SECONDS) {
                     launchState = LaunchState.IDLE;
-                    feederMechanism.leftFeeder.setPower(STOP_SPEED);
-                    feederMechanism.rightFeeder.setPower(STOP_SPEED);
+                    //         drive.leftFeeder.setPower(STOP_SPEED);
+                    //        drive.rightFeeder.setPower(STOP_SPEED);
                 }
                 break;
         }
@@ -160,17 +151,18 @@ public final class StarterBotLaunchMechanism {
                 launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
                 if (launcher.getVelocity() > LAUNCHER_MIN_VELOCITY){
                     autoLaunchState = AutoLaunchState.LAUNCH;
-                    feederMechanism.leftFeeder.setPower(1);
-                    feederMechanism.rightFeeder.setPower(1);
+//                    feederMechanism.leftFeeder.setPower(1);
+//                    feederMechanism.rightFeeder.setPower(1);
                     autoFeederTimer.reset();
                 }
                 break;
             case LAUNCH:
                 if (autoFeederTimer.seconds() > FEED_TIME) {
-                    feederMechanism.leftFeeder.setPower(0);
-                    feederMechanism.rightFeeder.setPower(0);
+//                    feederMechanism.leftFeeder.setPower(0);
+//                    feederMechanism.rightFeeder.setPower(0);
 
                     if(shotTimer.seconds() > TIME_BETWEEN_SHOTS){
+                        stopLauncher();
                         autoLaunchState = AutoLaunchState.IDLE;
                         return true;
                     }

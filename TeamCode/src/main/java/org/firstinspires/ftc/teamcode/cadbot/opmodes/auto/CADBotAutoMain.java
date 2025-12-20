@@ -30,7 +30,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.teamcode.gobildastarterbot.opmodes.auto;
+package org.firstinspires.ftc.teamcode.cadbot.opmodes.auto;
 
 import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -39,8 +39,9 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.teamcode.MecanumDrive;
-import org.firstinspires.ftc.teamcode.gobildastarterbot.mechanicals.StarterBotLaunchMechanism;
+import org.firstinspires.ftc.teamcode.cadbot.mechanisms.CADBotIntakeMechanism;
+import org.firstinspires.ftc.teamcode.cadbot.mechanisms.CADBotLaunchMechanism;
+import org.firstinspires.ftc.teamcode.cadbot.mechanisms.CADBotMecanumDrive;
 
 
 /*
@@ -58,13 +59,14 @@ import org.firstinspires.ftc.teamcode.gobildastarterbot.mechanicals.StarterBotLa
  * main robot "loop," continuously checking for conditions that allow us to move to the next step.
  */
 
-@Autonomous(name="StarterBotAutoWithMecanums", group="StarterBot")
-//@Disabled
-public class StarterBotAutoMecanums extends OpMode
+@Autonomous(name="CADBot Auto Main", group="CADBot")
+public class CADBotAutoMain extends OpMode
 {
-    MecanumDrive drive;
+    CADBotMecanumDrive drive;
 
-    StarterBotLaunchMechanism launchMechanism;
+    CADBotLaunchMechanism launchMechanism;
+
+    CADBotIntakeMechanism intakeMechanism;
 
     /*
      * The number of seconds that we wait between each of our 3 shots from the launcher. This
@@ -130,8 +132,8 @@ public class StarterBotAutoMecanums extends OpMode
         autonomousState = AutonomousState.LAUNCH;
         Pose2d initPose = new Pose2d(-43,43,0);
 
-        drive = new MecanumDrive(hardwareMap,initPose);
-        launchMechanism = new StarterBotLaunchMechanism(hardwareMap, telemetry);
+        drive = new CADBotMecanumDrive(hardwareMap,initPose);
+        launchMechanism = new CADBotLaunchMechanism(hardwareMap, telemetry);
 
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
@@ -146,8 +148,8 @@ public class StarterBotAutoMecanums extends OpMode
          * We also set the servo power to 0 here to make sure that the servo controller is booted
          * up and ready to go.
          */
-        launchMechanism.getFeederMechanism().rightFeeder.setPower(0);
-        launchMechanism.getFeederMechanism().leftFeeder.setPower(0);
+//        launchMechanism.getFeederMechanism().rightFeeder.setPower(0);
+//        launchMechanism.getFeederMechanism().leftFeeder.setPower(0);
 
         /*
          * Here we allow the driver to select which alliance we are on using the gamepad.
@@ -231,7 +233,7 @@ public class StarterBotAutoMecanums extends OpMode
                  * the robot has been within a tolerance of the target position for "holdSeconds."
                  * Once the function returns "true" we reset the encoders again and move on.
                  */
-                if(drive.drive(DRIVE_SPEED, -4, DistanceUnit.INCH, 1)){
+                if(drive.driveForAutonomous(DRIVE_SPEED, -4, DistanceUnit.INCH, 1)){
                     drive.leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     drive.rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     drive.leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);

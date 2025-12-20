@@ -41,7 +41,6 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
-import org.firstinspires.ftc.teamcode.gobildastarterbot.mechanicals.StarterBotFeederMechanism;
 import org.firstinspires.ftc.teamcode.gobildastarterbot.mechanicals.StarterBotLaunchMechanism;
 import org.firstinspires.ftc.teamcode.sensors.WebCamWithVisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
@@ -62,7 +61,7 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
  * main robot "loop," continuously checking for conditions that allow us to move to the next step.
  */
 
-@Autonomous(name="StarterBotAutoWithWebCam", group="StarterBot")
+@Autonomous(name="StarterBotAutoMecanumsWithWebCam", group="StarterBot")
 //@Disabled
 public class StarterBotAutoMecanumsWithWebCam extends OpMode
 {
@@ -71,8 +70,6 @@ public class StarterBotAutoMecanumsWithWebCam extends OpMode
     MecanumDrive drive;
 
     private StarterBotLaunchMechanism launchMechanism;
-
-    private StarterBotFeederMechanism feederMechanism;
 
     private WebCamWithVisionPortal webCamWithVisionPortal = new WebCamWithVisionPortal();
 
@@ -113,39 +110,7 @@ public class StarterBotAutoMecanumsWithWebCam extends OpMode
 
     double robotRotationAngle = 45;
 
-    /*
-     * Here we create three timers which we use in different parts of our code. Each of these is an
-     * "object," so even though they are all an instance of ElapsedTime(), they count independently
-     * from each other.
-     */
-    private ElapsedTime shotTimer = new ElapsedTime();
-    private ElapsedTime feederTimer = new ElapsedTime();
     private ElapsedTime driveTimer = new ElapsedTime();
-
-
-    /*
-     * TECH TIP: State Machines
-     * We use "state machines" in a few different ways in this auto. The first step of a state
-     * machine is creating an enum that captures the different "states" that our code can be in.
-     * The core advantage of a state machine is that it allows us to continue to loop through code,
-     * and only run the bits of code we need to at different times. This state machine is called the
-     * "LaunchState." It reflects the current condition of the shooter motor when we request a shot.
-     * It starts at IDLE. When a shot is requested from the user, it'll move into PREPARE then LAUNCH.
-     * We can use higher level code to cycle through these states, but this allows us to write
-     * functions and autonomous routines in a way that avoids loops within loops, and "waits."
-     */
-    private enum LaunchState {
-        IDLE,
-        PREPARE,
-        LAUNCH,
-    }
-
-    /*
-     * Here we create the instance of LaunchState that we use in code. This creates a unique object
-     * which can store the current condition of the shooter. In other applications, you may have
-     * multiple copies of the same enum which have different names. Here we just have one.
-     */
-    private LaunchState launchState;
 
     /*
      * Here is our auto state machine enum. This captures each action we'd like to do in auto.
@@ -196,13 +161,11 @@ public class StarterBotAutoMecanumsWithWebCam extends OpMode
          * We do the same for our launcher state machine, setting it to IDLE before we use it later.
          */
         autonomousState = AutonomousState.LAUNCH;
-        launchState = LaunchState.IDLE;
         Pose2d initPose = new Pose2d(-43,43,0);
 
         drive = new MecanumDrive(hardwareMap,initPose);
 
         launchMechanism = new StarterBotLaunchMechanism(hardwareMap, telemetry);
-        feederMechanism = new StarterBotFeederMechanism(hardwareMap, telemetry);
 
         webCamWithVisionPortal.initAprilTag(hardwareMap, telemetry);
 
@@ -219,8 +182,8 @@ public class StarterBotAutoMecanumsWithWebCam extends OpMode
          * We also set the servo power to 0 here to make sure that the servo controller is booted
          * up and ready to go.
          */
-        feederMechanism.rightFeeder.setPower(0);
-        feederMechanism.leftFeeder.setPower(0);
+        launchMechanism.getFeederMechanism().rightFeeder.setPower(0);
+        launchMechanism.getFeederMechanism().leftFeeder.setPower(0);
 
 
         /*
@@ -255,12 +218,12 @@ public class StarterBotAutoMecanumsWithWebCam extends OpMode
     @Override
     public void loop() {
 
-
         webCamWithVisionPortal.update();
         AprilTagDetection matchingAprilTag = webCamWithVisionPortal.getTagBySpecificID(allianceAprilTagId);
         if(matchingAprilTag != null) {
             webCamWithVisionPortal.displayDetectionTelemetry(matchingAprilTag);
-            telemetry.addData("Matching April Tag Detected : ", matchingAprilTag.toString());
+            telemetry.addData("Matching April Tag Detected : ", matchingAprilTag.toString()
+            + " Position : " + matchingAprilTag.robotPose.getPosition());
         } else {
             telemetry.addData("Matching April Tag : Not Found ", "Not detected");
         }
@@ -274,7 +237,7 @@ public class StarterBotAutoMecanumsWithWebCam extends OpMode
          * of the members of the enum for a match, since if we find the "break" line in one case,
          * we know our enum isn't reflecting a different state.
          */
-        switch (autonomousState){
+        switch (autonomousState) {
             /*
              * Since the first state of our auto is LAUNCH, this is the first "case" we encounter.
              * This case is very simple. We call our .launch() function with "true" in the parameter.
@@ -284,7 +247,7 @@ public class StarterBotAutoMecanumsWithWebCam extends OpMode
              * allowing it to cycle through and continue the process of launching the first ball.
              */
             case LAUNCH:
-                launch(true);
+                launchMechanism.launchForAuto(true);
                 autonomousState = AutonomousState.WAIT_FOR_LAUNCH;
                 break;
 
@@ -300,13 +263,13 @@ public class StarterBotAutoMecanumsWithWebCam extends OpMode
                  * state on our state machine. Otherwise, we reset the encoders on our drive motors
                  * and move onto the next state.
                  */
-                if(launch(false)) {
+                if(launchMechanism.launchForAuto(false)) {
                     shotsToFire -= 1;
                     if(shotsToFire > 0) {
                         autonomousState = AutonomousState.LAUNCH;
                     } else {
-                        drive.leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                        drive.rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//                        drive.leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//                        drive.rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                         drive.leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                         drive.rightBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                         launchMechanism.launcher.setVelocity(0);
@@ -321,9 +284,9 @@ public class StarterBotAutoMecanumsWithWebCam extends OpMode
                  * the robot has been within a tolerance of the target position for "holdSeconds."
                  * Once the function returns "true" we reset the encoders again and move on.
                  */
-                if(drive(DRIVE_SPEED, -4, DistanceUnit.INCH, 1)){
-                    drive.leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    drive.rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                if(drive.drive(DRIVE_SPEED, -4, DistanceUnit.INCH, 1)){
+//                    drive.leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//                    drive.rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     drive.leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     drive.rightBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     autonomousState = AutonomousState.ROTATING;
@@ -337,9 +300,9 @@ public class StarterBotAutoMecanumsWithWebCam extends OpMode
                     robotRotationAngle = -45;
                 }
 
-                if(rotate(ROTATE_SPEED, robotRotationAngle, AngleUnit.DEGREES,1)){
-                    drive.leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    drive.rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                if(drive.rotate(ROTATE_SPEED, robotRotationAngle, AngleUnit.DEGREES,1)){
+//                    drive.leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//                    drive.rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     drive.leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     drive.rightBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     autonomousState = AutonomousState.DRIVING_OFF_LINE;
@@ -347,7 +310,7 @@ public class StarterBotAutoMecanumsWithWebCam extends OpMode
                 break;
 
             case DRIVING_OFF_LINE:
-                if(drive(DRIVE_SPEED, -26, DistanceUnit.INCH, 1)){
+                if(drive.drive(DRIVE_SPEED, -26, DistanceUnit.INCH, 1)){
                     autonomousState = AutonomousState.COMPLETE;
                 }
                 break;
@@ -362,7 +325,7 @@ public class StarterBotAutoMecanumsWithWebCam extends OpMode
          * "copy-and-paste" that non-state machine autonomous routines fall into.
          */
         telemetry.addData("AutoState", autonomousState);
-        telemetry.addData("LauncherState", launchState);
+        telemetry.addData("LauncherState", launchMechanism.getAutoLaunchState());
         telemetry.addData("Motor Current Positions", "left (%d), right (%d)",
                 drive.leftFront.getCurrentPosition(), drive.rightFront.getCurrentPosition(),
                 drive.leftBack.getCurrentPosition(), drive.rightBack.getCurrentPosition());
@@ -377,146 +340,6 @@ public class StarterBotAutoMecanumsWithWebCam extends OpMode
      */
     @Override
     public void stop() {
-    }
-
-    /**
-     * Launches one ball, when a shot is requested spins up the motor and once it is above a minimum
-     * velocity, runs the feeder servos for the right amount of time to feed the next ball.
-     * @param shotRequested "true" if the user would like to fire a new shot, and "false" if a shot
-     *                      has already been requested and we need to continue to move through the
-     *                      state machine and launch the ball.
-     * @return "true" for one cycle after a ball has been successfully launched, "false" otherwise.
-     */
-    boolean launch(boolean shotRequested){
-        switch (launchState) {
-            case IDLE:
-                if (shotRequested) {
-                    launchState = LaunchState.PREPARE;
-                    shotTimer.reset();
-                }
-                break;
-            case PREPARE:
-                launchMechanism.launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
-                if (launchMechanism.launcher.getVelocity() > LAUNCHER_MIN_VELOCITY){
-                    launchState = LaunchState.LAUNCH;
-                    feederMechanism.leftFeeder.setPower(1);
-                    feederMechanism.rightFeeder.setPower(1);
-                    feederTimer.reset();
-                }
-                break;
-            case LAUNCH:
-                if (feederTimer.seconds() > FEED_TIME) {
-                    feederMechanism.leftFeeder.setPower(0);
-                    feederMechanism.rightFeeder.setPower(0);
-
-                    if(shotTimer.seconds() > TIME_BETWEEN_SHOTS){
-                        launchState = LaunchState.IDLE;
-                        return true;
-                    }
-                }
-        }
-        return false;
-    }
-
-    /**
-     * @param speed From 0-1
-     * @param distance In specified unit
-     * @param distanceUnit the unit of measurement for distance
-     * @param holdSeconds the number of seconds to wait at position before returning true.
-     * @return "true" if the motors are within tolerance of the target position for more than
-     * holdSeconds. "false" otherwise.
-     */
-    boolean drive(double speed, double distance, DistanceUnit distanceUnit, double holdSeconds) {
-        final double TOLERANCE_MM = 10;
-        /*
-         * In this function we use a DistanceUnits. This is a class that the FTC SDK implements
-         * which allows us to accept different input units depending on the user's preference.
-         * To use these, put both a double and a DistanceUnit as parameters in a function and then
-         * call distanceUnit.toMm(distance). This will return the number of mm that are equivalent
-         * to whatever distance in the unit specified. We are working in mm for this, so that's the
-         * unit we request from distanceUnit. But if we want to use inches in our function, we could
-         * use distanceUnit.toInches() instead!
-         */
-        double targetPosition = (distanceUnit.toMm(distance) * TICKS_PER_MM);
-
-        drive.leftFront.setTargetPosition((int) targetPosition);
-        drive.rightFront.setTargetPosition((int) targetPosition);
-        drive.leftBack.setTargetPosition((int) targetPosition);
-        drive.rightBack.setTargetPosition((int) targetPosition);
-
-        drive.leftFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        drive.rightFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        drive.leftBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        drive.rightBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-        drive.leftFront.setPower(speed);
-        drive.rightFront.setPower(speed);
-        drive.leftBack.setPower(speed);
-        drive.rightBack.setPower(speed);
-
-        /*
-         * Here we check if we are within tolerance of our target position or not. We calculate the
-         * absolute error (distance from our setpoint regardless of if it is positive or negative)
-         * and compare that to our tolerance. If we have not reached our target yet, then we reset
-         * the driveTimer. Only after we reach the target can the timer count higher than our
-         * holdSeconds variable.
-         */
-        if(Math.abs(targetPosition - drive.leftFront.getCurrentPosition()) > (TOLERANCE_MM * TICKS_PER_MM)){
-            driveTimer.reset();
-        }
-
-        return (driveTimer.seconds() > holdSeconds);
-    }
-
-    /**
-     * @param speed From 0-1
-     * @param angle the amount that the robot should rotate
-     * @param angleUnit the unit that angle is in
-     * @param holdSeconds the number of seconds to wait at position before returning true.
-     * @return True if the motors are within tolerance of the target position for more than
-     *         holdSeconds. False otherwise.
-     */
-    boolean rotate(double speed, double angle, AngleUnit angleUnit, double holdSeconds){
-        final double TOLERANCE_MM = 10;
-
-        /*
-         * Here we establish the number of mm that our drive wheels need to cover to create the
-         * requested angle. We use radians here because it makes the math much easier.
-         * Our robot will have rotated one radian when the wheels of the robot have driven
-         * 1/2 of the track width of our robot in a circle. This is also the radius of the circle
-         * that the robot tracks when it is rotating. So, to find the number of mm that our wheels
-         * need to travel, we just need to multiply the requested angle in radians by the radius
-         * of our turning circle.
-         */
-        double targetMm = angleUnit.toRadians(angle)*(TRACK_WIDTH_MM/2);
-
-        /*
-         * We need to set the left motor to the inverse of the target so that we rotate instead
-         * of driving straight.
-         */
-        double leftTargetPosition = -(targetMm*TICKS_PER_MM);
-        double rightTargetPosition = targetMm*TICKS_PER_MM;
-
-        drive.leftFront.setTargetPosition((int) leftTargetPosition);
-        drive.rightFront.setTargetPosition((int) rightTargetPosition);
-        drive.leftBack.setTargetPosition((int) leftTargetPosition);
-        drive.rightBack.setTargetPosition((int) rightTargetPosition);
-
-        drive.leftFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        drive.rightFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        drive.leftBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        drive.rightBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-        drive.leftFront.setPower(speed);
-        drive.rightFront.setPower(speed);
-        drive.leftBack.setPower(speed);
-        drive.rightBack.setPower(speed);
-
-        if((Math.abs(leftTargetPosition - drive.leftFront.getCurrentPosition())) > (TOLERANCE_MM * TICKS_PER_MM)){
-            driveTimer.reset();
-        }
-
-        return (driveTimer.seconds() > holdSeconds);
     }
 }
 

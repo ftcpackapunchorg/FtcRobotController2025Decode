@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.cadbot.mechanisms;
 
 import androidx.annotation.NonNull;
 
@@ -53,18 +53,21 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
+import org.firstinspires.ftc.teamcode.Drawing;
+import org.firstinspires.ftc.teamcode.Localizer;
+import org.firstinspires.ftc.teamcode.TwoDeadWheelLocalizer;
 import org.firstinspires.ftc.teamcode.messages.DriveCommandMessage;
 import org.firstinspires.ftc.teamcode.messages.MecanumCommandMessage;
 import org.firstinspires.ftc.teamcode.messages.MecanumLocalizerInputsMessage;
 import org.firstinspires.ftc.teamcode.messages.PoseMessage;
-import org.firstinspires.ftc.teamcode.utils.PrototypeBotConstants;
+import org.firstinspires.ftc.teamcode.utils.StarterBotConstants;
 
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
 @Config
-public final class PrototypeBotMecanumDrive {
+public final class CADBotMecanumDrive {
     public static class Params {
         // IMU orientation
         // TODO: fill in these values based on
@@ -76,13 +79,14 @@ public final class PrototypeBotMecanumDrive {
 
         // drive model parameters
         public double inPerTick = 0.0019925989;
-        public double lateralInPerTick = 0.0017686044729066817;
-        public double trackWidthTicks = 6209.081780203246;
+        public double lateralInPerTick = 0.0017907115745390422;
+        //0.0017609115382996813
+        public double trackWidthTicks = 6116.992887271519;
 
         // feedforward parameters (in tick units)
-        public double kS = 0.36624827480095945;
-        public double kV = 0.0004202087585865365;
-        public double kA = 0;
+        public double kS = 0.28579037053675194;
+        public double kV = 0.0004285304579137103;
+        public double kA = 0.000013;
 
         // path profile parameters (in inches)
         public double maxWheelVel = 50;
@@ -94,11 +98,11 @@ public final class PrototypeBotMecanumDrive {
         public double maxAngAccel = Math.PI;
 
         // path controller gains
-        public double axialGain = 0.0;
-        public double lateralGain = 0.0;
-        public double headingGain = 0.0; // shared with turn
+        public double axialGain = 10;
+        public double lateralGain = 10;
+        public double headingGain = 6; // shared with turn
 
-        public double axialVelGain = 0.0;
+        public double axialVelGain = 1.0;
         public double lateralVelGain = 0.0;
         public double headingVelGain = 0.0; // shared with turn
 
@@ -123,8 +127,8 @@ public final class PrototypeBotMecanumDrive {
     public final AccelConstraint defaultAccelConstraint =
             new ProfileAccelConstraint(PARAMS.minProfileAccel, PARAMS.maxProfileAccel);
 
+
     public final DcMotorEx leftFront, leftBack, rightBack, rightFront;
-//    public final CRServo leftFeeder, rightFeeder;
 
     public final VoltageSensor voltageSensor;
 
@@ -156,10 +160,10 @@ public final class PrototypeBotMecanumDrive {
         private Pose2d pose;
 
         public DriveLocalizer(Pose2d pose) {
-            leftFront = new OverflowEncoder(new RawEncoder(PrototypeBotMecanumDrive.this.leftFront));
-            leftBack = new OverflowEncoder(new RawEncoder(PrototypeBotMecanumDrive.this.leftBack));
-            rightBack = new OverflowEncoder(new RawEncoder(PrototypeBotMecanumDrive.this.rightBack));
-            rightFront = new OverflowEncoder(new RawEncoder(PrototypeBotMecanumDrive.this.rightFront));
+            leftFront = new OverflowEncoder(new RawEncoder(CADBotMecanumDrive.this.leftFront));
+            leftBack = new OverflowEncoder(new RawEncoder(CADBotMecanumDrive.this.leftBack));
+            rightBack = new OverflowEncoder(new RawEncoder(CADBotMecanumDrive.this.rightBack));
+            rightFront = new OverflowEncoder(new RawEncoder(CADBotMecanumDrive.this.rightFront));
 
             imu = lazyImu.get();
 
@@ -242,7 +246,7 @@ public final class PrototypeBotMecanumDrive {
         }
     }
 
-    public PrototypeBotMecanumDrive(HardwareMap hardwareMap, Pose2d pose) {
+    public CADBotMecanumDrive(HardwareMap hardwareMap, Pose2d pose) {
         LynxFirmware.throwIfModulesAreOutdated(hardwareMap);
 
         for (LynxModule module : hardwareMap.getAll(LynxModule.class)) {
@@ -251,13 +255,11 @@ public final class PrototypeBotMecanumDrive {
 
         // TODO: make sure your config has motors with these names (or change them)
         //   see https://ftc-docs.firstinspires.org/en/latest/hardware_and_software_configuration/configuring/index.html
-        leftFront = hardwareMap.get(DcMotorEx.class, PrototypeBotConstants.FRONT_LEFT_WHEEL_MOTOR_NAME);
-        leftBack = hardwareMap.get(DcMotorEx.class, PrototypeBotConstants.BACK_LEFT_WHEEL_MOTOR_NAME);
-        rightBack = hardwareMap.get(DcMotorEx.class, PrototypeBotConstants.BACK_RIGHT_WHEEL_MOTOR_NAME);
-        rightFront = hardwareMap.get(DcMotorEx.class, PrototypeBotConstants.FRONT_RIGHT_WHEEL_MOTOR_NAME);
+        leftFront = hardwareMap.get(DcMotorEx.class, StarterBotConstants.FRONT_LEFT_WHEEL_MOTOR_NAME);
+        leftBack = hardwareMap.get(DcMotorEx.class, StarterBotConstants.BACK_LEFT_WHEEL_MOTOR_NAME);
+        rightBack = hardwareMap.get(DcMotorEx.class, StarterBotConstants.BACK_RIGHT_WHEEL_MOTOR_NAME);
+        rightFront = hardwareMap.get(DcMotorEx.class, StarterBotConstants.FRONT_RIGHT_WHEEL_MOTOR_NAME);
 
-//        leftFeeder = hardwareMap.get(CRServo.class, "leftServo");
-//        rightFeeder = hardwareMap.get(CRServo.class, "rightServo");
         /*
          * Setting zeroPowerBehavior to BRAKE enables a "brake mode". This causes the motor to
          * slow down much faster when it is coasting. This creates a much more controllable
@@ -267,6 +269,7 @@ public final class PrototypeBotMecanumDrive {
         leftBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
         /*
          * To drive forward, most robots need the motor on one side to be reversed,
          * because the axles point in opposite directions. Pushing the left stick forward
@@ -303,18 +306,6 @@ public final class PrototypeBotMecanumDrive {
         voltageSensor = hardwareMap.voltageSensor.iterator().next();
 
         localizer = new TwoDeadWheelLocalizer(hardwareMap, lazyImu.get(), PARAMS.inPerTick, pose);
-        /*
-         * set Feeders to an initial value to initialize the servo controller
-         */
-        final double STOP_SPEED = 0.0;
-//        leftFeeder.setPower(STOP_SPEED);
-//        rightFeeder.setPower(STOP_SPEED);
-
-        /*
-         * Much like our drivetrain motors, we set the left feeder servo to reverse so that they
-         * both work to feed the ball into the robot.
-         */
-//        leftFeeder.setDirection(DcMotorSimple.Direction.REVERSE);
 
         FlightRecorder.write("MECANUM_PARAMS", PARAMS);
     }
@@ -520,14 +511,14 @@ public final class PrototypeBotMecanumDrive {
     public PoseVelocity2d updatePoseEstimate() {
         PoseVelocity2d vel = localizer.update();
         poseHistory.add(localizer.getPose());
-        
+
         while (poseHistory.size() > 100) {
             poseHistory.removeFirst();
         }
 
         estimatedPoseWriter.write(new PoseMessage(localizer.getPose()));
-        
-        
+
+
         return vel;
     }
 
@@ -674,9 +665,12 @@ public final class PrototypeBotMecanumDrive {
          * but only if at least one is out of the range [-1, 1]
          */
         double speed = 2.5;
-        if(turboSpeed > 0.1){
+        if(turboSpeed > 0.1) {
             speed = 1.1;
         }
+
+        // Counteract imperfect strafing
+        forward = forward * 1.1;
 
         double denominator = Math.max(Math.abs(forward) + Math.abs(strafe) + Math.abs(rotate), speed);
 

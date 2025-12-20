@@ -37,6 +37,9 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.PrototypeBotMecanumDrive;
+import org.firstinspires.ftc.teamcode.prototypebot.mechanicals.PrototypeBotIntakeMechanism;
+import org.firstinspires.ftc.teamcode.prototypebot.mechanicals.PrototypeBotLaunchMechanism;
+import org.firstinspires.ftc.teamcode.utils.PrototypeBotConstants;
 
 /*
  * This file includes a teleop (driver-controlled) file for the goBILDA® StarterBot for the
@@ -53,13 +56,16 @@ import org.firstinspires.ftc.teamcode.PrototypeBotMecanumDrive;
  * we will also need to adjust the "PIDF" coefficients with some that are a better fit for our application.
  */
 
-@TeleOp(name = "PrototypeBotTeleopMecanums", group = "PrototypeBot")
+@TeleOp(name = "PrototypeBotTeleopMain", group = "PrototypeBot")
 //@Disabled
-public class PrototypeBotTeleopMecanums extends OpMode {
+public class PrototypeBotTeleopMain extends OpMode {
 
     PrototypeBotMecanumDrive drive;
 
-    // Setup a variable for each drive wheel to save power level for telemetry
+    PrototypeBotLaunchMechanism launchMechanism;
+
+    PrototypeBotIntakeMechanism intakeMechanism;
+
     double leftFrontPower;
     double rightFrontPower;
     double leftBackPower;
@@ -72,7 +78,7 @@ public class PrototypeBotTeleopMecanums extends OpMode {
     public void init() {
 
 
-        Pose2d initPose = new Pose2d(-43,43,0);
+        Pose2d initPose = new Pose2d(PrototypeBotConstants.BLUE_INIT_POSE_X,PrototypeBotConstants.BLUE_INIT_POSE_Y,PrototypeBotConstants.BLUE_INIT_POSE_HEADING_DEGREES);
 
         /*
          * Initialize the hardware variables. Note that the strings used here as parameters
@@ -80,6 +86,10 @@ public class PrototypeBotTeleopMecanums extends OpMode {
          * step.
          */
         drive = new PrototypeBotMecanumDrive(hardwareMap, initPose);
+
+        launchMechanism = new PrototypeBotLaunchMechanism(hardwareMap, telemetry);
+
+        intakeMechanism = new PrototypeBotIntakeMechanism(hardwareMap, telemetry);
 
         /*
          * Tell the driver that initialization is complete.
@@ -115,22 +125,36 @@ public class PrototypeBotTeleopMecanums extends OpMode {
          * both motors work to rotate the robot. Combinations of these inputs can be used to create
          * more complex maneuvers.
          */
-        mecanumDrive(-gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
+        drive.mecanumDrive(-gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x, gamepad1.left_trigger, telemetry);
 
         /*
          * Here we give the user control of the speed of the launcher motor without automatically
          * queuing a shot.
          */
-//        if (gamepad2.y) {
-//            drive.launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
-//        } else if (gamepad2.b) { // stop flywheel
-//            drive.launcher.setVelocity(STOP_SPEED);
-//        }
+        if (gamepad2.y) {
+            launchMechanism.startLauncher();
+        } else if (gamepad2.b) { // stop flywheel
+            launchMechanism.stopLauncher();
+        }
+
+        /*
+         * Now we call our "Launch" function.
+         */
+        launchMechanism.launch(gamepad2.rightBumperWasPressed());
+
+        /*
+         * Now we call our "Intake" function.
+         */
+        intakeMechanism.intakeAction(gamepad2.leftBumperWasPressed());
 
         /*
          * Show the state and motor powers
          */
-//        telemetry.addData("motorSpeed", drive.launcher.getVelocity());
+        telemetry.addData("Launch State", launchMechanism.getLaunchState());
+        telemetry.addData("Launcher MotorSpeed", launchMechanism.launcher.getVelocity());
+
+        telemetry.addData("Intake State", intakeMechanism.getIntakeState());
+        telemetry.addData("Intake MotorSpeed", intakeMechanism.intake.getPower());
 
     }
 
@@ -139,45 +163,5 @@ public class PrototypeBotTeleopMecanums extends OpMode {
      */
     @Override
     public void stop() {
-    }
-
-    /*
-     * Remember, Y stick value is reversed
-     * Counteract imperfect strafing
-     *
-     * forward = -gamepad1.left_stick_y
-     * strafe = gamepad1.left_stick_x
-     * rotate = gamepad1.right_stick_x
-     */
-    void mecanumDrive(double forward, double strafe, double rotate){
-
-        /* the denominator is the largest motor power (absolute value) or 1
-         * This ensures all the powers maintain the same ratio,
-         * but only if at least one is out of the range [-1, 1]
-         */
-        double speed = 2.5;
-        if(gamepad1.left_trigger > 0.1){
-            speed = 1.1;
-        }
-
-        double denominator = Math.max(Math.abs(forward) + Math.abs(strafe) + Math.abs(rotate), speed);
-
-        leftFrontPower = (forward + strafe + rotate) / denominator;
-        rightFrontPower = (forward - strafe - rotate) / denominator;
-        leftBackPower = (forward - strafe + rotate) / denominator;
-        rightBackPower = (forward + strafe - rotate) / denominator;
-
-        drive.leftFront.setPower(leftFrontPower);
-        drive.rightFront.setPower(rightFrontPower);
-        drive.leftBack.setPower(leftBackPower);
-        drive.rightBack.setPower(rightBackPower);
-
-//        double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), speed);
-//
-//        double y = Math.pow(-gamepad1.left_stick_y,3); // Remember, Y stick value is reversed
-//        double x = Math.pow(gamepad1.left_stick_x * 1.1,3); // Counteract imperfect strafing
-//        double rx = Math.pow(gamepad1.right_stick_x,3);
-
-
     }
 }

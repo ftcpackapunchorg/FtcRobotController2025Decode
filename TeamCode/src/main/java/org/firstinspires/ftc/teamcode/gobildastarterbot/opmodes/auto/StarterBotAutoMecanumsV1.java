@@ -7,20 +7,14 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
-import org.firstinspires.ftc.teamcode.gobildastarterbot.mechanicals.StarterBotFeederMechanism;
 import org.firstinspires.ftc.teamcode.gobildastarterbot.mechanicals.StarterBotLaunchMechanism;
 
 @Autonomous
 @Disabled
 public class StarterBotAutoMecanumsV1 extends OpMode {
-
-    final double FEED_TIME = 0.20;
-    final double LAUNCHER_TARGET_VELOCITY = 1125;
-    final double LAUNCHER_MIN_VELOCITY = 1075;
-    final double TIME_BETWEEN_SHOTS = 2;
 
     final double DRIVE_SPEED = 0.5;
     final double ROTATE_SPEED = 0.2;
@@ -35,14 +29,9 @@ public class StarterBotAutoMecanumsV1 extends OpMode {
     private MecanumDrive drive;
 
     private StarterBotLaunchMechanism launchMechanism;
-    private StarterBotFeederMechanism feederMechanism;
 
-    private ElapsedTime shotTimer = new ElapsedTime();
-    private ElapsedTime feederTimer = new ElapsedTime();
     private ElapsedTime driveTimer = new ElapsedTime();
 
-    private enum LaunchState { IDLE, PREPARE, LAUNCH }
-    private LaunchState launchState;
 
     private enum AutonomousState {
         LAUNCH,
@@ -66,18 +55,16 @@ public class StarterBotAutoMecanumsV1 extends OpMode {
     @Override
     public void init() {
         autonomousState = AutonomousState.LAUNCH;
-        launchState = LaunchState.IDLE;
         Pose2d initPose = new Pose2d(-43,43,0);
         drive = new MecanumDrive(hardwareMap, initPose);
         launchMechanism = new StarterBotLaunchMechanism(hardwareMap, telemetry);
-        feederMechanism = new StarterBotFeederMechanism(hardwareMap, telemetry);
         telemetry.addData("Status", "Initialized");
     }
 
     @Override
     public void init_loop() {
-        feederMechanism.rightFeeder.setPower(0);
-        feederMechanism.leftFeeder.setPower(0);
+        launchMechanism.getFeederMechanism().rightFeeder.setPower(0);
+        launchMechanism.getFeederMechanism().leftFeeder.setPower(0);
 
         if (gamepad1.b) alliance = Alliance.RED;
         else if (gamepad1.x) alliance = Alliance.BLUE;
@@ -94,12 +81,12 @@ public class StarterBotAutoMecanumsV1 extends OpMode {
     public void loop() {
         switch (autonomousState) {
             case LAUNCH:
-                launch(true);
+                launchMechanism.launchForAuto(true);
                 autonomousState = AutonomousState.WAIT_FOR_LAUNCH;
                 break;
 
             case WAIT_FOR_LAUNCH:
-                if (launch(false)) {
+                if (launchMechanism.launchForAuto(false)) {
                     shotsToFire--;
                     if (shotsToFire > 0) autonomousState = AutonomousState.LAUNCH;
                     else {
@@ -111,65 +98,9 @@ public class StarterBotAutoMecanumsV1 extends OpMode {
                 break;
 
             case DRIVING_AWAY_FROM_GOAL:
-                if (drive(DRIVE_SPEED, -12, DistanceUnit.INCH, 1)) {
+                if (drive(DRIVE_SPEED, -146, DistanceUnit.INCH, 30)) {
                     resetDriveEncoders();
                     autonomousState = AutonomousState.ROTATING;
-                }
-                break;
-
-            case ROTATING:
-                robotRotationAngle = (alliance == Alliance.RED) ? 45 : -45;
-                if (rotate(ROTATE_SPEED, robotRotationAngle, AngleUnit.DEGREES, 1)) {
-                    resetDriveEncoders();
-                    autonomousState = AutonomousState.DRIVING_OFF_LINE;
-                }
-                break;
-
-            case DRIVING_OFF_LINE:
-                if (drive(DRIVE_SPEED, -38, DistanceUnit.INCH, 1)) {
-                    resetDriveEncoders();
-                    autonomousState = AutonomousState.STRAFE_RIGHT_4;
-                }
-                break;
-
-            case STRAFE_RIGHT_4:
-                if (drive(DRIVE_SPEED, 4, DistanceUnit.INCH, 1, true)) {
-                    resetDriveEncoders();
-                    autonomousState = AutonomousState.ROTATE_NEG_90;
-                }
-                break;
-
-            case ROTATE_NEG_90:
-                if (rotate(ROTATE_SPEED, -90, AngleUnit.DEGREES, 1)) {
-                    resetDriveEncoders();
-                    autonomousState = AutonomousState.DRIVE_FORWARD_5;
-                }
-                break;
-
-            case DRIVE_FORWARD_5:
-                if (drive(DRIVE_SPEED, 5, DistanceUnit.INCH, 1)) {
-                    resetDriveEncoders();
-                    autonomousState = AutonomousState.DRIVE_BACK_5;
-                }
-                break;
-
-            case DRIVE_BACK_5:
-                if (drive(DRIVE_SPEED, -5, DistanceUnit.INCH, 1)) {
-                    resetDriveEncoders();
-                    autonomousState = AutonomousState.ROTATE_NEG_80;
-                }
-                break;
-
-            case ROTATE_NEG_80:
-                if (rotate(ROTATE_SPEED, -80, AngleUnit.DEGREES, 1)) {
-                    resetDriveEncoders();
-                    autonomousState = AutonomousState.DRIVE_FORWARD_5_FINAL;
-                }
-                break;
-
-            case DRIVE_FORWARD_5_FINAL:
-                if (drive(DRIVE_SPEED, 5, DistanceUnit.INCH, 1)) {
-                    autonomousState = AutonomousState.COMPLETE;
                 }
                 break;
 
@@ -178,7 +109,7 @@ public class StarterBotAutoMecanumsV1 extends OpMode {
         }
 
         telemetry.addData("AutoState", autonomousState);
-        telemetry.addData("LauncherState", launchState);
+        telemetry.addData("LauncherState", launchMechanism.getAutoLaunchState());
         telemetry.addData("Motor Positions", "LF: %d, RF: %d, LB: %d, RB: %d",
                 drive.leftFront.getCurrentPosition(), drive.rightFront.getCurrentPosition(),
                 drive.leftBack.getCurrentPosition(), drive.rightBack.getCurrentPosition());
@@ -193,36 +124,6 @@ public class StarterBotAutoMecanumsV1 extends OpMode {
         drive.rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         drive.leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         drive.rightBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-    }
-
-    boolean launch(boolean shotRequested) {
-        switch (launchState) {
-            case IDLE:
-                if (shotRequested) {
-                    launchState = LaunchState.PREPARE;
-                    shotTimer.reset();
-                }
-                break;
-            case PREPARE:
-                launchMechanism.launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
-                if (launchMechanism.launcher.getVelocity() > LAUNCHER_MIN_VELOCITY) {
-                    launchState = LaunchState.LAUNCH;
-                    feederMechanism.leftFeeder.setPower(1);
-                    feederMechanism.rightFeeder.setPower(1);
-                    feederTimer.reset();
-                }
-                break;
-            case LAUNCH:
-                if (feederTimer.seconds() > FEED_TIME) {
-                    feederMechanism.leftFeeder.setPower(0);
-                    feederMechanism.rightFeeder.setPower(0);
-                    if (shotTimer.seconds() > TIME_BETWEEN_SHOTS) {
-                        launchState = LaunchState.IDLE;
-                        return true;
-                    }
-                }
-        }
-        return false;
     }
 
     boolean drive(double speed, double distance, DistanceUnit unit, double holdSeconds) {

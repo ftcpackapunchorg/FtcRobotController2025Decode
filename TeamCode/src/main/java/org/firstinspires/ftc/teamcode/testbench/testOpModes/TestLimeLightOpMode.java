@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.testbench.testOpModes;
 
 
 import com.acmerobotics.roadrunner.Pose2d;
+import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -28,6 +29,7 @@ public class TestLimeLightOpMode extends OpMode {
         Pose2d initPose = new Pose2d(-43,43,0);
 
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
+        limelight.pipelineSwitch(0); // 0 is purple artifact, 1 is green artifact
 
         /*
          * Tell the driver that initialization is complete.
@@ -39,12 +41,21 @@ public class TestLimeLightOpMode extends OpMode {
     @Override
     public void start() {
 
-
-
+        limelight.start();
     }
 
     @Override
     public void loop() {
+
+        LLResult llResult = limelight.getLatestResult();
+
+        if(llResult != null && llResult.isValid()) {
+
+            telemetry.addData("Target X Offset : ", llResult.getTx());
+            telemetry.addData("Target Y Offset : ", llResult.getTy());
+            telemetry.addData("Target Area Offset : ", llResult.getTa());
+
+        }
 
         if(gamepad1.a) {
 

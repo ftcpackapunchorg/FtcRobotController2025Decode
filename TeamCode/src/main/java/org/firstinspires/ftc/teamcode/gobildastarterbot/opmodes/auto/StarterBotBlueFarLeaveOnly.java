@@ -33,6 +33,10 @@
 package org.firstinspires.ftc.teamcode.gobildastarterbot.opmodes.auto;
 
 import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.PoseVelocity2d;
+import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
+import com.acmerobotics.roadrunner.Vector2d;
+import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -41,6 +45,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.gobildastarterbot.mechanicals.StarterBotLaunchMechanism;
+import org.firstinspires.ftc.teamcode.utils.StarterBotConstants;
 
 
 /*
@@ -58,9 +63,8 @@ import org.firstinspires.ftc.teamcode.gobildastarterbot.mechanicals.StarterBotLa
  * main robot "loop," continuously checking for conditions that allow us to move to the next step.
  */
 
-@Autonomous(name="StarterBotAutoWithMecanums", group="StarterBot")
-//@Disabled
-public class StarterBotAutoMecanums extends OpMode
+@Autonomous(name="StarterBotBlueFarLeaveOnly", group="StarterBot")
+public class StarterBotBlueFarLeaveOnly extends OpMode
 {
     MecanumDrive drive;
 
@@ -99,6 +103,7 @@ public class StarterBotAutoMecanums extends OpMode
         DRIVING_AWAY_FROM_GOAL,
         ROTATING,
         DRIVING_OFF_LINE,
+        DRIVE_TO_LEAVE_POS,
         COMPLETE
     }
 
@@ -117,6 +122,10 @@ public class StarterBotAutoMecanums extends OpMode
      */
     private Alliance alliance = Alliance.RED;
 
+    Pose2d initPose;
+
+    TrajectoryActionBuilder goToLeaveZone;
+
     /*
      * This code runs ONCE when the driver hits INIT.
      */
@@ -127,11 +136,20 @@ public class StarterBotAutoMecanums extends OpMode
          * Later in our code, we will progress through the state machine by moving to other enum members.
          * We do the same for our launcher state machine, setting it to IDLE before we use it later.
          */
-        autonomousState = AutonomousState.LAUNCH;
-        Pose2d initPose = new Pose2d(-43,43,0);
+        autonomousState = AutonomousState.DRIVE_TO_LEAVE_POS;
+        initPose = new Pose2d(StarterBotConstants.BLUE_FAR_POSE_X,StarterBotConstants.BLUE_FAR_POSE_Y, Math.toRadians(StarterBotConstants.BLUE_FAR_POSE_HEADING_DEGREES));
 
         drive = new MecanumDrive(hardwareMap,initPose);
         launchMechanism = new StarterBotLaunchMechanism(hardwareMap, telemetry);
+
+        PoseVelocity2d currentPoseVel = drive.updatePoseEstimate();
+
+        Pose2d currentPose = new Pose2d(currentPoseVel.component1(), currentPoseVel.component2());
+
+        Vector2d leavePose = new Vector2d(56, -36);
+
+        goToLeaveZone = drive.actionBuilder(initPose)
+                .strafeTo(leavePose);
 
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
@@ -215,15 +233,28 @@ public class StarterBotAutoMecanums extends OpMode
                     if(shotsToFire > 0) {
                         autonomousState = AutonomousState.LAUNCH;
                     } else {
-                        drive.leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                        drive.rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                         drive.leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                         drive.rightBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                         launchMechanism.launcher.setVelocity(0);
-                        autonomousState = AutonomousState.DRIVING_AWAY_FROM_GOAL;
+//                        autonomousState = AutonomousState.DRIVING_AWAY_FROM_GOAL;
+                        autonomousState = AutonomousState.DRIVE_TO_LEAVE_POS;
                     }
                 }
                 break;
+
+//            case DRIVING_AWAY_FROM_GOAL:
+//                /*
+//                 * This is another function that returns a boolean. This time we return "true" if
+//                 * the robot has been within a tolerance of the target position for "holdSeconds."
+//                 * Once the function returns "true" we reset the encoders again and move on.
+//                 */
+//                if(drive.drive(DRIVE_SPEED, -4, DistanceUnit.INCH, 1)){
+//                    drive.leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//                    drive.rightBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//                    autonomousState = AutonomousState.ROTATING;
+//                }
+//
+//                break;
 
             case DRIVING_AWAY_FROM_GOAL:
                 /*
@@ -231,13 +262,14 @@ public class StarterBotAutoMecanums extends OpMode
                  * the robot has been within a tolerance of the target position for "holdSeconds."
                  * Once the function returns "true" we reset the encoders again and move on.
                  */
-                if(drive.drive(DRIVE_SPEED, -4, DistanceUnit.INCH, 1)){
-                    drive.leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    drive.rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    drive.leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    drive.rightBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    autonomousState = AutonomousState.ROTATING;
-                }
+//                if(drive.drive(DRIVE_SPEED, -4, DistanceUnit.INCH, 1)){
+//                    drive.leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//                    drive.rightBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//                    autonomousState = AutonomousState.ROTATING;
+//                }
+
+                Actions.runBlocking(goToLeaveZone.build());
+                autonomousState = AutonomousState.COMPLETE;
                 break;
 
             case ROTATING:
@@ -248,8 +280,6 @@ public class StarterBotAutoMecanums extends OpMode
                 }
 
                 if(drive.rotate(ROTATE_SPEED, robotRotationAngle, AngleUnit.DEGREES,1)){
-                    drive.leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    drive.rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     drive.leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     drive.rightBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     autonomousState = AutonomousState.DRIVING_OFF_LINE;
@@ -261,6 +291,22 @@ public class StarterBotAutoMecanums extends OpMode
                     autonomousState = AutonomousState.COMPLETE;
                 }
                 break;
+            case DRIVE_TO_LEAVE_POS:
+                telemetry.addData("Current Pos X : ", drive.localizer.getPose().position.x);
+                telemetry.addData("Current Pos Y : ", drive.localizer.getPose().position.y);
+                telemetry.addData("Current Pos Heading : ", drive.localizer.getPose().heading);
+//                telemetry.update();
+
+                Actions.runBlocking(goToLeaveZone
+                        .build());
+                autonomousState = AutonomousState.COMPLETE;
+
+                telemetry.addData("Target Pos X : ", drive.localizer.getPose().position.x);
+                telemetry.addData("Target Pos Y : ", drive.localizer.getPose().position.y);
+                telemetry.addData("Target Pos Heading : ", drive.localizer.getPose().heading);
+                telemetry.update();
+                break;
+
         }
 
         /*
@@ -278,6 +324,9 @@ public class StarterBotAutoMecanums extends OpMode
         telemetry.addData("Motor Target Positions", "left (%d), right (%d)",
                 drive.leftFront.getTargetPosition(), drive.rightFront.getTargetPosition(),
                 drive.leftBack.getTargetPosition(), drive.rightBack.getTargetPosition());
+        telemetry.addData("Target Pos X : ", drive.updatePoseEstimate().component1().x);
+        telemetry.addData("Target Pos Y : ", drive.updatePoseEstimate().component1().y);
+        telemetry.addData("Target Pos Heading : ", drive.updatePoseEstimate().component2());
         telemetry.update();
     }
 

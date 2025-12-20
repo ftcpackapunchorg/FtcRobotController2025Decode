@@ -37,29 +37,32 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.PrototypeBotMecanumDrive;
+import org.firstinspires.ftc.teamcode.prototypebot.mechanicals.PrototypeBotIntakeMechanism;
+import org.firstinspires.ftc.teamcode.utils.PrototypeBotConstants;
 
 /*
  * This file includes a teleop (driver-controlled) file for the goBILDA® StarterBot for the
  * 2025-2026 FIRST® Tech Challenge season DECODE™. It leverages a differential/Skid-Steer
- * system for robot mobility, one high-speed motor driving two "launcher wheels", and two servos
- * which feed that launcher.
+ * system for robot mobility, one high-speed motor driving two "intake wheels", and two servos
+ * which feed that intake.
  *
  * Likely the most niche concept we'll use in this example is closed-loop motor velocity control.
  * This control method reads the current speed as reported by the motor's encoder and applies a varying
  * amount of power to reach, and then hold a target velocity. The FTC SDK calls this control method
  * "RUN_USING_ENCODER". This contrasts to the default "RUN_WITHOUT_ENCODER" where you control the power
  * applied to the motor directly.
- * Since the dynamics of a launcher wheel system varies greatly from those of most other FTC mechanisms,
+ * Since the dynamics of a intake wheel system varies greatly from those of most other FTC mechanisms,
  * we will also need to adjust the "PIDF" coefficients with some that are a better fit for our application.
  */
 
-@TeleOp(name = "PrototypeBotTeleopMecanums", group = "PrototypeBot")
+@TeleOp(name = "PrototypeBotTeleopIntake", group = "PrototypeBot")
 //@Disabled
-public class PrototypeBotTeleopMecanums extends OpMode {
+public class PrototypeBotTeleopIntake extends OpMode {
 
     PrototypeBotMecanumDrive drive;
 
-    // Setup a variable for each drive wheel to save power level for telemetry
+    PrototypeBotIntakeMechanism intakeMechanism;
+
     double leftFrontPower;
     double rightFrontPower;
     double leftBackPower;
@@ -72,7 +75,7 @@ public class PrototypeBotTeleopMecanums extends OpMode {
     public void init() {
 
 
-        Pose2d initPose = new Pose2d(-43,43,0);
+        Pose2d initPose = new Pose2d(PrototypeBotConstants.BLUE_INIT_POSE_X, PrototypeBotConstants.BLUE_INIT_POSE_Y, Math.toRadians(PrototypeBotConstants.BLUE_INIT_POSE_HEADING_DEGREES));
 
         /*
          * Initialize the hardware variables. Note that the strings used here as parameters
@@ -80,6 +83,8 @@ public class PrototypeBotTeleopMecanums extends OpMode {
          * step.
          */
         drive = new PrototypeBotMecanumDrive(hardwareMap, initPose);
+
+        intakeMechanism = new PrototypeBotIntakeMechanism(hardwareMap, telemetry);
 
         /*
          * Tell the driver that initialization is complete.
@@ -118,19 +123,25 @@ public class PrototypeBotTeleopMecanums extends OpMode {
         mecanumDrive(-gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
 
         /*
-         * Here we give the user control of the speed of the launcher motor without automatically
+         * Here we give the user control of the speed of the intake motor without automatically
          * queuing a shot.
          */
-//        if (gamepad2.y) {
-//            drive.launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
-//        } else if (gamepad2.b) { // stop flywheel
-//            drive.launcher.setVelocity(STOP_SPEED);
-//        }
+        if (gamepad2.y) {
+            intakeMechanism.startIntake();
+        } else if (gamepad2.b) { // stop flywheel
+            intakeMechanism.stopIntake();
+        }
+
+        /*
+         * Now we call our "Intake" function.
+         */
+        intakeMechanism.intakeAction(gamepad2.leftBumperWasPressed());
 
         /*
          * Show the state and motor powers
          */
-//        telemetry.addData("motorSpeed", drive.launcher.getVelocity());
+        telemetry.addData("State", intakeMechanism.getIntakeState());
+        telemetry.addData("Intake MotorSpeed", intakeMechanism.intake.getPower());
 
     }
 
@@ -140,6 +151,7 @@ public class PrototypeBotTeleopMecanums extends OpMode {
     @Override
     public void stop() {
     }
+
 
     /*
      * Remember, Y stick value is reversed
@@ -156,7 +168,7 @@ public class PrototypeBotTeleopMecanums extends OpMode {
          * but only if at least one is out of the range [-1, 1]
          */
         double speed = 2.5;
-        if(gamepad1.left_trigger > 0.1){
+        if(gamepad1.left_trigger > 0.1) {
             speed = 1.1;
         }
 

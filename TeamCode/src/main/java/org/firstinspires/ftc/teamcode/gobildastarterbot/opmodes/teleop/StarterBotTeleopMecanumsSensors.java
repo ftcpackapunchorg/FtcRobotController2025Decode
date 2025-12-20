@@ -1,4 +1,4 @@
-/*
+        /*
  * Copyright (c) 2025 FIRST
  * All rights reserved.
  *
@@ -41,8 +41,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.gobildastarterbot.mechanicals.StarterBotFeederMechanism;
 import org.firstinspires.ftc.teamcode.gobildastarterbot.mechanicals.StarterBotLaunchMechanism;
-import org.firstinspires.ftc.teamcode.testbench.sensors.TestDistanceSensor;
-import org.firstinspires.ftc.teamcode.testbench.sensors.TestLED;
+import org.firstinspires.ftc.teamcode.testbench.sensors.DistanceSensor;
+import org.firstinspires.ftc.teamcode.testbench.sensors.TeleopLED;
 
 /*
  * This file includes a teleop (driver-controlled) file for the goBILDA® StarterBot for the
@@ -115,20 +115,23 @@ public class StarterBotTeleopMecanumsSensors extends OpMode {
     double leftBackPower;
     double rightBackPower;
 
-    TestDistanceSensor leftDistanceSensor = new TestDistanceSensor();
-    TestDistanceSensor rightDistanceSensor = new TestDistanceSensor();
+    DistanceSensor leftDistanceSensor = new DistanceSensor();
+    DistanceSensor rightDistanceSensor = new DistanceSensor();
 
 
-    TestLED testLED = new TestLED();
+    TeleopLED rightLED = new TeleopLED();
+    TeleopLED leftLED = new TeleopLED();
     /*
      * Code to run ONCE when the driver hits INIT
      */
     @Override
     public void init() {
         launchState = LaunchState.IDLE;
-        leftDistanceSensor.init( hardwareMap, "leftDistanceSensor");
-        rightDistanceSensor.init(hardwareMap,"rightDistanceSensor");
-        testLED.init(hardwareMap);
+        leftDistanceSensor.init(hardwareMap, "leftDistanceSensor");
+        rightDistanceSensor.init(hardwareMap, "rightDistanceSensor");
+        rightLED.init(hardwareMap);
+        leftLED.init(hardwareMap);
+
 
         Pose2d initPose = new Pose2d(-43,43,0);
 
@@ -193,50 +196,51 @@ public class StarterBotTeleopMecanumsSensors extends OpMode {
         double leftDistance = leftDistanceSensor.getDistance();
 
         if(leftDistance < 30) {
-            testLED.setGreenLED(false);
-            testLED.setRedLED(true);
+            leftLED.setGreenLED(false, "left");
+            leftLED.setRedLED(true, "left");
 
             telemetry.addLine("Too close");
 
         } else if(leftDistance >= 30 && leftDistance <= 55) {
 
-            testLED.setGreenLED(true);
-            testLED.setRedLED(true);
+            leftLED.setGreenLED(true, "left");
+            leftLED.setRedLED(true, "left");
 
             telemetry.addLine("Watch out");
 
         }
         else {
 
-            testLED.setGreenLED(true);
-            testLED.setRedLED(false);
+            leftLED.setGreenLED(true, "left");
+            leftLED.setRedLED(false, "left");
 
             telemetry.addLine("Safe distance");
 
         }
 
-        telemetry.addData("Distance : ", leftDistanceSensor.getDistance());
+        telemetry.addData("Distance : ", rightDistanceSensor.getDistance());
+
 
         double rightDistance = rightDistanceSensor.getDistance();
 
         if(rightDistance < 30) {
-            testLED.setGreenLED(false);
-            testLED.setRedLED(true);
+            rightLED.setGreenLED(false, "right");
+            rightLED.setRedLED(true, "right");
 
             telemetry.addLine("Too close");
 
         } else if(rightDistance >= 30 && rightDistance <= 55) {
 
-            testLED.setGreenLED(true);
-            testLED.setRedLED(true);
+            rightLED.setGreenLED(true, "right");
+            rightLED.setRedLED(true, "right");
 
             telemetry.addLine("Watch out");
 
         }
         else {
 
-            testLED.setGreenLED(true);
-            testLED.setRedLED(false);
+            rightLED.setGreenLED(true, "right");
+            rightLED.setRedLED(false, "right");
 
             telemetry.addLine("Safe distance");
 
@@ -332,3 +336,4 @@ public class StarterBotTeleopMecanumsSensors extends OpMode {
 
     }
 }
+
