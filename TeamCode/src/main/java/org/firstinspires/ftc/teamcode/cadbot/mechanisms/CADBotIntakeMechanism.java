@@ -59,14 +59,16 @@ public final class CADBotIntakeMechanism {
         IDLE,
         GET_READY,
         INTAKE,
-        INTAKE_IN_PROGRESS;
+        INTAKE_IN_PROGRESS,
+        COMPLETE;
     }
 
     private enum AutoIntakeState {
         IDLE,
         GET_READY,
         INTAKE,
-        INTAKE_IN_PROGRESS;
+        INTAKE_IN_PROGRESS,
+        COMPLETE;
     }
 
     /*
@@ -93,7 +95,7 @@ public final class CADBotIntakeMechanism {
 
         intake = hardwareMap.get(DcMotorEx.class, PrototypeBotConstants.INTAKE_ONE_TO_ONE_RATIO_MOTOR_NAME);
 
-        cadBotIntakeFeederMechanism = new CADBotIntakeFeederMechanism(hardwareMap, telemetry);
+//        cadBotIntakeFeederMechanism = new CADBotIntakeFeederMechanism(hardwareMap, telemetry);
 
         /*
          * Here we set our intake to the RUN_USING_ENCODER runmode.
@@ -119,8 +121,8 @@ public final class CADBotIntakeMechanism {
                 }
                 break;
             case GET_READY:
-                intakeFeedTimer.reset();
-                cadBotIntakeFeederMechanism.startIntakeFeeders();
+//                intakeFeedTimer.reset();
+//                cadBotIntakeFeederMechanism.startIntakeFeeders();
                 intakeState = IntakeState.INTAKE;
                 break;
             case INTAKE:
@@ -132,8 +134,8 @@ public final class CADBotIntakeMechanism {
             case INTAKE_IN_PROGRESS:
                 if (intakeFeedTimer.seconds() > INTAKE_FEED_TIME_SECONDS) {
                     intake.setVelocity(MIN_INTAKE_POWER);
-                    intakeState = IntakeState.IDLE;
-                    cadBotIntakeFeederMechanism.stopIntakeFeeders();
+                    intakeState = IntakeState.COMPLETE;
+//                    cadBotIntakeFeederMechanism.stopIntakeFeeders();
                 }
         }
     }
@@ -156,7 +158,7 @@ public final class CADBotIntakeMechanism {
                 break;
             case GET_READY:
                 autoIntakeFeederTimer.reset();
-                cadBotIntakeFeederMechanism.startIntakeFeeders();
+//                cadBotIntakeFeederMechanism.startIntakeFeeders();
                 autoIntakeState = AutoIntakeState.INTAKE;
                 break;
             case INTAKE:
@@ -168,9 +170,10 @@ public final class CADBotIntakeMechanism {
             case INTAKE_IN_PROGRESS:
                 if (autoIntakeFeederTimer.seconds() > INTAKE_FEED_TIME_SECONDS) {
                     intake.setVelocity(MIN_INTAKE_POWER);
-                    autoIntakeState = AutoIntakeState.IDLE;
-                    cadBotIntakeFeederMechanism.stopIntakeFeeders();
+                    autoIntakeState = AutoIntakeState.COMPLETE;
+//                    cadBotIntakeFeederMechanism.stopIntakeFeeders();
                 }
+
         }
         return false;
     }
