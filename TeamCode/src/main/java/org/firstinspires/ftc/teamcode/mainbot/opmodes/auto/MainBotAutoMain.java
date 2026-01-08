@@ -30,7 +30,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.teamcode.cadbot.opmodes.auto;
+package org.firstinspires.ftc.teamcode.mainbot.opmodes.auto;
 
 import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -39,9 +39,9 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.teamcode.cadbot.mechanisms.CADBotIntakeMechanism;
-import org.firstinspires.ftc.teamcode.cadbot.mechanisms.CADBotLaunchMechanism;
-import org.firstinspires.ftc.teamcode.cadbot.mechanisms.CADBotMecanumDrive;
+import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotIntakeMechanism;
+import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotLaunchMechanism;
+import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotMecanumDrive;
 
 
 /*
@@ -59,14 +59,14 @@ import org.firstinspires.ftc.teamcode.cadbot.mechanisms.CADBotMecanumDrive;
  * main robot "loop," continuously checking for conditions that allow us to move to the next step.
  */
 
-@Autonomous(name="CADBot Auto Main", group="CADBot")
-public class CADBotAutoMain extends OpMode
+@Autonomous(name="MainBot Auto Main", group="MainBot")
+public class MainBotAutoMain extends OpMode
 {
-    CADBotMecanumDrive drive;
+    MainBotMecanumDrive drive;
 
-    CADBotLaunchMechanism launchMechanism;
+    MainBotLaunchMechanism launchMechanism;
 
-    CADBotIntakeMechanism intakeMechanism;
+    MainBotIntakeMechanism intakeMechanism;
 
     /*
      * The number of seconds that we wait between each of our 3 shots from the launcher. This
@@ -132,8 +132,8 @@ public class CADBotAutoMain extends OpMode
         autonomousState = AutonomousState.LAUNCH;
         Pose2d initPose = new Pose2d(-43,43,0);
 
-        drive = new CADBotMecanumDrive(hardwareMap,initPose);
-        launchMechanism = new CADBotLaunchMechanism(hardwareMap, telemetry);
+        drive = new MainBotMecanumDrive(hardwareMap,initPose);
+        launchMechanism = new MainBotLaunchMechanism(hardwareMap, telemetry);
 
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");

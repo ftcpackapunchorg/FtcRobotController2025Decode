@@ -1,26 +1,25 @@
-package org.firstinspires.ftc.teamcode.cadbot.mechanisms;
+package org.firstinspires.ftc.teamcode.mainbot.mechanisms;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.utils.PrototypeBotConstants;
+import org.firstinspires.ftc.teamcode.mainbot.utils.MainBotConstants;
 
-public final class CADBotIntakeMechanism {
+public final class MainBotIntakeMechanism {
 
     public final DcMotorEx intake;
 
-    private CADBotIntakeFeederMechanism cadBotIntakeFeederMechanism;
+//    private MainBotIntakeFeederMechanism mainBotIntakeFeederMechanism;
 
-    final double INTAKE_FEED_TIME_SECONDS = 5.0; //The feeder servos run this long when a shot is requested.
+    final double INTAKE_FEED_TIME_SECONDS = 10.0; //The feeder servos run this long when a shot is requested.
 
-    final double MIN_INTAKE_POWER = 0.0;
+//    final double MIN_INTAKE_POWER = 0.0;
 
-    final double MAX_INTAKE_POWER = 1.0;
+//    final double MAX_INTAKE_POWER = 1.0;
 
     /*
      * When we control our intake motor, we are using encoders. These allow the control system
@@ -28,8 +27,10 @@ public final class CADBotIntakeMechanism {
      * velocity. Here we are setting the target, and minimum velocity that the intake should run
      * at. The minimum velocity is a threshold for determining when to fire.
      */
-    final double INTAKE_TARGET_VELOCITY = 1125;
+    final double INTAKE_TARGET_VELOCITY = 1825;
     final double INTAKE_MIN_VELOCITY = 1075;
+
+    final double INTAKE_STOP_SPEED = 0;
 
     ElapsedTime intakeFeedTimer = new ElapsedTime();
 
@@ -91,11 +92,16 @@ public final class CADBotIntakeMechanism {
 
     private AutoIntakeState autoIntakeState = AutoIntakeState.IDLE;
 
-    public CADBotIntakeMechanism(HardwareMap hardwareMap, Telemetry telemetry) {
+    public MainBotIntakeMechanism(HardwareMap hardwareMap, Telemetry telemetry) {
 
-        intake = hardwareMap.get(DcMotorEx.class, PrototypeBotConstants.INTAKE_ONE_TO_ONE_RATIO_MOTOR_NAME);
+        intake = hardwareMap.get(DcMotorEx.class, MainBotConstants.INTAKE_ONE_TO_ONE_RATIO_MOTOR_NAME);
 
-//        cadBotIntakeFeederMechanism = new CADBotIntakeFeederMechanism(hardwareMap, telemetry);
+//        cadBotIntakeFeederMechanism = new MainBotIntakeFeederMechanism(hardwareMap, telemetry);
+
+        intakeState = IntakeState.IDLE;
+
+        autoIntakeState = AutoIntakeState.IDLE;
+
 
         /*
          * Here we set our intake to the RUN_USING_ENCODER runmode.
@@ -109,7 +115,7 @@ public final class CADBotIntakeMechanism {
 
         intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        intake.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 0, 0, 10));
+//        intake.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 0, 0, 10));
 
     }
 
@@ -121,19 +127,19 @@ public final class CADBotIntakeMechanism {
                 }
                 break;
             case GET_READY:
-//                intakeFeedTimer.reset();
+                intakeFeedTimer.reset();
 //                cadBotIntakeFeederMechanism.startIntakeFeeders();
                 intakeState = IntakeState.INTAKE;
                 break;
             case INTAKE:
-                intake.setVelocity(MAX_INTAKE_POWER);
+                intake.setVelocity(INTAKE_TARGET_VELOCITY);
                 if (intake.getVelocity() > INTAKE_MIN_VELOCITY) {
                     intakeState = IntakeState.INTAKE_IN_PROGRESS;
                 }
                 break;
             case INTAKE_IN_PROGRESS:
                 if (intakeFeedTimer.seconds() > INTAKE_FEED_TIME_SECONDS) {
-                    intake.setVelocity(MIN_INTAKE_POWER);
+                    intake.setVelocity(INTAKE_MIN_VELOCITY);
                     intakeState = IntakeState.COMPLETE;
 //                    cadBotIntakeFeederMechanism.stopIntakeFeeders();
                 }
@@ -162,14 +168,14 @@ public final class CADBotIntakeMechanism {
                 autoIntakeState = AutoIntakeState.INTAKE;
                 break;
             case INTAKE:
-                intake.setVelocity(MAX_INTAKE_POWER);
+                intake.setVelocity(INTAKE_TARGET_VELOCITY);
                 if (intake.getVelocity() > INTAKE_MIN_VELOCITY) {
                     autoIntakeState = AutoIntakeState.INTAKE_IN_PROGRESS;
                 }
                 break;
             case INTAKE_IN_PROGRESS:
                 if (autoIntakeFeederTimer.seconds() > INTAKE_FEED_TIME_SECONDS) {
-                    intake.setVelocity(MIN_INTAKE_POWER);
+                    intake.setVelocity(INTAKE_MIN_VELOCITY);
                     autoIntakeState = AutoIntakeState.COMPLETE;
 //                    cadBotIntakeFeederMechanism.stopIntakeFeeders();
                 }
@@ -180,14 +186,14 @@ public final class CADBotIntakeMechanism {
 
     public void startIntake() {
 
-        cadBotIntakeFeederMechanism.startIntakeFeeders();
+//        mainBotIntakeFeederMechanism.startIntakeFeeders();
 
-        intake.setVelocity(MAX_INTAKE_POWER);
+        intake.setVelocity(INTAKE_TARGET_VELOCITY);
     }
 
     public void stopIntake() {
 
-        cadBotIntakeFeederMechanism.stopIntakeFeeders();
-        intake.setVelocity(MIN_INTAKE_POWER);
+//        mainBotIntakeFeederMechanism.stopIntakeFeeders();
+        intake.setVelocity(INTAKE_STOP_SPEED);
     }
 }

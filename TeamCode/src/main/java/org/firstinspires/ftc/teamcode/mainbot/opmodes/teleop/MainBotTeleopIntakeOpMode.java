@@ -30,7 +30,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.teamcode.cadbot.opmodes.teleop;
+package org.firstinspires.ftc.teamcode.mainbot.opmodes.teleop;
 
 import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -54,9 +54,9 @@ import org.firstinspires.ftc.teamcode.utils.PrototypeBotConstants;
  * we will also need to adjust the "PIDF" coefficients with some that are a better fit for our application.
  */
 
-@TeleOp(name = "CADBotTeleopIntakeOpMode", group = "CADBot")
+@TeleOp(name = "MainBotTeleopIntakeOpMode", group = "MainBot")
 //@Disabled
-public class CADBotTeleopIntakeOpMode extends OpMode {
+public class MainBotTeleopIntakeOpMode extends OpMode {
 
 //    PrototypeBotMecanumDrive drive;
 

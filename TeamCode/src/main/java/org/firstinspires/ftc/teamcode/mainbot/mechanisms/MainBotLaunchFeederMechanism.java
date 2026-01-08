@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.cadbot.mechanisms;
+package org.firstinspires.ftc.teamcode.mainbot.mechanisms;
 
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -7,11 +7,11 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.utils.StarterBotConstants;
 
-public final class CADBotLaunchFeederMechanism {
+public final class MainBotLaunchFeederMechanism {
 
     public final CRServo leftFeeder, rightFeeder;
 
-    public CADBotLaunchFeederMechanism(HardwareMap hardwareMap, Telemetry telemetry) {
+    public MainBotLaunchFeederMechanism(HardwareMap hardwareMap, Telemetry telemetry) {
 
         leftFeeder = hardwareMap.get(CRServo.class, StarterBotConstants.LEFT_FEEDER_CRSERVO_NAME);
         rightFeeder = hardwareMap.get(CRServo.class, StarterBotConstants.RIGHT_FEEDER_CRSERVO_NAME);

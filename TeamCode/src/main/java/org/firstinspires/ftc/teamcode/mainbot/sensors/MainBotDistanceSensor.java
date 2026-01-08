@@ -1,11 +1,11 @@
-package org.firstinspires.ftc.teamcode.cadbot.sensors;
+package org.firstinspires.ftc.teamcode.mainbot.sensors;
 
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
-public class CADBotDistanceSensor {
+public class MainBotDistanceSensor {
 
 
     private DistanceSensor distanceSensor;

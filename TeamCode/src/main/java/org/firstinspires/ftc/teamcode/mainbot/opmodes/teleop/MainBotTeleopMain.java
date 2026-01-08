@@ -30,7 +30,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.teamcode.cadbot.opmodes.teleop;
+package org.firstinspires.ftc.teamcode.mainbot.opmodes.teleop;
 
 import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -38,13 +38,13 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.cadbot.mechanisms.CADBotIntakeMechanism;
-import org.firstinspires.ftc.teamcode.cadbot.mechanisms.CADBotLaunchMechanism;
-import org.firstinspires.ftc.teamcode.cadbot.mechanisms.CADBotMecanumDrive;
-import org.firstinspires.ftc.teamcode.cadbot.sensors.CADBotDistanceSensor;
-import org.firstinspires.ftc.teamcode.cadbot.sensors.CADBotRGBLightIndicator;
-import org.firstinspires.ftc.teamcode.cadbot.sensors.CADBotSimpleLEDLight;
-import org.firstinspires.ftc.teamcode.cadbot.utils.CADBotConstants;
+import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotIntakeMechanism;
+import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotLaunchMechanism;
+import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotMecanumDrive;
+import org.firstinspires.ftc.teamcode.mainbot.sensors.MainBotDistanceSensor;
+import org.firstinspires.ftc.teamcode.mainbot.sensors.MainBotRGBLightIndicator;
+import org.firstinspires.ftc.teamcode.mainbot.sensors.MainBotSimpleLEDLight;
+import org.firstinspires.ftc.teamcode.mainbot.utils.MainBotConstants;
 
 /*
  * This file includes a teleop (driver-controlled) file for the goBILDA® StarterBot for the
@@ -61,21 +61,21 @@ import org.firstinspires.ftc.teamcode.cadbot.utils.CADBotConstants;
  * we will also need to adjust the "PIDF" coefficients with some that are a better fit for our application.
  */
 
-@TeleOp(name = "CADBot Teleop Main", group = "CADBot")
-public class CADBotTeleopMain extends OpMode {
+@TeleOp(name = "MainBot Teleop Main", group = "MainBot")
+public class MainBotTeleopMain extends OpMode {
 
-    CADBotMecanumDrive drive;
+    MainBotMecanumDrive drive;
 
-    CADBotLaunchMechanism launchMechanism;
+    MainBotLaunchMechanism launchMechanism;
 
-    CADBotIntakeMechanism intakeMechanism;
+    MainBotIntakeMechanism intakeMechanism;
 
-    CADBotDistanceSensor leftDistanceSensor;
-    CADBotDistanceSensor rightDistanceSensor;
-    CADBotSimpleLEDLight leftLED;
-    CADBotSimpleLEDLight rightLED;
-    CADBotRGBLightIndicator leftRGBLightIndicator;
-    CADBotRGBLightIndicator rightRGBLightIndicator;
+    MainBotDistanceSensor leftDistanceSensor;
+    MainBotDistanceSensor rightDistanceSensor;
+    MainBotSimpleLEDLight leftLED;
+    MainBotSimpleLEDLight rightLED;
+    MainBotRGBLightIndicator leftRGBLightIndicator;
+    MainBotRGBLightIndicator rightRGBLightIndicator;
 
     boolean enableDistanceSensors;
     boolean enableRGBLights;
@@ -87,18 +87,18 @@ public class CADBotTeleopMain extends OpMode {
     @Override
     public void init() {
 
-        Pose2d initPose = new Pose2d(CADBotConstants.BLUE_NEAR_INIT_POSE_X, CADBotConstants.BLUE_NEAR_INIT_POSE_Y,CADBotConstants.BLUE_NEAR_INIT_POSE_HEADING_DEGREES);
+        Pose2d initPose = new Pose2d(MainBotConstants.BLUE_NEAR_INIT_POSE_X, MainBotConstants.BLUE_NEAR_INIT_POSE_Y, MainBotConstants.BLUE_NEAR_INIT_POSE_HEADING_DEGREES);
 
         /*
          * Initialize the hardware variables. Note that the strings used here as parameters
          * to 'get' must correspond to the names assigned during the robot configuration
          * step.
          */
-        drive = new CADBotMecanumDrive(hardwareMap, initPose);
+        drive = new MainBotMecanumDrive(hardwareMap, initPose);
 
-        launchMechanism = new CADBotLaunchMechanism(hardwareMap, telemetry);
+        launchMechanism = new MainBotLaunchMechanism(hardwareMap, telemetry);
 
-        intakeMechanism = new CADBotIntakeMechanism(hardwareMap, telemetry);
+        intakeMechanism = new MainBotIntakeMechanism(hardwareMap, telemetry);
 
         initSensors(hardwareMap, telemetry);
 
@@ -113,8 +113,8 @@ public class CADBotTeleopMain extends OpMode {
         // Initiate distance sensors if configured
         try {
 
-            leftDistanceSensor.init(hardwareMap, CADBotConstants.LEFT_DISTANCE_SENSOR_NAME);
-            rightDistanceSensor.init(hardwareMap, CADBotConstants.RIGHT_DISTANCE_SENSOR_NAME);
+            leftDistanceSensor.init(hardwareMap, MainBotConstants.LEFT_DISTANCE_SENSOR_NAME);
+            rightDistanceSensor.init(hardwareMap, MainBotConstants.RIGHT_DISTANCE_SENSOR_NAME);
             enableDistanceSensors = true;
 
         } catch (Exception e) {
@@ -125,8 +125,8 @@ public class CADBotTeleopMain extends OpMode {
         // Initiate Simple LED Lights if configured
         try {
 
-            rightLED.init(hardwareMap, CADBotConstants.LED_NAME_PREFIX_RIGHT);
-            leftLED.init(hardwareMap, CADBotConstants.LED_NAME_PREFIX_LEFT);
+            rightLED.init(hardwareMap, MainBotConstants.LED_NAME_PREFIX_RIGHT);
+            leftLED.init(hardwareMap, MainBotConstants.LED_NAME_PREFIX_LEFT);
 
             enableSimpleLEDLights = true;
 
@@ -143,8 +143,8 @@ public class CADBotTeleopMain extends OpMode {
         // Initiate RGB Lights if configured
         try {
 
-            leftRGBLightIndicator.init(hardwareMap, CADBotConstants.LEFT_RGB_LIGHT_INDICATOR_NAME);
-            rightRGBLightIndicator.init(hardwareMap, CADBotConstants.RIGHT_RGB_LIGHT_INDICATOR_NAME);
+            leftRGBLightIndicator.init(hardwareMap, MainBotConstants.LEFT_RGB_LIGHT_INDICATOR_NAME);
+            rightRGBLightIndicator.init(hardwareMap, MainBotConstants.RIGHT_RGB_LIGHT_INDICATOR_NAME);
             enableRGBLights = true;
 
         } catch (Exception e) {
@@ -199,7 +199,7 @@ public class CADBotTeleopMain extends OpMode {
          */
         if (gamepad2.x) {
             intakeMechanism.startIntake();
-        } else if (gamepad2.b) { // stop intake
+        } else if (gamepad2.a) { // stop intake
             intakeMechanism.stopIntake();
         }
 
@@ -244,7 +244,7 @@ public class CADBotTeleopMain extends OpMode {
 
     }
 
-    private void lightUpDistanceBasedLEDs(CADBotSimpleLEDLight ledInput, Telemetry telemetry, double distance) {
+    private void lightUpDistanceBasedLEDs(MainBotSimpleLEDLight ledInput, Telemetry telemetry, double distance) {
 
         if(distance < 30) {
 

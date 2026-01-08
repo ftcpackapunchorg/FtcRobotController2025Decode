@@ -1,6 +1,6 @@
-package org.firstinspires.ftc.teamcode.cadbot.utils;
+package org.firstinspires.ftc.teamcode.mainbot.utils;
 
-public class CADBotConstants {
+public class MainBotConstants {
 
     public static final String FRONT_LEFT_WHEEL_MOTOR_NAME = "frontLeft";
     public static final String BACK_LEFT_WHEEL_MOTOR_NAME = "backLeft";

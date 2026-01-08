@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.cadbot.mechanisms;
+package org.firstinspires.ftc.teamcode.mainbot.mechanisms;
 
 import androidx.annotation.NonNull;
 
@@ -67,7 +67,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 @Config
-public final class CADBotMecanumDrive {
+public final class MainBotMecanumDrive {
     public static class Params {
         // IMU orientation
         // TODO: fill in these values based on
@@ -160,10 +160,10 @@ public final class CADBotMecanumDrive {
         private Pose2d pose;
 
         public DriveLocalizer(Pose2d pose) {
-            leftFront = new OverflowEncoder(new RawEncoder(CADBotMecanumDrive.this.leftFront));
-            leftBack = new OverflowEncoder(new RawEncoder(CADBotMecanumDrive.this.leftBack));
-            rightBack = new OverflowEncoder(new RawEncoder(CADBotMecanumDrive.this.rightBack));
-            rightFront = new OverflowEncoder(new RawEncoder(CADBotMecanumDrive.this.rightFront));
+            leftFront = new OverflowEncoder(new RawEncoder(MainBotMecanumDrive.this.leftFront));
+            leftBack = new OverflowEncoder(new RawEncoder(MainBotMecanumDrive.this.leftBack));
+            rightBack = new OverflowEncoder(new RawEncoder(MainBotMecanumDrive.this.rightBack));
+            rightFront = new OverflowEncoder(new RawEncoder(MainBotMecanumDrive.this.rightFront));
 
             imu = lazyImu.get();
 
@@ -246,7 +246,7 @@ public final class CADBotMecanumDrive {
         }
     }
 
-    public CADBotMecanumDrive(HardwareMap hardwareMap, Pose2d pose) {
+    public MainBotMecanumDrive(HardwareMap hardwareMap, Pose2d pose) {
         LynxFirmware.throwIfModulesAreOutdated(hardwareMap);
 
         for (LynxModule module : hardwareMap.getAll(LynxModule.class)) {

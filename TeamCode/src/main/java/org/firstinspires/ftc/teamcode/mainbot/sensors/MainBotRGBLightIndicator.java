@@ -1,9 +1,9 @@
-package org.firstinspires.ftc.teamcode.cadbot.sensors;
+package org.firstinspires.ftc.teamcode.mainbot.sensors;
 
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
-public class CADBotRGBLightIndicator {
+public class MainBotRGBLightIndicator {
 
     private Servo rgbLightIndicator;
 

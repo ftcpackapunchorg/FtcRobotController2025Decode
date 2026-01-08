@@ -1,21 +1,21 @@
-package org.firstinspires.ftc.teamcode.cadbot.mechanisms;
+package org.firstinspires.ftc.teamcode.mainbot.mechanisms;
 
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.cadbot.utils.CADBotConstants;
+import org.firstinspires.ftc.teamcode.mainbot.utils.MainBotConstants;
 
-public final class CADBotIntakeFeederMechanism {
+public final class MainBotIntakeFeederMechanism {
 
     public final Servo leftIntakeFeeder, rightIntakeFeeder;
     final double STOP_SPEED = 0.0;
     final double MAX_SPEED = 0.5;
 
-    public CADBotIntakeFeederMechanism(HardwareMap hardwareMap, Telemetry telemetry) {
+    public MainBotIntakeFeederMechanism(HardwareMap hardwareMap, Telemetry telemetry) {
 
-        leftIntakeFeeder = hardwareMap.get(Servo.class, CADBotConstants.LEFT_INTAKE_CR_SERVO_NAME);
-        rightIntakeFeeder = hardwareMap.get(Servo.class, CADBotConstants.RIGHT_INTAKE_CR_SERVO_NAME);
+        leftIntakeFeeder = hardwareMap.get(Servo.class, MainBotConstants.LEFT_INTAKE_CR_SERVO_NAME);
+        rightIntakeFeeder = hardwareMap.get(Servo.class, MainBotConstants.RIGHT_INTAKE_CR_SERVO_NAME);
 
         /*
          * Much like our drivetrain motors, we set the left feeder servo to reverse so that they

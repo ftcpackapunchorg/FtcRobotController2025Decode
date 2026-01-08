@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.cadbot.mechanisms;
+package org.firstinspires.ftc.teamcode.mainbot.mechanisms;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -7,9 +7,9 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.utils.PrototypeBotConstants;
+import org.firstinspires.ftc.teamcode.mainbot.utils.MainBotConstants;
 
-public final class CADBotLaunchMechanism {
+public final class MainBotLaunchMechanism {
 
     public final DcMotorEx launcher;
 
@@ -79,9 +79,9 @@ public final class CADBotLaunchMechanism {
 
     private AutoLaunchState autoLaunchState;
 
-    public CADBotLaunchMechanism(HardwareMap hardwareMap, Telemetry telemetry) {
+    public MainBotLaunchMechanism(HardwareMap hardwareMap, Telemetry telemetry) {
 
-        launcher = hardwareMap.get(DcMotorEx.class, PrototypeBotConstants.LAUNCHER_ONE_TO_ONE_RATIO_MOTOR_NAME);
+        launcher = hardwareMap.get(DcMotorEx.class, MainBotConstants.LAUNCHER_ONE_TO_ONE_RATIO_MOTOR_NAME);
 
         launchState = LaunchState.IDLE;
 
@@ -118,7 +118,7 @@ public final class CADBotLaunchMechanism {
             case LAUNCH:
                 //         drive.leftFeeder.setPower(FULL_SPEED);
                 //         drive.rightFeeder.setPower(FULL_SPEED);
-                feederTimer.reset();
+//                feederTimer.reset();
                 launchState = LaunchState.LAUNCHING;
                 break;
             case LAUNCHING:
