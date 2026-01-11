@@ -41,6 +41,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotIntakeMechanism;
 import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotLaunchMechanism;
 import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotMecanumDrive;
+import org.firstinspires.ftc.teamcode.mainbot.sensors.MainBotColorSensor;
 import org.firstinspires.ftc.teamcode.mainbot.sensors.MainBotDistanceSensor;
 import org.firstinspires.ftc.teamcode.mainbot.sensors.MainBotRGBLightIndicator;
 import org.firstinspires.ftc.teamcode.mainbot.sensors.MainBotSimpleLEDLight;
@@ -77,9 +78,12 @@ public class MainBotTeleopMain extends OpMode {
     MainBotRGBLightIndicator leftRGBLightIndicator;
     MainBotRGBLightIndicator rightRGBLightIndicator;
 
+    MainBotColorSensor intakeColorSensor;
+
     boolean enableDistanceSensors;
     boolean enableRGBLights;
     boolean enableSimpleLEDLights;
+    boolean enableIntakeColorSensor;
 
     /*
      * Code to run ONCE when the driver hits INIT
@@ -149,6 +153,18 @@ public class MainBotTeleopMain extends OpMode {
 
         } catch (Exception e) {
             telemetry.addData("Initialization", "No RGB Light Indicators");
+            enableRGBLights = false;
+        }
+
+        // Initiate Color Sensor if configured
+        try {
+
+            intakeColorSensor.init(hardwareMap, "intakeColorSensor");
+
+            enableIntakeColorSensor = true;
+
+        } catch (Exception e) {
+            telemetry.addData("Initialization", "No Intake Color Sensor");
             enableRGBLights = false;
         }
     }
@@ -231,6 +247,12 @@ public class MainBotTeleopMain extends OpMode {
 
             leftRGBLightIndicator.setRGBLightToGreen();
             rightRGBLightIndicator.setRGBLightToGreen();
+        }
+
+        if(enableIntakeColorSensor) {
+
+            intakeColorSensor.getDetectedColor(telemetry);
+
         }
 
         /*

@@ -64,7 +64,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 @Config
-public final class MecanumDrive {
+public final class GoBildaStarterBotMecanumDrive {
     public static class Params {
         // IMU orientation
         // TODO: fill in these values based on
@@ -72,18 +72,18 @@ public final class MecanumDrive {
         public RevHubOrientationOnRobot.LogoFacingDirection logoFacingDirection =
                 RevHubOrientationOnRobot.LogoFacingDirection.LEFT;
         public RevHubOrientationOnRobot.UsbFacingDirection usbFacingDirection =
-                RevHubOrientationOnRobot.UsbFacingDirection.UP;
+                RevHubOrientationOnRobot.UsbFacingDirection.FORWARD;
 
         // drive model parameters
-        public double inPerTick = 0.0250690880378997;
-        public double lateralInPerTick = 0.022349203393586807;
+        public double inPerTick = 0.0019925989;
+        public double lateralInPerTick = 0.0017907115745390422;
         //0.0017609115382996813
-        public double trackWidthTicks = 406.1622861360251;
+        public double trackWidthTicks = 6116.992887271519;
 
         // feedforward parameters (in tick units)
-        public double kS = 0.6591195248745754;
-        public double kV = 0.004829316104194536;
-        public double kA = 0.000009;
+        public double kS = 0.28579037053675194;
+        public double kV = 0.0004285304579137103;
+        public double kA = 0.000013;
 
         // path profile parameters (in inches)
         public double maxWheelVel = 50;
@@ -95,11 +95,11 @@ public final class MecanumDrive {
         public double maxAngAccel = Math.PI;
 
         // path controller gains
-        public double axialGain = 0;
-        public double lateralGain = 0;
-        public double headingGain = 0; // shared with turn
+        public double axialGain = 10;
+        public double lateralGain = 10;
+        public double headingGain = 6; // shared with turn
 
-        public double axialVelGain = 0.0;
+        public double axialVelGain = 1.0;
         public double lateralVelGain = 0.0;
         public double headingVelGain = 0.0; // shared with turn
 
@@ -157,10 +157,10 @@ public final class MecanumDrive {
         private Pose2d pose;
 
         public DriveLocalizer(Pose2d pose) {
-            leftFront = new OverflowEncoder(new RawEncoder(MecanumDrive.this.leftFront));
-            leftBack = new OverflowEncoder(new RawEncoder(MecanumDrive.this.leftBack));
-            rightBack = new OverflowEncoder(new RawEncoder(MecanumDrive.this.rightBack));
-            rightFront = new OverflowEncoder(new RawEncoder(MecanumDrive.this.rightFront));
+            leftFront = new OverflowEncoder(new RawEncoder(GoBildaStarterBotMecanumDrive.this.leftFront));
+            leftBack = new OverflowEncoder(new RawEncoder(GoBildaStarterBotMecanumDrive.this.leftBack));
+            rightBack = new OverflowEncoder(new RawEncoder(GoBildaStarterBotMecanumDrive.this.rightBack));
+            rightFront = new OverflowEncoder(new RawEncoder(GoBildaStarterBotMecanumDrive.this.rightFront));
 
             imu = lazyImu.get();
 
@@ -243,7 +243,7 @@ public final class MecanumDrive {
         }
     }
 
-    public MecanumDrive(HardwareMap hardwareMap, Pose2d pose) {
+    public GoBildaStarterBotMecanumDrive(HardwareMap hardwareMap, Pose2d pose) {
         LynxFirmware.throwIfModulesAreOutdated(hardwareMap);
 
         for (LynxModule module : hardwareMap.getAll(LynxModule.class)) {

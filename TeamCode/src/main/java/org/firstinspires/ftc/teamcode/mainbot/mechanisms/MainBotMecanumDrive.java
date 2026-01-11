@@ -75,17 +75,17 @@ public final class MainBotMecanumDrive {
         public RevHubOrientationOnRobot.LogoFacingDirection logoFacingDirection =
                 RevHubOrientationOnRobot.LogoFacingDirection.LEFT;
         public RevHubOrientationOnRobot.UsbFacingDirection usbFacingDirection =
-                RevHubOrientationOnRobot.UsbFacingDirection.FORWARD;
+                RevHubOrientationOnRobot.UsbFacingDirection.UP;
 
         // drive model parameters
-        public double inPerTick = 0.0019925989;
-        public double lateralInPerTick = 0.0017907115745390422;
+        public double inPerTick = 0.0237909516380655;
+        public double lateralInPerTick = 0.021778420552899188;
         //0.0017609115382996813
         public double trackWidthTicks = 6116.992887271519;
 
         // feedforward parameters (in tick units)
-        public double kS = 0.28579037053675194;
-        public double kV = 0.0004285304579137103;
+        public double kS = 0.669836699644315;
+        public double kV = 0.004869490058451354;
         public double kA = 0.000013;
 
         // path profile parameters (in inches)
@@ -282,8 +282,8 @@ public final class MainBotMecanumDrive {
         leftBack.setDirection(DcMotorEx.Direction.REVERSE);
         rightBack.setDirection(DcMotorEx.Direction.FORWARD);
 
-//        leftFront.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
-//        rightFront.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+        leftFront.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+        rightFront.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         leftBack.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         rightBack.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
 
@@ -658,7 +658,38 @@ public final class MainBotMecanumDrive {
 
     public void mecanumDrive(double forward, double strafe, double rotate, float turboSpeed, Telemetry telemetry){
 
-        telemetry.addData("turboSpeed", turboSpeed);
+
+        // Pratt's logic -- Begin
+//        double frontLeftPower = forward + strafe + rotate;
+//        double backLeftPower = forward - strafe + rotate;
+//        double frontRightPower = forward - strafe - rotate;
+//        double backRightPower = forward + strafe - rotate;
+//
+//        double maxPower = 1.0;
+//        double maxSpeed = 1.0;
+//
+//        maxPower = Math.max(maxPower, Math.abs(frontLeftPower));
+//        maxPower = Math.max(maxPower, Math.abs(backLeftPower));
+//        maxPower = Math.max(maxPower, Math.abs(frontRightPower));
+//        maxPower = Math.max(maxPower, Math.abs(backRightPower));
+//
+//        telemetry.addData("maxSpeed : ", maxSpeed);
+//        telemetry.addData("maxPower", maxPower);
+//        telemetry.addData("turboSpeed", turboSpeed);
+//        telemetry.addData("forward : ", forward);
+//        telemetry.addData("strafe : ", strafe);
+//        telemetry.addData("rotate : ", rotate);
+//        telemetry.update();
+//
+//        leftFront.setPower(maxSpeed * (frontLeftPower / maxPower));
+//        leftBack.setPower(maxSpeed * (backLeftPower / maxPower));
+//        rightFront.setPower(maxSpeed * (frontRightPower / maxPower));
+//        rightBack.setPower(maxSpeed * (backRightPower / maxPower));
+
+        // Pratt's logic -- End
+
+
+        /** Original code **/
 
         /* the denominator is the largest motor power (absolute value) or 1
          * This ensures all the powers maintain the same ratio,
@@ -670,7 +701,7 @@ public final class MainBotMecanumDrive {
         }
 
         // Counteract imperfect strafing
-        forward = forward * 1.1;
+//        forward = forward * 1.1;
 
         double denominator = Math.max(Math.abs(forward) + Math.abs(strafe) + Math.abs(rotate), speed);
 
@@ -691,12 +722,13 @@ public final class MainBotMecanumDrive {
         leftBack.setPower(leftBackPower);
         rightBack.setPower(rightBackPower);
 
+        /** Old code for reference
 //        double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), speed);
 //
 //        double y = Math.pow(-gamepad1.left_stick_y,3); // Remember, Y stick value is reversed
 //        double x = Math.pow(gamepad1.left_stick_x * 1.1,3); // Counteract imperfect strafing
 //        double rx = Math.pow(gamepad1.right_stick_x,3);
-
+**/
 
     }
 
