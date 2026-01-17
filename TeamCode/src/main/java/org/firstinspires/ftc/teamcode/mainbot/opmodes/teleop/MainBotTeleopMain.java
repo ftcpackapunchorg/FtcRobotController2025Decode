@@ -75,15 +75,17 @@ public class MainBotTeleopMain extends OpMode {
     MainBotDistanceSensor rightDistanceSensor;
     MainBotSimpleLEDLight leftLED;
     MainBotSimpleLEDLight rightLED;
-    MainBotRGBLightIndicator leftRGBLightIndicator;
-    MainBotRGBLightIndicator rightRGBLightIndicator;
+    MainBotRGBLightIndicator firstRGBLightIndicator;
+    MainBotRGBLightIndicator secondRGBLightIndicator;
+    MainBotRGBLightIndicator thirdRGBLightIndicator;
 
-    MainBotColorSensor intakeColorSensor;
+    MainBotColorSensor intakeColorSensor = new MainBotColorSensor();
 
     boolean enableDistanceSensors;
     boolean enableRGBLights;
     boolean enableSimpleLEDLights;
     boolean enableIntakeColorSensor;
+    int noOfArtifactsInTheRobot = 0;
 
     /*
      * Code to run ONCE when the driver hits INIT
@@ -147,8 +149,9 @@ public class MainBotTeleopMain extends OpMode {
         // Initiate RGB Lights if configured
         try {
 
-            leftRGBLightIndicator.init(hardwareMap, MainBotConstants.LEFT_RGB_LIGHT_INDICATOR_NAME);
-            rightRGBLightIndicator.init(hardwareMap, MainBotConstants.RIGHT_RGB_LIGHT_INDICATOR_NAME);
+            firstRGBLightIndicator.init(hardwareMap, MainBotConstants.FIRST_RGB_LIGHT_INDICATOR_NAME);
+            secondRGBLightIndicator.init(hardwareMap, MainBotConstants.SECOND_RGB_LIGHT_INDICATOR_NAME);
+            thirdRGBLightIndicator.init(hardwareMap, MainBotConstants.THIRD_RGB_LIGHT_INDICATOR_NAME);
             enableRGBLights = true;
 
         } catch (Exception e) {
@@ -207,6 +210,8 @@ public class MainBotTeleopMain extends OpMode {
             launchMechanism.startLauncher();
         } else if (gamepad2.b) { // stop flywheel
             launchMechanism.stopLauncher();
+        } else if(gamepad2.dpad_down) {
+            launchMechanism.reverseLauncher();
         }
 
         /*
@@ -215,8 +220,13 @@ public class MainBotTeleopMain extends OpMode {
          */
         if (gamepad2.x) {
             intakeMechanism.startIntake();
-        } else if (gamepad2.a) { // stop intake
+        } else if (gamepad2.a) {
+
+            // Stop intake
             intakeMechanism.stopIntake();
+        } else if (gamepad2.leftBumperWasPressed()) {
+
+            intakeMechanism.reverseIntake();
         }
 
         /*
@@ -227,7 +237,7 @@ public class MainBotTeleopMain extends OpMode {
         /*
          * Now we call our "Intake" function.
          */
-        intakeMechanism.intakeAction(gamepad2.leftBumperWasPressed());
+//        intakeMechanism.intakeAction(gamepad2.leftBumperWasPressed());
 
         if(enableDistanceSensors) {
 
@@ -245,8 +255,23 @@ public class MainBotTeleopMain extends OpMode {
 
         if(enableRGBLights) {
 
-            leftRGBLightIndicator.setRGBLightToGreen();
-            rightRGBLightIndicator.setRGBLightToGreen();
+            if(enableIntakeColorSensor) {
+
+                if(intakeColorSensor.getDetectedColor(telemetry).equals(MainBotColorSensor.DetectedColor.GREEN) ||
+                        intakeColorSensor.getDetectedColor(telemetry).equals(MainBotColorSensor.DetectedColor.PURPLE)) {
+
+                    if(noOfArtifactsInTheRobot == 0) {
+                        firstRGBLightIndicator.setRGBLightToGreen();
+                        noOfArtifactsInTheRobot++;
+                    } else if(noOfArtifactsInTheRobot == 1) {
+                        secondRGBLightIndicator.setRGBLightToGreen();
+                        noOfArtifactsInTheRobot++;
+                    } else if(noOfArtifactsInTheRobot == 2) {
+                        thirdRGBLightIndicator.setRGBLightToGreen();
+                        noOfArtifactsInTheRobot++;
+                    }
+                }
+            }
         }
 
         if(enableIntakeColorSensor) {
@@ -263,6 +288,7 @@ public class MainBotTeleopMain extends OpMode {
 
         telemetry.addData("Intake State", intakeMechanism.getIntakeState());
         telemetry.addData("Intake MotorSpeed", intakeMechanism.intake.getPower());
+//        telemetry.update();
 
     }
 

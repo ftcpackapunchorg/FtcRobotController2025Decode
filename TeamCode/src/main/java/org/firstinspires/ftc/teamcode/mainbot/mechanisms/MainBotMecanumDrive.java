@@ -260,6 +260,11 @@ public final class MainBotMecanumDrive {
         rightBack = hardwareMap.get(DcMotorEx.class, StarterBotConstants.BACK_RIGHT_WHEEL_MOTOR_NAME);
         rightFront = hardwareMap.get(DcMotorEx.class, StarterBotConstants.FRONT_RIGHT_WHEEL_MOTOR_NAME);
 
+        leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
         /*
          * Setting zeroPowerBehavior to BRAKE enables a "brake mode". This causes the motor to
          * slow down much faster when it is coasting. This creates a much more controllable
@@ -701,7 +706,7 @@ public final class MainBotMecanumDrive {
         }
 
         // Counteract imperfect strafing
-//        forward = forward * 1.1;
+        forward = forward * 1.1;
 
         double denominator = Math.max(Math.abs(forward) + Math.abs(strafe) + Math.abs(rotate), speed);
 
@@ -710,7 +715,7 @@ public final class MainBotMecanumDrive {
         telemetry.addData("forward : ", forward);
         telemetry.addData("strafe : ", strafe);
         telemetry.addData("rotate : ", rotate);
-        telemetry.update();
+//        telemetry.update();
 
         leftFrontPower = (forward + strafe + rotate) / denominator;
         rightFrontPower = (forward - strafe - rotate) / denominator;

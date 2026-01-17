@@ -14,6 +14,9 @@ public class MainBotConstants {
     public static final String RIGHT_INTAKE_CR_SERVO_NAME = "rightIntakeServo";
     public static final String LEFT_RGB_LIGHT_INDICATOR_NAME = "leftRGBLight";
     public static final String RIGHT_RGB_LIGHT_INDICATOR_NAME = "rightRGBLight";
+    public static final String FIRST_RGB_LIGHT_INDICATOR_NAME = "firstRGBLight";
+    public static final String SECOND_RGB_LIGHT_INDICATOR_NAME = "secondRGBLight";
+    public static final String THIRD_RGB_LIGHT_INDICATOR_NAME = "thirdRGBLight";
     public static final String LEFT_DISTANCE_SENSOR_NAME = "leftDistanceSensor";
     public static final String RIGHT_DISTANCE_SENSOR_NAME = "rightDistanceSensor";
     // This is used in conjunction with led name prefix. leftGreenLED, rightGreenLED

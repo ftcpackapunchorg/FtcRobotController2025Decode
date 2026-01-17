@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.mainbot.mechanisms;
 
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
@@ -23,8 +22,9 @@ public final class MainBotLaunchMechanism {
      * velocity. Here we are setting the target, and minimum velocity that the launcher should run
      * at. The minimum velocity is a threshold for determining when to fire.
      */
-    final double LAUNCHER_TARGET_VELOCITY = 1125;
-    final double LAUNCHER_MIN_VELOCITY = 1075;
+    final double LAUNCHER_TARGET_VELOCITY = 2000;
+    final double LAUNCHER_MIN_VELOCITY = 1500;
+    final double LAUNCHER_REVERSE_VELOCITY = 300;
 
     ElapsedTime feederTimer = new ElapsedTime();
 
@@ -32,6 +32,7 @@ public final class MainBotLaunchMechanism {
 
     final double FEED_TIME = 0.20;
     final double TIME_BETWEEN_SHOTS = 2;
+    final double REVERSE_ROTATION_TIME = 0.1;
 
     /*
      * TECH TIP: State Machines
@@ -64,6 +65,7 @@ public final class MainBotLaunchMechanism {
      */
     private ElapsedTime shotTimer = new ElapsedTime();
     private ElapsedTime autoFeederTimer = new ElapsedTime();
+    private ElapsedTime reverseLaunchTimer = new ElapsedTime();
 
     private enum AutoLaunchState { IDLE, PREPARE, LAUNCH }
 
@@ -94,11 +96,11 @@ public final class MainBotLaunchMechanism {
          * into the port right beside the motor itself. And that the motors polarity is consistent
          * through any wiring.
          */
-        launcher.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        launcher.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
 
-        launcher.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        launcher.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
 
-        launcher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 0, 0, 10));
+        launcher.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 0, 0, 10));
 
     }
 
@@ -174,10 +176,18 @@ public final class MainBotLaunchMechanism {
     public void startLauncher() {
 
         launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
+//        launcher.setPower(.7);
     }
 
     public void stopLauncher() {
 
         launcher.setVelocity(STOP_SPEED);
+//        launcher.setPower(0);
+    }
+
+    public void reverseLauncher() {
+
+        launcher.setVelocity(-1 * LAUNCHER_REVERSE_VELOCITY);
+//        launcher.setPower(-1 * 0.1);
     }
 }

@@ -15,7 +15,7 @@ public final class MainBotIntakeMechanism {
 
 //    private MainBotIntakeFeederMechanism mainBotIntakeFeederMechanism;
 
-    final double INTAKE_FEED_TIME_SECONDS = 10.0; //The feeder servos run this long when a shot is requested.
+    final double INTAKE_FEED_TIME_SECONDS = 10.0; //The feeder servos run this long when an intake is requested.
 
 //    final double MIN_INTAKE_POWER = 0.0;
 
@@ -36,8 +36,8 @@ public final class MainBotIntakeMechanism {
 
     /** Auto related **/
 
-    final double INTAKE_TIME = 3.0;
-    final double TIME_BETWEEN_SHOTS = 2;
+//    final double INTAKE_TIME = 3.0;
+//    final double TIME_BETWEEN_SHOTS = 2;
 
     /*
      * TECH TIP: State Machines
@@ -195,5 +195,11 @@ public final class MainBotIntakeMechanism {
 
 //        mainBotIntakeFeederMechanism.stopIntakeFeeders();
         intake.setVelocity(INTAKE_STOP_SPEED);
+    }
+
+    public void reverseIntake() {
+
+//        mainBotIntakeFeederMechanism.stopIntakeFeeders();
+        intake.setVelocity(-1 * INTAKE_STOP_SPEED);
     }
 }
