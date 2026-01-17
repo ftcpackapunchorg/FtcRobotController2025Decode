@@ -22,8 +22,8 @@ public final class MainBotLaunchMechanism {
      * velocity. Here we are setting the target, and minimum velocity that the launcher should run
      * at. The minimum velocity is a threshold for determining when to fire.
      */
-    final double LAUNCHER_TARGET_VELOCITY = 2000;
-    final double LAUNCHER_MIN_VELOCITY = 1500;
+    final double LAUNCHER_TARGET_VELOCITY = 1125;
+    final double LAUNCHER_MIN_VELOCITY = 1075;
     final double LAUNCHER_REVERSE_VELOCITY = 300;
 
     ElapsedTime feederTimer = new ElapsedTime();
@@ -102,6 +102,7 @@ public final class MainBotLaunchMechanism {
 
         launcher.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 0, 0, 10));
 
+//        launcher.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(0, 0, 0, 13));
     }
 
     public void launch(boolean shotRequested) {
