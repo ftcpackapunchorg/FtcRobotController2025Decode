@@ -19,9 +19,9 @@ public class TuneLauncher extends LinearOpMode {
 
     int stepIndex = 1;
 
-    double highVelocity = 1500;
+    double highVelocity = 850;
 
-    double lowVelovity = 900;
+    double lowVelovity = 650;
 
     double curTargetVelocity = highVelocity;
 

@@ -146,8 +146,8 @@ public class StarterBotAutoMecanums extends OpMode
          * We also set the servo power to 0 here to make sure that the servo controller is booted
          * up and ready to go.
          */
-        launchMechanism.getFeederMechanism().rightFeeder.setPower(0);
-        launchMechanism.getFeederMechanism().leftFeeder.setPower(0);
+//        launchMechanism.getFeederMechanism().rightFeeder.setPower(0);
+//        launchMechanism.getFeederMechanism().leftFeeder.setPower(0);
 
         /*
          * Here we allow the driver to select which alliance we are on using the gamepad.

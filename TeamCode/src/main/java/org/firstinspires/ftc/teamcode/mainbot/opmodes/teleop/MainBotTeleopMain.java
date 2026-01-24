@@ -206,9 +206,11 @@ public class MainBotTeleopMain extends OpMode {
          * Here we give the user control of the speed of the launcher motor without automatically
          * queuing a shot.
          */
-        if (gamepad2.y) {
+        if (gamepad2.rightBumperWasPressed()) {
             launchMechanism.startLauncher();
-        } else if (gamepad2.b) { // stop flywheel
+        } else if(gamepad2.yWasReleased()) {
+            launchMechanism.startLauncherNearZone();
+        } else if (gamepad2.bWasPressed()) { // stop flywheel
             launchMechanism.stopLauncher();
         } else if(gamepad2.dpad_down) {
             launchMechanism.reverseLauncher();
@@ -228,6 +230,8 @@ public class MainBotTeleopMain extends OpMode {
 
             intakeMechanism.reverseIntake();
         }
+
+//        intakeMechanism.startIntakeWithInput(gamepad2.right_trigger);
 
         /*
          * Now we call our "Launch" function.
