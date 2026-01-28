@@ -33,7 +33,7 @@ public class TuneLauncher extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
 
         motor = hardwareMap.get(DcMotorEx.class, "launcher");
-        motor.setDirection(DcMotorSimple.Direction.REVERSE);
+        motor.setDirection(DcMotorSimple.Direction.FORWARD);
         motor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         PIDFCoefficients pidfCoefficients = new PIDFCoefficients(0, 0, 0, 0);

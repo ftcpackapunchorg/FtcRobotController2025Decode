@@ -207,7 +207,8 @@ public class MainBotTeleopMain extends OpMode {
          * queuing a shot.
          */
         if (gamepad2.rightBumperWasPressed()) {
-            launchMechanism.startLauncher();
+//            launchMechanism.startLauncher();
+            launchMechanism.launch(true);
         } else if(gamepad2.yWasReleased()) {
             launchMechanism.startLauncherNearZone();
         } else if (gamepad2.bWasPressed()) { // stop flywheel

@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.mainbot.utils.MainBotConstants;
 
-public final class MainBotLaunchMechanism {
+public final class MainBotLaunchWithFeederMechanism {
 
     public final DcMotorEx launcher;
 
@@ -81,9 +81,9 @@ public final class MainBotLaunchMechanism {
 
     private AutoLaunchState autoLaunchState;
 
-//    MainBotLaunchFeederMechanism feederMechanism;
+    MainBotLaunchFeederMechanism feederMechanism;
 
-    public MainBotLaunchMechanism(HardwareMap hardwareMap, Telemetry telemetry) {
+    public MainBotLaunchWithFeederMechanism(HardwareMap hardwareMap, Telemetry telemetry) {
 
         launcher = hardwareMap.get(DcMotorEx.class, MainBotConstants.LAUNCHER_ONE_TO_ONE_RATIO_MOTOR_NAME);
 
@@ -106,7 +106,7 @@ public final class MainBotLaunchMechanism {
 
         launcher.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(60.1060, 0, 0, 14.3960));
 
-//        feederMechanism = new MainBotLaunchFeederMechanism(hardwareMap, telemetry);
+        feederMechanism = new MainBotLaunchFeederMechanism(hardwareMap, telemetry);
     }
 
     public void launch(boolean shotRequested) {
@@ -123,7 +123,7 @@ public final class MainBotLaunchMechanism {
                 }
                 break;
             case LAUNCH:
-//                        feederMechanism.leftFeeder.setPower(0.2);
+                        feederMechanism.leftFeeder.setPower(0.2);
                 //         drive.rightFeeder.setPower(FULL_SPEED);
 //                feederTimer.reset();
                 launchState = LaunchState.LAUNCHING;
@@ -131,7 +131,7 @@ public final class MainBotLaunchMechanism {
             case LAUNCHING:
                 if (feederTimer.seconds() > FEED_TIME_SECONDS) {
                     launchState = LaunchState.IDLE;
-//                    feederMechanism.leftFeeder.setPower(STOP_SPEED);
+                    feederMechanism.leftFeeder.setPower(STOP_SPEED);
                     //        drive.rightFeeder.setPower(STOP_SPEED);
                 }
                 break;

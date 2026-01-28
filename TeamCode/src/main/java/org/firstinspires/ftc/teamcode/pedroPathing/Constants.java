@@ -16,8 +16,11 @@ import org.firstinspires.ftc.teamcode.mainbot.utils.MainBotConstants;
 public class Constants {
     public static FollowerConstants followerConstants = new FollowerConstants()
             .mass(10.8)
-            .forwardZeroPowerAcceleration(-807.9787163989407)
-            .lateralZeroPowerAcceleration(-27.690375788222877);
+            .forwardZeroPowerAcceleration(-53.15050408949898)
+            .lateralZeroPowerAcceleration(-71.3525267688645);
+//            .translationalPIDFCoefficients(new PIDFCoefficients(0.07, 0, 0.05, 0.07));
+//            .forwardZeroPowerAcceleration(-383.27292125439027)
+//            .lateralZeroPowerAcceleration(-221.532463826907);
 
     public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1, 1);
 
@@ -40,8 +43,10 @@ public class Constants {
             .leftRearMotorDirection(DcMotorSimple.Direction.REVERSE)
             .rightFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
             .rightRearMotorDirection(DcMotorSimple.Direction.FORWARD)
-            .xVelocity(37.890587003212275)
-            .yVelocity(53.644698897684655);
+            .xVelocity(54.28465210922121)
+            .yVelocity(28.552962415800316);
+//            .xVelocity(98.35647551468978)
+//            .yVelocity(55.057696554604476);
 
     public static PinpointConstants localizerConstants = new PinpointConstants()
             .forwardPodY(0.75) // Distance from center to the forward backward moving odometry pod
