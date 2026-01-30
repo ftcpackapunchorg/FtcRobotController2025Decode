@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.testbench.testOpModes;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -7,6 +8,7 @@ import org.firstinspires.ftc.teamcode.testbench.sensors.TestDistanceSensor;
 import org.firstinspires.ftc.teamcode.testbench.sensors.TestLED;
 
 @TeleOp(name = "TestDistanceSensor2MWithLED", group = "TestBench")
+@Disabled
 public class TestDistanceSensorWithLEDOpMode extends OpMode {
 
     TestDistanceSensor distanceSensor = new TestDistanceSensor();

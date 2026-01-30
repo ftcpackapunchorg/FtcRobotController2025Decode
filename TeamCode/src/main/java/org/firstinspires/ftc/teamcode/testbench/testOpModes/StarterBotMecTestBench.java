@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.testbench.testOpModes;
 
 
 import com.acmerobotics.roadrunner.Pose2d;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -11,6 +12,7 @@ import org.firstinspires.ftc.teamcode.gobildastarterbot.mechanicals.StarterBotLa
 
 
 @TeleOp(name="StarterBotMecTestBench", group="TestBench")
+@Disabled
 public class StarterBotMecTestBench extends OpMode {
     double power = 1;
 

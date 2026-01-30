@@ -4,6 +4,7 @@ package org.firstinspires.ftc.teamcode.testbench.testOpModes;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -16,6 +17,7 @@ import org.firstinspires.ftc.teamcode.utils.StarterBotConstants;
 
 
 @TeleOp(name="TestLimeLightAprilTagOpMode", group="TestBench")
+@Disabled
 public class TestLimeLightAprilTagOpMode extends OpMode {
     double power = 1;
 

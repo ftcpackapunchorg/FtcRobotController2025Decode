@@ -75,15 +75,15 @@ public final class MecanumDrive {
                 RevHubOrientationOnRobot.UsbFacingDirection.UP;
 
         // drive model parameters
-        public double inPerTick = 0.0250690880378997;
-        public double lateralInPerTick = 0.022349203393586807;
+        public double inPerTick = 0.0020515874985523; // 0.0019275339039446;
+        public double lateralInPerTick = 0.001373351080759621; // 0.00181183472255428;
         //0.0017609115382996813
-        public double trackWidthTicks = 406.1622861360251;
+        public double trackWidthTicks = 4515.709640942835;
 
         // feedforward parameters (in tick units)
-        public double kS = 0.6591195248745754;
-        public double kV = 0.004829316104194536;
-        public double kA = 0.000009;
+        public double kS = 0.41714020246254124; //0.25665589875789596;
+        public double kV = 0.0004326392179125656; // 0.0004402414293525428;
+        public double kA = 0.00011;
 
         // path profile parameters (in inches)
         public double maxWheelVel = 50;
@@ -95,9 +95,9 @@ public final class MecanumDrive {
         public double maxAngAccel = Math.PI;
 
         // path controller gains
-        public double axialGain = 0;
-        public double lateralGain = 0;
-        public double headingGain = 0; // shared with turn
+        public double axialGain = .2;
+        public double lateralGain = 2;
+        public double headingGain = 1; // shared with turn
 
         public double axialVelGain = 0.0;
         public double lateralVelGain = 0.0;
@@ -279,18 +279,18 @@ public final class MecanumDrive {
         leftBack.setDirection(DcMotorEx.Direction.REVERSE);
         rightBack.setDirection(DcMotorEx.Direction.FORWARD);
 
+        /*
+         * Here we reset the encoders on our drive motors before we start moving.
+         */
+        leftFront.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        rightFront.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        leftBack.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        rightBack.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+
         leftFront.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         rightFront.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         leftBack.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         rightBack.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
-
-        /*
-         * Here we reset the encoders on our drive motors before we start moving.
-         */
-//        leftFront.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-//        rightFront.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-//        leftBack.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-//        rightBack.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
 
         // TODO: reverse motor directions if needed
         //   leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -302,7 +302,8 @@ public final class MecanumDrive {
 
         voltageSensor = hardwareMap.voltageSensor.iterator().next();
 
-        localizer = new TwoDeadWheelLocalizer(hardwareMap, lazyImu.get(), PARAMS.inPerTick, pose);
+        localizer = new PinpointLocalizer(hardwareMap, PARAMS.inPerTick, pose);
+//                new TwoDeadWheelLocalizer(hardwareMap, lazyImu.get(), PARAMS.inPerTick, pose);
 
         FlightRecorder.write("MECANUM_PARAMS", PARAMS);
     }

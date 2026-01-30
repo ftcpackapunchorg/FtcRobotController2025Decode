@@ -51,4 +51,16 @@ public final class TestServo {
 
     }
 
+    public void openForArtifact() {
+        rightIntakeFeeder.setPosition(0); // Right servo
+//        leftIntakeFeeder.setPosition(.7); // Left servo
+
+    }
+
+    public void blockArtifact() {
+        rightIntakeFeeder.setPosition(0.2); // Right servo
+//        leftIntakeFeeder.setPosition(.7); // Left servo
+
+    }
+
 }
