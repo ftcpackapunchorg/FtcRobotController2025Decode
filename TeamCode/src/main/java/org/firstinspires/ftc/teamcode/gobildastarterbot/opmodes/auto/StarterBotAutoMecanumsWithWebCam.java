@@ -34,6 +34,7 @@ package org.firstinspires.ftc.teamcode.gobildastarterbot.opmodes.auto;
 
 import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -62,7 +63,7 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
  */
 
 @Autonomous(name="StarterBotAutoMecanumsWithWebCam", group="StarterBot")
-//@Disabled
+@Disabled
 public class StarterBotAutoMecanumsWithWebCam extends OpMode
 {
 

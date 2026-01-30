@@ -5,7 +5,6 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
 
@@ -19,9 +18,9 @@ public class TuneLauncher extends LinearOpMode {
 
     int stepIndex = 1;
 
-    double highVelocity = 850;
+    double highVelocity = 1500;
 
-    double lowVelovity = 650;
+    double lowVelovity = 450;
 
     double curTargetVelocity = highVelocity;
 
@@ -33,7 +32,7 @@ public class TuneLauncher extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
 
         motor = hardwareMap.get(DcMotorEx.class, "launcher");
-        motor.setDirection(DcMotorSimple.Direction.FORWARD);
+//        motor.setDirection(DcMotorSimple.Direction.FORWARD);
         motor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         PIDFCoefficients pidfCoefficients = new PIDFCoefficients(0, 0, 0, 0);

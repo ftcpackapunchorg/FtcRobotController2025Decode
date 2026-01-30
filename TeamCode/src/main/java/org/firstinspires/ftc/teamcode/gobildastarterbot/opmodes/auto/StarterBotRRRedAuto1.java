@@ -63,6 +63,7 @@ import org.firstinspires.ftc.teamcode.gobildastarterbot.mechanicals.StarterBotLa
  */
 
 @Autonomous(name="StarterBotRRRedAuto1", group="StarterBot")
+@Disabled
 public class StarterBotRRRedAuto1 extends OpMode
 {
     MecanumDrive drive;

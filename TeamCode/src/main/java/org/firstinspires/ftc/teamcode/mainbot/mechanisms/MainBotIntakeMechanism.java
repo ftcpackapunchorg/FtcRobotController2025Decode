@@ -1,8 +1,6 @@
 package org.firstinspires.ftc.teamcode.mainbot.mechanisms;
 
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -12,14 +10,6 @@ import org.firstinspires.ftc.teamcode.mainbot.utils.MainBotConstants;
 public final class MainBotIntakeMechanism {
 
     public final DcMotorEx intake;
-
-//    private MainBotIntakeFeederMechanism mainBotIntakeFeederMechanism;
-
-    final double INTAKE_FEED_TIME_SECONDS = 10.0; //The feeder servos run this long when an intake is requested.
-
-//    final double MIN_INTAKE_POWER = 0.0;
-
-//    final double MAX_INTAKE_POWER = 1.0;
 
     /*
      * When we control our intake motor, we are using encoders. These allow the control system
@@ -32,12 +22,11 @@ public final class MainBotIntakeMechanism {
 
     final double INTAKE_STOP_SPEED = 0;
 
+    final double INTAKE_REVERSE_SPEED = 100;
+
     ElapsedTime intakeFeedTimer = new ElapsedTime();
 
     /** Auto related **/
-
-//    final double INTAKE_TIME = 3.0;
-//    final double TIME_BETWEEN_SHOTS = 2;
 
     /*
      * TECH TIP: State Machines
@@ -102,7 +91,6 @@ public final class MainBotIntakeMechanism {
 
         autoIntakeState = AutoIntakeState.IDLE;
 
-
         /*
          * Here we set our intake to the RUN_USING_ENCODER runmode.
          * If you notice that you have no control over the velocity of the motor, it just jumps
@@ -110,10 +98,14 @@ public final class MainBotIntakeMechanism {
          * into the port right beside the motor itself. And that the motors polarity is consistent
          * through any wiring.
          */
-        intake.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        intake.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        intake.setDirection(DcMotorEx.Direction.REVERSE);
+
+        intake.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+
+        intake.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+
+        intake.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
 
 //        intake.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 0, 0, 10));
 
@@ -138,11 +130,11 @@ public final class MainBotIntakeMechanism {
                 }
                 break;
             case INTAKE_IN_PROGRESS:
-                if (intakeFeedTimer.seconds() > INTAKE_FEED_TIME_SECONDS) {
+//                if (intakeFeedTimer.seconds() > INTAKE_FEED_TIME_SECONDS) {
                     intake.setVelocity(INTAKE_MIN_VELOCITY);
                     intakeState = IntakeState.COMPLETE;
 //                    cadBotIntakeFeederMechanism.stopIntakeFeeders();
-                }
+//                }
         }
     }
 
@@ -174,11 +166,11 @@ public final class MainBotIntakeMechanism {
                 }
                 break;
             case INTAKE_IN_PROGRESS:
-                if (autoIntakeFeederTimer.seconds() > INTAKE_FEED_TIME_SECONDS) {
+//                if (autoIntakeFeederTimer.seconds() > INTAKE_FEED_TIME_SECONDS) {
                     intake.setVelocity(INTAKE_MIN_VELOCITY);
                     autoIntakeState = AutoIntakeState.COMPLETE;
 //                    cadBotIntakeFeederMechanism.stopIntakeFeeders();
-                }
+//                }
 
         }
         return false;
@@ -200,6 +192,6 @@ public final class MainBotIntakeMechanism {
     public void reverseIntake() {
 
 //        mainBotIntakeFeederMechanism.stopIntakeFeeders();
-        intake.setVelocity(-1 * INTAKE_STOP_SPEED);
+        intake.setVelocity(-1 * INTAKE_REVERSE_SPEED);
     }
 }

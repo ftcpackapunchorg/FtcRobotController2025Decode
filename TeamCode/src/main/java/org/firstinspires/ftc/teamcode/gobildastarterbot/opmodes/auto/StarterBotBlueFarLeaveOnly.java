@@ -38,6 +38,7 @@ import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
@@ -64,6 +65,7 @@ import org.firstinspires.ftc.teamcode.utils.StarterBotConstants;
  */
 
 @Autonomous(name="StarterBotBlueFarLeaveOnly", group="StarterBot")
+@Disabled
 public class StarterBotBlueFarLeaveOnly extends OpMode
 {
     MecanumDrive drive;
