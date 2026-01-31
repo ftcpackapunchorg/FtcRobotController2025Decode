@@ -666,67 +666,67 @@ public final class MainBotMecanumDrive {
 
 
         // Pratt's logic -- Begin
-        double frontLeftPower = forward + strafe + rotate;
-        double backLeftPower = forward - strafe + rotate;
-        double frontRightPower = forward - strafe - rotate;
-        double backRightPower = forward + strafe - rotate;
-
-        double maxPower = 1.0;
-        double maxSpeed = 1.0;
-
-        maxPower = Math.max(maxPower, Math.abs(frontLeftPower));
-        maxPower = Math.max(maxPower, Math.abs(backLeftPower));
-        maxPower = Math.max(maxPower, Math.abs(frontRightPower));
-        maxPower = Math.max(maxPower, Math.abs(backRightPower));
-
-        telemetry.addData("maxSpeed : ", maxSpeed);
-        telemetry.addData("maxPower", maxPower);
-        telemetry.addData("turboSpeed", turboSpeed);
-        telemetry.addData("forward : ", forward);
-        telemetry.addData("strafe : ", strafe);
-        telemetry.addData("rotate : ", rotate);
-        telemetry.update();
-
-        leftFront.setPower(maxSpeed * (frontLeftPower / maxPower));
-        leftBack.setPower(maxSpeed * (backLeftPower / maxPower));
-        rightFront.setPower(maxSpeed * (frontRightPower / maxPower));
-        rightBack.setPower(maxSpeed * (backRightPower / maxPower));
+//        double frontLeftPower = forward + strafe + rotate;
+//        double backLeftPower = forward - strafe + rotate;
+//        double frontRightPower = forward - strafe - rotate;
+//        double backRightPower = forward + strafe - rotate;
+//
+//        double maxPower = 1.0;
+//        double maxSpeed = 1.0;
+//
+//        maxPower = Math.max(maxPower, Math.abs(frontLeftPower));
+//        maxPower = Math.max(maxPower, Math.abs(backLeftPower));
+//        maxPower = Math.max(maxPower, Math.abs(frontRightPower));
+//        maxPower = Math.max(maxPower, Math.abs(backRightPower));
+//
+//        telemetry.addData("maxSpeed : ", maxSpeed);
+//        telemetry.addData("maxPower", maxPower);
+//        telemetry.addData("turboSpeed", turboSpeed);
+//        telemetry.addData("forward : ", forward);
+//        telemetry.addData("strafe : ", strafe);
+//        telemetry.addData("rotate : ", rotate);
+//        telemetry.update();
+//
+//        leftFront.setPower(maxSpeed * (frontLeftPower / maxPower));
+//        leftBack.setPower(maxSpeed * (backLeftPower / maxPower));
+//        rightFront.setPower(maxSpeed * (frontRightPower / maxPower));
+//        rightBack.setPower(maxSpeed * (backRightPower / maxPower));
 
         // Pratt's logic -- End
 
 
 //        /** Original code **/
-//
-//        /* the denominator is the largest motor power (absolute value) or 1
-//         * This ensures all the powers maintain the same ratio,
-//         * but only if at least one is out of the range [-1, 1]
-//         */
-//        double speed = 2.5;
-//        if(turboSpeed > 0.1) {
-//            speed = 1.1;
-//        }
-//
-//        // Counteract imperfect strafing
-//        forward = forward * 1.1;
-//
-//        double denominator = Math.max(Math.abs(forward) + Math.abs(strafe) + Math.abs(rotate), speed);
-//
-//        telemetry.addData("speed : ", speed);
-//        telemetry.addData("denominator", denominator);
-//        telemetry.addData("forward : ", forward);
-//        telemetry.addData("strafe : ", strafe);
-//        telemetry.addData("rotate : ", rotate);
-////        telemetry.update();
-//
-//        leftFrontPower = (forward + strafe + rotate) / denominator;
-//        rightFrontPower = (forward - strafe - rotate) / denominator;
-//        leftBackPower = (forward - strafe + rotate) / denominator;
-//        rightBackPower = (forward + strafe - rotate) / denominator;
-//
-//        leftFront.setPower(leftFrontPower);
-//        rightFront.setPower(rightFrontPower);
-//        leftBack.setPower(leftBackPower);
-//        rightBack.setPower(rightBackPower);
+
+        /* the denominator is the largest motor power (absolute value) or 1
+         * This ensures all the powers maintain the same ratio,
+         * but only if at least one is out of the range [-1, 1]
+         */
+        double speed = 2.5;
+        if(turboSpeed > 0.1) {
+            speed = 1.1;
+        }
+
+        // Counteract imperfect strafing
+        forward = forward * 1.1;
+
+        double denominator = Math.max(Math.abs(forward) + Math.abs(strafe) + Math.abs(rotate), speed);
+
+        telemetry.addData("speed : ", speed);
+        telemetry.addData("denominator", denominator);
+        telemetry.addData("forward : ", forward);
+        telemetry.addData("strafe : ", strafe);
+        telemetry.addData("rotate : ", rotate);
+//        telemetry.update();
+
+        leftFrontPower = (forward + strafe + rotate) / denominator;
+        rightFrontPower = (forward - strafe - rotate) / denominator;
+        leftBackPower = (forward - strafe + rotate) / denominator;
+        rightBackPower = (forward + strafe - rotate) / denominator;
+
+        leftFront.setPower(leftFrontPower);
+        rightFront.setPower(rightFrontPower);
+        leftBack.setPower(leftBackPower);
+        rightBack.setPower(rightBackPower);
         /** Original Code End **/
 
         /** Old code for reference

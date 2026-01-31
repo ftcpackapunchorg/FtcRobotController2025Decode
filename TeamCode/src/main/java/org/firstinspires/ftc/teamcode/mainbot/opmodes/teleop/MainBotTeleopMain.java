@@ -39,7 +39,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotIntakeMechanism;
-import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotLaunchMechanism;
+import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotLaunchWithFeederMechanism;
 import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotMecanumDrive;
 import org.firstinspires.ftc.teamcode.mainbot.sensors.MainBotColorSensor;
 import org.firstinspires.ftc.teamcode.mainbot.sensors.MainBotDistanceSensor;
@@ -67,7 +67,7 @@ public class MainBotTeleopMain extends OpMode {
 
     MainBotMecanumDrive drive;
 
-    MainBotLaunchMechanism launchMechanism;
+    MainBotLaunchWithFeederMechanism launchMechanism;
 
     MainBotIntakeMechanism intakeMechanism;
 
@@ -75,9 +75,11 @@ public class MainBotTeleopMain extends OpMode {
     MainBotDistanceSensor rightDistanceSensor;
     MainBotSimpleLEDLight leftLED;
     MainBotSimpleLEDLight rightLED;
-    MainBotRGBLightIndicator firstRGBLightIndicator;
-    MainBotRGBLightIndicator secondRGBLightIndicator;
-    MainBotRGBLightIndicator thirdRGBLightIndicator;
+//    MainBotRGBLightIndicator firstRGBLightIndicator;
+//    MainBotRGBLightIndicator secondRGBLightIndicator;
+//    MainBotRGBLightIndicator thirdRGBLightIndicator;
+
+    MainBotRGBLightIndicator artifactIntakeIndicator, isArtifactAllowedIndicator;
 
     MainBotColorSensor intakeColorSensor = new MainBotColorSensor();
 
@@ -102,7 +104,7 @@ public class MainBotTeleopMain extends OpMode {
          */
         drive = new MainBotMecanumDrive(hardwareMap, initPose);
 
-        launchMechanism = new MainBotLaunchMechanism(hardwareMap, telemetry);
+        launchMechanism = new MainBotLaunchWithFeederMechanism(hardwareMap, telemetry, "Blue");
 
         intakeMechanism = new MainBotIntakeMechanism(hardwareMap, telemetry);
 
@@ -149,9 +151,11 @@ public class MainBotTeleopMain extends OpMode {
         // Initiate RGB Lights if configured
         try {
 
-            firstRGBLightIndicator.init(hardwareMap, MainBotConstants.FIRST_RGB_LIGHT_INDICATOR_NAME);
-            secondRGBLightIndicator.init(hardwareMap, MainBotConstants.SECOND_RGB_LIGHT_INDICATOR_NAME);
-            thirdRGBLightIndicator.init(hardwareMap, MainBotConstants.THIRD_RGB_LIGHT_INDICATOR_NAME);
+//            firstRGBLightIndicator.init(hardwareMap, MainBotConstants.FIRST_RGB_LIGHT_INDICATOR_NAME);
+//            secondRGBLightIndicator.init(hardwareMap, MainBotConstants.SECOND_RGB_LIGHT_INDICATOR_NAME);
+//            thirdRGBLightIndicator.init(hardwareMap, MainBotConstants.THIRD_RGB_LIGHT_INDICATOR_NAME);
+            artifactIntakeIndicator.init(hardwareMap, MainBotConstants.ARTIFACT_INTAKE_INDICATOR);
+            isArtifactAllowedIndicator.init(hardwareMap, MainBotConstants.ALLOW_ARTIFACT_SERVO_INDICATOR);
             enableRGBLights = true;
 
         } catch (Exception e) {
@@ -208,9 +212,11 @@ public class MainBotTeleopMain extends OpMode {
          */
         if (gamepad2.rightBumperWasPressed()) {
 //            launchMechanism.startLauncher();
-            launchMechanism.launch(true);
+//            launchMechanism.launch(true);
+            launchMechanism.launch(true, "FAR_ZONE");
         } else if(gamepad2.yWasReleased()) {
-            launchMechanism.startLauncherNearZone();
+//            launchMechanism.startLauncherNearZone();
+            launchMechanism.launch(true, "NEAR_ZONE");
         } else if (gamepad2.bWasPressed()) { // stop flywheel
             launchMechanism.stopLauncher();
         } else if(gamepad2.dpad_down) {
@@ -224,12 +230,19 @@ public class MainBotTeleopMain extends OpMode {
         if (gamepad2.x) {
             intakeMechanism.startIntake();
         } else if (gamepad2.a) {
-
             // Stop intake
             intakeMechanism.stopIntake();
         } else if (gamepad2.leftBumperWasPressed()) {
-
             intakeMechanism.reverseIntake();
+        } else if(gamepad2.dpad_right) {
+            launchMechanism.reverseLauncher();
+            intakeMechanism.startIntake();
+        }
+
+        if(gamepad2.right_trigger > 0.0) {
+            launchMechanism.blockArtifact();
+        } else if(gamepad2.left_trigger > 0.0) {
+            launchMechanism.allowArtifact();
         }
 
 //        intakeMechanism.startIntakeWithInput(gamepad2.right_trigger);
@@ -237,7 +250,7 @@ public class MainBotTeleopMain extends OpMode {
         /*
          * Now we call our "Launch" function.
          */
-        launchMechanism.launch(gamepad2.rightBumperWasPressed());
+//        launchMechanism.launch(gamepad2.rightBumperWasPressed(), "FAR_ZONE");
 
         /*
          * Now we call our "Intake" function.
@@ -258,31 +271,40 @@ public class MainBotTeleopMain extends OpMode {
 
         }
 
-        if(enableRGBLights) {
-
-            if(enableIntakeColorSensor) {
-
-                if(intakeColorSensor.getDetectedColor(telemetry).equals(MainBotColorSensor.DetectedColor.GREEN) ||
-                        intakeColorSensor.getDetectedColor(telemetry).equals(MainBotColorSensor.DetectedColor.PURPLE)) {
-
-                    if(noOfArtifactsInTheRobot == 0) {
-                        firstRGBLightIndicator.setRGBLightToGreen();
-                        noOfArtifactsInTheRobot++;
-                    } else if(noOfArtifactsInTheRobot == 1) {
-                        secondRGBLightIndicator.setRGBLightToGreen();
-                        noOfArtifactsInTheRobot++;
-                    } else if(noOfArtifactsInTheRobot == 2) {
-                        thirdRGBLightIndicator.setRGBLightToGreen();
-                        noOfArtifactsInTheRobot++;
-                    }
-                }
-            }
-        }
-
         if(enableIntakeColorSensor) {
 
             intakeColorSensor.getDetectedColor(telemetry);
 
+        }
+
+        if(enableRGBLights) {
+
+            if(enableIntakeColorSensor && (intakeColorSensor.getDetectedColor(telemetry).equals(MainBotColorSensor.DetectedColor.GREEN) ||
+                    intakeColorSensor.getDetectedColor(telemetry).equals(MainBotColorSensor.DetectedColor.PURPLE))) {
+
+                telemetry.addData("Detected color : ", intakeColorSensor.getDetectedColor(telemetry));
+
+                artifactIntakeIndicator.setRGBLightToGreen();
+
+//                    if(noOfArtifactsInTheRobot == 0) {
+//                        firstRGBLightIndicator.setRGBLightToGreen();
+//                        noOfArtifactsInTheRobot++;
+//                    } else if(noOfArtifactsInTheRobot == 1) {
+//                        secondRGBLightIndicator.setRGBLightToGreen();
+//                        noOfArtifactsInTheRobot++;
+//                    } else if(noOfArtifactsInTheRobot == 2) {
+//                        thirdRGBLightIndicator.setRGBLightToGreen();
+//                        noOfArtifactsInTheRobot++;
+//                    }
+            } else {
+                artifactIntakeIndicator.setRGBLightToWhite();
+            }
+
+            if(enableRGBLights && launchMechanism.isArtifactAllowedToFlow()) {
+                isArtifactAllowedIndicator.setRGBLightToGreen();
+            } else {
+                isArtifactAllowedIndicator.setRGBLightToRed();
+            }
         }
 
         /*

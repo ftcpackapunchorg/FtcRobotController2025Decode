@@ -35,6 +35,7 @@ package org.firstinspires.ftc.teamcode.gobildastarterbot.opmodes.auto;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
@@ -60,6 +61,7 @@ import org.firstinspires.ftc.teamcode.gobildastarterbot.mechanicals.StarterBotLa
  */
 
 @Autonomous(name="StarterBotAutoRawPath", group="StarterBot")
+@Disabled
 public class StarterBotAutoRawPath extends OpMode
 {
     MecanumDrive drive;

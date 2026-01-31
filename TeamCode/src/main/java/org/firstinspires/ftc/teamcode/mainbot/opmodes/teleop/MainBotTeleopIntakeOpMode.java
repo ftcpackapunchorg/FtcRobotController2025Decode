@@ -37,7 +37,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.prototypebot.mechanicals.PrototypeBotIntakeMechanism;
+import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotIntakeMechanism;
 import org.firstinspires.ftc.teamcode.utils.PrototypeBotConstants;
 
 /*
@@ -61,7 +61,7 @@ public class MainBotTeleopIntakeOpMode extends OpMode {
 
 //    PrototypeBotMecanumDrive drive;
 
-    PrototypeBotIntakeMechanism intakeMechanism;
+    MainBotIntakeMechanism intakeMechanism;
 
     double leftFrontPower;
     double rightFrontPower;
@@ -84,7 +84,7 @@ public class MainBotTeleopIntakeOpMode extends OpMode {
          */
 //        drive = new PrototypeBotMecanumDrive(hardwareMap, initPose);
 
-        intakeMechanism = new PrototypeBotIntakeMechanism(hardwareMap, telemetry);
+        intakeMechanism = new MainBotIntakeMechanism(hardwareMap, telemetry);
 
         /*
          * Tell the driver that initialization is complete.

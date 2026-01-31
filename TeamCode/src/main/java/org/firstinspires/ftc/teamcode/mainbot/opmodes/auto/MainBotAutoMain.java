@@ -35,12 +35,12 @@ package org.firstinspires.ftc.teamcode.mainbot.opmodes.auto;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotIntakeMechanism;
-import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotLaunchMechanism;
+import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotLaunchWithFeederMechanism;
 import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotMecanumDrive;
 
 
@@ -64,7 +64,7 @@ public class MainBotAutoMain extends OpMode
 {
     MainBotMecanumDrive drive;
 
-    MainBotLaunchMechanism launchMechanism;
+    MainBotLaunchWithFeederMechanism launchMechanism;
 
     MainBotIntakeMechanism intakeMechanism;
 
@@ -74,7 +74,10 @@ public class MainBotAutoMain extends OpMode
      * that each shot will score.
      */
 
-    int shotsToFire = 3; //The number of shots to fire in this auto.
+    int shotsToFire = 2; //The number of shots to fire in this auto.
+    int noOfArtifactsToIntake = 2;
+
+    ElapsedTime autoModeTimer = new ElapsedTime();
 
     double robotRotationAngle = 45;
 
@@ -100,8 +103,10 @@ public class MainBotAutoMain extends OpMode
         WAIT_FOR_LAUNCH,
         DRIVING_AWAY_FROM_GOAL,
         ROTATING,
-        DRIVING_OFF_LINE,
-        COMPLETE
+        DRIVE_TO_LEAVE_ZONE,
+        INTAKE_ARTIFACTS,
+        COMPLETE,
+        GO_TO_LAUNCH_ZONE;
     }
 
     private AutonomousState autonomousState;
@@ -133,7 +138,7 @@ public class MainBotAutoMain extends OpMode
         Pose2d initPose = new Pose2d(-43,43,0);
 
         drive = new MainBotMecanumDrive(hardwareMap,initPose);
-        launchMechanism = new MainBotLaunchMechanism(hardwareMap, telemetry);
+        launchMechanism = new MainBotLaunchWithFeederMechanism(hardwareMap, telemetry, alliance.name());
 
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
@@ -196,7 +201,7 @@ public class MainBotAutoMain extends OpMode
              * allowing it to cycle through and continue the process of launching the first ball.
              */
             case LAUNCH:
-                launchMechanism.launchForAuto(true);
+                launchMechanism.launchForAuto(true, drive.lazyImu.get().getRobotYawPitchRollAngles(), telemetry);
                 autonomousState = AutonomousState.WAIT_FOR_LAUNCH;
                 break;
 
@@ -212,16 +217,16 @@ public class MainBotAutoMain extends OpMode
                  * state on our state machine. Otherwise, we reset the encoders on our drive motors
                  * and move onto the next state.
                  */
-                if(launchMechanism.launchForAuto(false)) {
+                if(launchMechanism.launchForAuto(false, drive.lazyImu.get().getRobotYawPitchRollAngles(), telemetry)) {
                     shotsToFire -= 1;
                     if(shotsToFire > 0) {
                         autonomousState = AutonomousState.LAUNCH;
                     } else {
-                        drive.leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                        drive.rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                        drive.leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                        drive.rightBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                        launchMechanism.launcher.setVelocity(0);
+//                        drive.leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//                        drive.rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//                        drive.leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//                        drive.rightBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                        launchMechanism.stopLauncher();
                         autonomousState = AutonomousState.DRIVING_AWAY_FROM_GOAL;
                     }
                 }
@@ -233,13 +238,14 @@ public class MainBotAutoMain extends OpMode
                  * the robot has been within a tolerance of the target position for "holdSeconds."
                  * Once the function returns "true" we reset the encoders again and move on.
                  */
-                if(drive.driveForAutonomous(DRIVE_SPEED, -4, DistanceUnit.INCH, 1)){
-                    drive.leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    drive.rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    drive.leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    drive.rightBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//                if(drive.driveForAutonomous(DRIVE_SPEED, -4, DistanceUnit.INCH, 1)){
+////                    drive.leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+////                    drive.rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+////                    drive.leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//                    drive.rightBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     autonomousState = AutonomousState.ROTATING;
-                }
+//                }
+
                 break;
 
             case ROTATING:
@@ -250,18 +256,42 @@ public class MainBotAutoMain extends OpMode
                 }
 
                 if(drive.rotate(ROTATE_SPEED, robotRotationAngle, AngleUnit.DEGREES,1)){
-                    drive.leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    drive.rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    drive.leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    drive.rightBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    autonomousState = AutonomousState.DRIVING_OFF_LINE;
+//                    drive.leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//                    drive.rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//                    drive.leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//                    drive.rightBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    autonomousState = AutonomousState.DRIVE_TO_LEAVE_ZONE;
                 }
                 break;
 
-            case DRIVING_OFF_LINE:
+            case DRIVE_TO_LEAVE_ZONE:
                 if(drive.drive(DRIVE_SPEED, -26, DistanceUnit.INCH, 1)){
                     autonomousState = AutonomousState.COMPLETE;
                 }
+                break;
+
+            case INTAKE_ARTIFACTS:
+
+                if(noOfArtifactsToIntake > 0) {
+
+                    // If color sensor detects an artifact, reduce the noOfArtifactsToIntake by 1
+                    // Once the count is 0, then move to the launch zone
+
+                    // noOfArtifactsToIntake -= 1;
+
+                } else {
+                    autonomousState = AutonomousState.GO_TO_LAUNCH_ZONE;
+                }
+
+                break;
+
+            case GO_TO_LAUNCH_ZONE:
+
+                // Check the distance from the robot to the goal or based on the auto path
+                // Identify the launch zone
+                // go the nearest launch zone
+
+                autonomousState = AutonomousState.LAUNCH;
                 break;
         }
 

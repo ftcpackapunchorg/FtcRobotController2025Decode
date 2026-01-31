@@ -24,7 +24,7 @@ public final class MainBotLaunchMechanism {
      */
     final double LAUNCHER_TARGET_VELOCITY = 800;
     final double LAUNCHER_MIN_VELOCITY = 780;
-    final double LAUNCHER_REVERSE_VELOCITY = 150;
+    final double LAUNCHER_REVERSE_VELOCITY = 15;
 
     ElapsedTime feederTimer = new ElapsedTime();
 

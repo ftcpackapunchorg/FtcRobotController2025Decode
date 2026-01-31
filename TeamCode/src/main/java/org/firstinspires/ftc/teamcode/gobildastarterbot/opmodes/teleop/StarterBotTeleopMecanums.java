@@ -33,6 +33,7 @@
 package org.firstinspires.ftc.teamcode.gobildastarterbot.opmodes.teleop;
 
 import com.acmerobotics.roadrunner.Pose2d;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -55,7 +56,7 @@ import org.firstinspires.ftc.teamcode.gobildastarterbot.mechanicals.StarterBotLa
  */
 
 @TeleOp(name = "StarterBotTeleopMecanums", group = "StarterBot")
-//@Disabled
+@Disabled
 public class StarterBotTeleopMecanums extends OpMode {
     MecanumDrive drive;
 
