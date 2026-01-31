@@ -28,11 +28,11 @@ public final class MainBotLaunchWithFeederMechanism {
      * at. The minimum velocity is a threshold for determining when to fire.
      */
     final double LAUNCHER_TARGET_VELOCITY = 1060;
-    final double LAUNCHER_MIN_VELOCITY = 1060;
+    final double LAUNCHER_MIN_VELOCITY = 580;
     final double LAUNCHER_REVERSE_VELOCITY = 230;
 
     final double LAUNCHER_NEAR_ZONE_TARGET_VELOCITY = 860;
-    final double LAUNCHER_NEAR_ZONE_MIN_VELOCITY = 840;
+    final double LAUNCHER_NEAR_ZONE_MIN_VELOCITY = 400;
 
     final double LAUNCHER_STOP_VELOCITY = 0.0;
 
@@ -244,6 +244,10 @@ public final class MainBotLaunchWithFeederMechanism {
                             autoLaunchZone = "NEAR_ZONE";
                         }
                     }
+
+                    autoLaunchState = AutoLaunchState.PREPARE;
+                } else {
+                    autoLaunchState = AutoLaunchState.PREPARE;
                 }
                 break;
             case PREPARE:
