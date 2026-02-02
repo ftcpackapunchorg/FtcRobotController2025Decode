@@ -12,7 +12,7 @@ import org.firstinspires.ftc.teamcode.prototypebot.mechanicals.PrototypeBotIntak
 import java.lang.Math;
 
 @Autonomous(name = "MainBotAutoFarRed", group = "MainBot")
-public class MainbotAutoFarRed extends LinearOpMode {
+public class MainbotAutoCloseRed extends LinearOpMode {
 
     MecanumDrive drive;
     StarterBotLaunchMechanism launcher;
