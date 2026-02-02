@@ -27,11 +27,11 @@ public final class MainBotLaunchWithFeederMechanism {
      * velocity. Here we are setting the target, and minimum velocity that the launcher should run
      * at. The minimum velocity is a threshold for determining when to fire.
      */
-    final double LAUNCHER_TARGET_VELOCITY = 1060;
+    final double LAUNCHER_TARGET_VELOCITY = 800;
     final double LAUNCHER_MIN_VELOCITY = 580;
     final double LAUNCHER_REVERSE_VELOCITY = 230;
 
-    final double LAUNCHER_NEAR_ZONE_TARGET_VELOCITY = 860;
+    final double LAUNCHER_NEAR_ZONE_TARGET_VELOCITY = 600;
     final double LAUNCHER_NEAR_ZONE_MIN_VELOCITY = 400;
 
     final double LAUNCHER_STOP_VELOCITY = 0.0;
@@ -161,7 +161,7 @@ public final class MainBotLaunchWithFeederMechanism {
                 launcher.setVelocity(targetVelocity);
                 if (launcher.getVelocity() > minVeliocity) {
                     launchState = LaunchState.LAUNCHING;
-                    feederMechanism.allowArtifact();
+//                    feederMechanism.allowArtifact();
                 }
                 break;
             case LAUNCH:
@@ -170,7 +170,7 @@ public final class MainBotLaunchWithFeederMechanism {
             case LAUNCHING:
 //                if (feederTimer.seconds() > FEED_TIME_SECONDS) {
                     launchState = LaunchState.IDLE;
-                    feederMechanism.blockArtifact();
+//                    feederMechanism.blockArtifact();
 //                }
                 break;
         }
@@ -326,7 +326,7 @@ public final class MainBotLaunchWithFeederMechanism {
         }
     }
 
-    public boolean isArtifactAllowedToFlow() {
-        return feederMechanism.isArtifactAllowedToFlow();
+    public boolean isArtifactAllowedToFlow(Telemetry telemetry) {
+        return feederMechanism.isArtifactAllowedToFlow(telemetry);
     }
 }

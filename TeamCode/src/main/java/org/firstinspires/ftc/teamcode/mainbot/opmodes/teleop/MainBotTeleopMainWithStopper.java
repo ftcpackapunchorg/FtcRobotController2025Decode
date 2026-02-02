@@ -39,7 +39,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotIntakeMechanism;
-import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotLaunchMechanism;
+import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotLaunchWithFeederMechanism;
 import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotMecanumDrive;
 import org.firstinspires.ftc.teamcode.mainbot.sensors.MainBotColorSensor;
 import org.firstinspires.ftc.teamcode.mainbot.sensors.MainBotDistanceSensor;
@@ -62,12 +62,12 @@ import org.firstinspires.ftc.teamcode.mainbot.utils.MainBotConstants;
  * we will also need to adjust the "PIDF" coefficients with some that are a better fit for our application.
  */
 
-@TeleOp(name = "MainBot Teleop Main", group = "MainBot")
-public class MainBotTeleopMain extends OpMode {
+@TeleOp(name = "MainBot Teleop Main With Stopper", group = "MainBot")
+public class MainBotTeleopMainWithStopper extends OpMode {
 
     MainBotMecanumDrive drive;
 
-    MainBotLaunchMechanism launchMechanism;
+    MainBotLaunchWithFeederMechanism launchMechanism;
 
     MainBotIntakeMechanism intakeMechanism;
 
@@ -89,6 +89,8 @@ public class MainBotTeleopMain extends OpMode {
     boolean enableIntakeColorSensor;
     int noOfArtifactsInTheRobot = 0;
 
+    boolean isStopperBlockingArtifact = true;
+
     /*
      * Code to run ONCE when the driver hits INIT
      */
@@ -104,7 +106,7 @@ public class MainBotTeleopMain extends OpMode {
          */
         drive = new MainBotMecanumDrive(hardwareMap, initPose);
 
-        launchMechanism = new MainBotLaunchMechanism(hardwareMap, telemetry, "Blue");
+        launchMechanism = new MainBotLaunchWithFeederMechanism(hardwareMap, telemetry, "Blue");
 
         intakeMechanism = new MainBotIntakeMechanism(hardwareMap, telemetry);
 
@@ -150,6 +152,9 @@ public class MainBotTeleopMain extends OpMode {
 
         // Initiate RGB Lights if configured
         try {
+
+            artifactIntakeIndicator = new MainBotRGBLightIndicator();
+            isArtifactAllowedIndicator = new MainBotRGBLightIndicator();
 
 //            firstRGBLightIndicator.init(hardwareMap, MainBotConstants.FIRST_RGB_LIGHT_INDICATOR_NAME);
 //            secondRGBLightIndicator.init(hardwareMap, MainBotConstants.SECOND_RGB_LIGHT_INDICATOR_NAME);
@@ -239,11 +244,13 @@ public class MainBotTeleopMain extends OpMode {
             intakeMechanism.startIntake();
         }
 
-//        if(gamepad2.right_trigger > 0.0) {
-//            launchMechanism.blockArtifact();
-//        } else if(gamepad2.left_trigger > 0.0) {
-//            launchMechanism.allowArtifact();
-//        }
+        if(gamepad2.right_trigger > 0.0) {
+            launchMechanism.blockArtifact();
+            isStopperBlockingArtifact = true;
+        } else if(gamepad2.left_trigger > 0.0) {
+            launchMechanism.allowArtifact();
+            isStopperBlockingArtifact = false;
+        }
 
 //        intakeMechanism.startIntakeWithInput(gamepad2.right_trigger);
 
@@ -282,10 +289,10 @@ public class MainBotTeleopMain extends OpMode {
             if(enableIntakeColorSensor && (intakeColorSensor.getDetectedColor(telemetry).equals(MainBotColorSensor.DetectedColor.GREEN) ||
                     intakeColorSensor.getDetectedColor(telemetry).equals(MainBotColorSensor.DetectedColor.PURPLE))) {
 
-//            if(intakeColorSensor.getDetectedColor(telemetry) <= 4) {
-
                 telemetry.addData("Detected color : ", intakeColorSensor.getDetectedColor(telemetry));
 
+//            if(intakeColorSensor.getDetectedColor(telemetry) <= 4) {
+//
 //                telemetry.addData("Distance : ", intakeColorSensor.getDetectedColor(telemetry));
 
                 artifactIntakeIndicator.setRGBLightToGreen();
@@ -303,6 +310,12 @@ public class MainBotTeleopMain extends OpMode {
             } else {
                 artifactIntakeIndicator.setRGBLightToWhite();
             }
+
+            if(enableRGBLights && isStopperBlockingArtifact) {
+                isArtifactAllowedIndicator.setRGBLightToRed();
+            } else if(enableRGBLights && !isStopperBlockingArtifact){
+                isArtifactAllowedIndicator.setRGBLightToGreen();
+            }
         }
 
         /*
@@ -313,6 +326,8 @@ public class MainBotTeleopMain extends OpMode {
 
         telemetry.addData("Intake State", intakeMechanism.getIntakeState());
         telemetry.addData("Intake MotorSpeed", intakeMechanism.intake.getPower());
+
+        telemetry.addData("Stopper Blocking Artifact?", isStopperBlockingArtifact);
 //        telemetry.update();
 
     }

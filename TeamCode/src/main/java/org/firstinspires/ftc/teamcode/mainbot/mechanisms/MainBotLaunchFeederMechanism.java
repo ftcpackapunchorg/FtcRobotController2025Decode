@@ -14,7 +14,7 @@ public final class MainBotLaunchFeederMechanism {
 
     private double ALLOW_ARTIFACT_POSITION = 0.1;
 
-    private double BLOCK_ARTIFACT_POSITION = 0.4;
+    private double BLOCK_ARTIFACT_POSITION = 0.45;
 
     public MainBotLaunchFeederMechanism(HardwareMap hardwareMap, Telemetry telemetry) {
 
@@ -36,7 +36,10 @@ public final class MainBotLaunchFeederMechanism {
         feederServo.setPosition(ALLOW_ARTIFACT_POSITION);
     }
 
-    public boolean isArtifactAllowedToFlow() {
+    public boolean isArtifactAllowedToFlow(Telemetry telemetry) {
+
+        telemetry.addData("Stopper position : ", feederServo.getPosition());
+
         if(feederServo.getPosition() <= ALLOW_ARTIFACT_POSITION) {
 
             return true;

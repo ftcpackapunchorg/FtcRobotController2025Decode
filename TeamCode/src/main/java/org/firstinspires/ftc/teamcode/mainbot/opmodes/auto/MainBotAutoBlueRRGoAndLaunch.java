@@ -28,7 +28,7 @@ public class MainBotAutoBlueRRGoAndLaunch extends LinearOpMode {
     public void runOpMode() {
 
         drive = new MecanumDrive(hardwareMap, startPose);
-        launcher = new MainBotLaunchMechanism(hardwareMap, telemetry);
+        launcher = new MainBotLaunchMechanism(hardwareMap, telemetry, "Blue");
         intake = new MainBotIntakeMechanism(hardwareMap, telemetry);
 
         waitForStart();

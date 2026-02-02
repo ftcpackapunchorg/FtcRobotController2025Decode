@@ -4,26 +4,24 @@ package org.firstinspires.ftc.teamcode.testbench.testOpModes;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
-import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.gobildastarterbot.mechanicals.StarterBotFeederMechanism;
 import org.firstinspires.ftc.teamcode.gobildastarterbot.mechanicals.StarterBotLaunchMechanism;
+import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotMecanumDrive;
 import org.firstinspires.ftc.teamcode.utils.StarterBotConstants;
 
 
 @TeleOp(name="TestLimeLightAprilTagOpMode", group="TestBench")
-@Disabled
 public class TestLimeLightAprilTagOpMode extends OpMode {
     double power = 1;
 
     private Limelight3A limelight;
 
-    MecanumDrive drive;
+    MainBotMecanumDrive drive;
 
     StarterBotLaunchMechanism launchMechanism;
 
@@ -49,10 +47,10 @@ public class TestLimeLightAprilTagOpMode extends OpMode {
 
         Pose2d initPose = new Pose2d(StarterBotConstants.BLUE_INIT_POSE_X,StarterBotConstants.BLUE_INIT_POSE_Y, Math.toRadians(StarterBotConstants.BLUE_INIT_POSE_HEADING_DEGREES));
 
-        drive = new MecanumDrive(hardwareMap, initPose);
+        drive = new MainBotMecanumDrive(hardwareMap, initPose);
 
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
-        limelight.pipelineSwitch(3); // 0 is purple artifact, 1 is green artifact. // 2 - April tag 20 (Blue) // 3 - April tag 24 (Red)
+        limelight.pipelineSwitch(2); // 0 is purple artifact, 1 is green artifact. // 2 - April tag 20 (Blue) // 3 - April tag 24 (Red)
 
         /*
          * Tell the driver that initialization is complete.
