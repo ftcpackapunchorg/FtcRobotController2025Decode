@@ -6,8 +6,8 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.MecanumDrive;
-import org.firstinspires.ftc.teamcode.gobildastarterbot.mechanicals.StarterBotLaunchMechanism;
-import org.firstinspires.ftc.teamcode.prototypebot.mechanicals.PrototypeBotIntakeMechanism;
+import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotIntakeMechanism;
+import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotLaunchMechanism;
 
 import java.lang.Math;
 
@@ -15,8 +15,8 @@ import java.lang.Math;
 public class MainBotAutoWithIntakePath extends LinearOpMode {
 
     MecanumDrive drive;
-    StarterBotLaunchMechanism launcher;
-    PrototypeBotIntakeMechanism intake;
+    MainBotLaunchMechanism launcher;
+    MainBotIntakeMechanism intake;
 
     /* ---------------- POSES ---------------- */
     Pose2d startPose = new Pose2d(-48, -48, Math.toRadians(-135));
@@ -26,8 +26,8 @@ public class MainBotAutoWithIntakePath extends LinearOpMode {
     public void runOpMode() {
 
         drive = new MecanumDrive(hardwareMap, startPose);
-        launcher = new StarterBotLaunchMechanism(hardwareMap, telemetry);
-        intake = new PrototypeBotIntakeMechanism(hardwareMap, telemetry);
+        launcher = new MainBotLaunchMechanism(hardwareMap, telemetry);
+        intake = new MainBotIntakeMechanism(hardwareMap, telemetry);
 
         waitForStart();
         if (isStopRequested()) return;
@@ -38,16 +38,18 @@ public class MainBotAutoWithIntakePath extends LinearOpMode {
                         .waitSeconds(3)
                         .build()
         );
-        intake.startIntake();
-        fireLauncher();
-        intake.stopIntake();
+
+//        intake.startIntake();
+//        fireLauncher();
+//        intake.stopIntake();
+
         Actions.runBlocking(
                 drive.actionBuilder(shootPose)
                         .strafeToLinearHeading(new Vector2d(-11.8, -23), Math.toRadians(-90))
                         .build()
         );
 
-        intake.startIntake();
+//        intake.startIntake();
 
 
         Actions.runBlocking(drive.actionBuilder(new Pose2d(-11.8, -23, Math.toRadians(-90)))
@@ -55,7 +57,7 @@ public class MainBotAutoWithIntakePath extends LinearOpMode {
                         .build()
         );
 
-        intake.stopIntake();
+//        intake.stopIntake();
 
 
         Actions.runBlocking(
@@ -65,9 +67,9 @@ public class MainBotAutoWithIntakePath extends LinearOpMode {
                         .build()
         );
 
-        intake.startIntake();
-        fireLauncher();
-        intake.stopIntake();
+//        intake.startIntake();
+//        fireLauncher();
+//        intake.stopIntake();
 
         Actions.runBlocking(
                 drive.actionBuilder(new Pose2d(-40, -30, Math.toRadians(-135)))
@@ -75,7 +77,7 @@ public class MainBotAutoWithIntakePath extends LinearOpMode {
                         .build()
         );
 
-        intake.startIntake();
+//        intake.startIntake();
 
 
         Actions.runBlocking(
@@ -84,7 +86,7 @@ public class MainBotAutoWithIntakePath extends LinearOpMode {
                         .build()
         );
 
-        intake.stopIntake();
+//        intake.stopIntake();
 
         Actions.runBlocking(
                 drive.actionBuilder(new Pose2d(11.5, -51, Math.toRadians(-90)))
@@ -95,9 +97,9 @@ public class MainBotAutoWithIntakePath extends LinearOpMode {
                         .build()
         );
 
-        intake.startIntake();
-        fireLauncher();
-        intake.stopIntake();
+//        intake.startIntake();
+//        fireLauncher();
+//        intake.stopIntake();
 
         Actions.runBlocking(
                 drive.actionBuilder(new Pose2d(-40, -30, Math.toRadians(-135)))
