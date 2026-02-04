@@ -5,17 +5,17 @@ import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotIntakeMechanism;
 import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotLaunchMechanism;
+import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotMecanumDrive;
 
 import java.lang.Math;
 
-@Autonomous(name = "MainBotNoIntakeFarSide", group = "MainBot")
-public class MainBotNoIntakeFarSideRed extends LinearOpMode {
+@Autonomous(name = "MainBotNoIntakeNearSideRed", group = "MainBot")
+public class MainBotNoIntakeNearSideRed extends LinearOpMode {
 
     /* ---------------- MECHANISMS ---------------- */
-    MecanumDrive drive;
+    MainBotMecanumDrive drive;
     MainBotLaunchMechanism launcher;
     MainBotIntakeMechanism intake;
 
@@ -29,7 +29,7 @@ public class MainBotNoIntakeFarSideRed extends LinearOpMode {
     @Override
     public void runOpMode() {
 
-        drive = new MecanumDrive(hardwareMap, startPose);
+        drive = new MainBotMecanumDrive(hardwareMap, startPose);
         launcher = new MainBotLaunchMechanism(hardwareMap, telemetry, "Red");
         intake = new MainBotIntakeMechanism(hardwareMap, telemetry);
 
