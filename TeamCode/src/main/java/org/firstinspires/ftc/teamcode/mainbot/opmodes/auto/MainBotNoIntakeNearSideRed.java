@@ -51,7 +51,7 @@ public class MainBotNoIntakeNearSideRed extends LinearOpMode {
 
         /* ---------------- FIRST SHOT ---------------- */
         intake.startIntake();
-        fireLauncher();
+        fireLauncher("NEAR_ZONE");
         intake.stopIntake();
 
         /* =====================================================
@@ -115,9 +115,9 @@ public class MainBotNoIntakeNearSideRed extends LinearOpMode {
      * HELPER METHODS
      * ===================================================== */
 
-    private void fireLauncher() {
-        launcher.launchForAuto(true);
-        while (opModeIsActive() && !launcher.launchForAuto(false)) {
+    private void fireLauncher(String launchZone) {
+        launcher.launchForAuto(true, launchZone, intake, telemetry);
+        while (opModeIsActive() && !launcher.launchForAuto(false, launchZone, intake, telemetry)) {
             idle();
         }
         launcher.stopLauncher();

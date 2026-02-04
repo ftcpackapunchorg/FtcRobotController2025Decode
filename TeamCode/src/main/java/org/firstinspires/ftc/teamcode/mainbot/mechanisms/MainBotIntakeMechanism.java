@@ -1,5 +1,9 @@
 package org.firstinspires.ftc.teamcode.mainbot.mechanisms;
 
+import androidx.annotation.NonNull;
+
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.acmerobotics.roadrunner.Action;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -194,4 +198,31 @@ public final class MainBotIntakeMechanism {
 //        mainBotIntakeFeederMechanism.stopIntakeFeeders();
         intake.setVelocity(-1 * INTAKE_REVERSE_SPEED);
     }
+
+    public class StartIntake implements Action {
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            stopIntake();
+            return false;
+        }
+    }
+
+    public Action startIntakeAction() {
+        return new StartIntake();
+    }
+
+    public class StopIntake implements Action {
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            stopIntake();
+            return false;
+        }
+    }
+
+    public Action stopIntakeAction() {
+        return new StopIntake();
+    }
+
 }
