@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.mainbot.mechanisms;
 
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -16,6 +15,10 @@ public final class MainBotLaunchMechanism {
     final double STOP_SPEED = 0.0; //We send this power to the servos when we want them to stop.
     final double FULL_SPEED = 1.0;
 
+    private double targetVelocity;
+    private double minVeliocity;
+
+
     /*
      * When we control our launcher motor, we are using encoders. These allow the control system
      * to read the current speed of the motor and apply more or less power to keep it at a constant
@@ -24,7 +27,10 @@ public final class MainBotLaunchMechanism {
      */
     final double LAUNCHER_TARGET_VELOCITY = 800;
     final double LAUNCHER_MIN_VELOCITY = 780;
-    final double LAUNCHER_REVERSE_VELOCITY = 15;
+    final double LAUNCHER_REVERSE_VELOCITY = 150;
+
+    final double LAUNCHER_NEAR_ZONE_TARGET_VELOCITY = 600;
+    final double LAUNCHER_NEAR_ZONE_MIN_VELOCITY = 400;
 
     ElapsedTime feederTimer = new ElapsedTime();
 
@@ -83,7 +89,7 @@ public final class MainBotLaunchMechanism {
 
 //    MainBotLaunchFeederMechanism feederMechanism;
 
-    public MainBotLaunchMechanism(HardwareMap hardwareMap, Telemetry telemetry) {
+    public MainBotLaunchMechanism(HardwareMap hardwareMap, Telemetry telemetry, String allianceName) {
 
         launcher = hardwareMap.get(DcMotorEx.class, MainBotConstants.LAUNCHER_ONE_TO_ONE_RATIO_MOTOR_NAME);
 
@@ -104,12 +110,12 @@ public final class MainBotLaunchMechanism {
 
 //        launcher.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 0, 0, 10));
 
-        launcher.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(60.1060, 0, 0, 14.3960));
+//        launcher.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(60.1060, 0, 0, 14.3960));
 
 //        feederMechanism = new MainBotLaunchFeederMechanism(hardwareMap, telemetry);
     }
 
-    public void launch(boolean shotRequested) {
+    public void launch(boolean shotRequested, String launchZone) {
         switch (launchState) {
             case IDLE:
                 if (shotRequested) {
@@ -117,9 +123,17 @@ public final class MainBotLaunchMechanism {
                 }
                 break;
             case SPIN_UP:
-                launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
-                if (launcher.getVelocity() > LAUNCHER_MIN_VELOCITY) {
-                    launchState = LaunchState.LAUNCH;
+                if("FAR_ZONE".equals(launchZone)) {
+                    targetVelocity = LAUNCHER_TARGET_VELOCITY;
+                    minVeliocity = LAUNCHER_MIN_VELOCITY;
+                } else if("NEAR_ZONE".equals(launchZone)) {
+                    targetVelocity = LAUNCHER_NEAR_ZONE_TARGET_VELOCITY;
+                    minVeliocity = LAUNCHER_NEAR_ZONE_MIN_VELOCITY;
+                }
+                launcher.setVelocity(targetVelocity);
+                if (launcher.getVelocity() > minVeliocity) {
+                    launchState = MainBotLaunchMechanism.LaunchState.LAUNCHING;
+
                 }
                 break;
             case LAUNCH:

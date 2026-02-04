@@ -12,6 +12,8 @@ public class MainBotColorSensor {
 
     private NormalizedColorSensor colorSensor;
 
+//    private DistanceSensor colorSensor;
+
     public enum DetectedColor {
 
         PURPLE,
@@ -30,7 +32,15 @@ public class MainBotColorSensor {
         colorSensor = hardwareMap.get(NormalizedColorSensor.class, sensorName);
         colorSensor.setGain(4); // Starts with a value of 1
 
+//        colorSensor = hardwareMap.get(DistanceSensor.class, sensorName);
+
     }
+
+//    public double getDetectedColor(Telemetry telemetry) {
+//
+//        return colorSensor.getDistance(DistanceUnit.CM);
+//
+//    }
 
     public DetectedColor getDetectedColor(Telemetry telemetry) {
 
@@ -41,9 +51,9 @@ public class MainBotColorSensor {
         float normRed, normGreen, normBlue;
 
         //Determining the amount of red, green, and blue
-        telemetry.addData("Red", "%.3f", colors.red);
-        telemetry.addData("Green", "%.3f", colors.green);
-        telemetry.addData("Blue", "%.3f", colors.blue);
+//        telemetry.addData("Red", "%.3f", colors.red);
+//        telemetry.addData("Green", "%.3f", colors.green);
+//        telemetry.addData("Blue", "%.3f", colors.blue);
 
         //Determining HSV and alpha
         telemetry.addData("Hue", JavaUtil.colorToHue(colors.toColor()));
@@ -75,7 +85,7 @@ public class MainBotColorSensor {
             telemetry.addData("Color", "Yellow");
             detectedColor = DetectedColor.YELLOW;
         }
-        else if (hue < 150){
+        else if (hue < 175){
             telemetry.addData("Color", "Green");
             detectedColor = DetectedColor.GREEN;
         }
@@ -89,12 +99,11 @@ public class MainBotColorSensor {
         }
         else{
             telemetry.addData("Color", "Red");
-            detectedColor = DetectedColor.RED;
+            detectedColor = DetectedColor.UNKNOWN;
         }
 //        telemetry.update();
 
         return detectedColor;
 
     }
-
 }

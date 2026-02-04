@@ -134,7 +134,7 @@ public class MainBotAutoMain extends OpMode
          * Later in our code, we will progress through the state machine by moving to other enum members.
          * We do the same for our launcher state machine, setting it to IDLE before we use it later.
          */
-        autonomousState = AutonomousState.LAUNCH;
+        autonomousState = AutonomousState.GO_TO_LAUNCH_ZONE;
         Pose2d initPose = new Pose2d(-43,43,0);
 
         drive = new MainBotMecanumDrive(hardwareMap,initPose);

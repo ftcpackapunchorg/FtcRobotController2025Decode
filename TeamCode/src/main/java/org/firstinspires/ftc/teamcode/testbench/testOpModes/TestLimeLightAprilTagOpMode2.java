@@ -2,10 +2,11 @@ package org.firstinspires.ftc.teamcode.testbench.testOpModes;
 
 
 import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
+import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -20,7 +21,6 @@ import java.util.List;
 
 
 @TeleOp(name="TestLimeLightAprilTagOpMode2", group="TestBench")
-@Disabled
 public class TestLimeLightAprilTagOpMode2 extends OpMode {
     double power = 1;
 
@@ -52,16 +52,28 @@ public class TestLimeLightAprilTagOpMode2 extends OpMode {
 
         Pose2d initPose = new Pose2d(StarterBotConstants.BLUE_INIT_POSE_X,StarterBotConstants.BLUE_INIT_POSE_Y, Math.toRadians(StarterBotConstants.BLUE_INIT_POSE_HEADING_DEGREES));
 
+        Pose2d currentPoseFromAprilTag = null;
+
         drive = new MainBotMecanumDrive(hardwareMap, initPose);
 
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
         limelight.pipelineSwitch(4); // 0 is purple artifact, 1 is green artifact. // 2 - April tag 20 (Blue) // 3 - April tag 24 (Red) // 4 - April Tag Multiple 19 - 24
+
+//        TrajectoryActionBuilder goToNearLaunchZone = createActionForLaunchZoneNear(currentPoseFromAprilTag);
 
         /*
          * Tell the driver that initialization is complete.
          */
         telemetry.addData("Status", "Initialized");
 
+    }
+
+    private TrajectoryActionBuilder createActionForLaunchZoneNear(Pose2d currentPoseFromAprilTag) {
+
+        TrajectoryActionBuilder goToLaunchZoneNear = drive.actionBuilder(currentPoseFromAprilTag)
+                .strafeToLinearHeading(new Vector2d(-20, -20), Math.toRadians(-135));
+
+        return goToLaunchZoneNear;
     }
 
     @Override
@@ -112,24 +124,31 @@ public class TestLimeLightAprilTagOpMode2 extends OpMode {
             double currentPositionY = fiducial.getRobotPoseFieldSpace().getPosition().y;
             double currentPositionAngleInDegrees = fiducial.getRobotPoseFieldSpace().getOrientation().getYaw(AngleUnit.DEGREES);
 
-            Pose2d currRobotPose = new Pose2d(currentPositionX, currentPositionY, Math.toRadians(currentPositionAngleInDegrees));
+            Pose2d currRobotPose = new Pose2d(currentPositionX * 39.3701, currentPositionY * 39.3701, Math.toRadians(currentPositionAngleInDegrees));
 
             telemetry.addData("Current Position X : ", currentPositionX);
             telemetry.addData("Current Position Y : ", currentPositionY);
+            telemetry.addData("Current Position X Inches : ", currentPositionX * 39.3701);
+            telemetry.addData("Current Position Y Inches : ", currentPositionY * 39.3701);
             telemetry.addData("Current Position Angle In Degrees : ", currentPositionAngleInDegrees);
-            telemetry.update();
+//            telemetry.update();
 
             double robotFromTargetPosePosX = fiducial.getRobotPoseTargetSpace().getPosition().x;
             double robotFromTargetPosePosY = fiducial.getRobotPoseTargetSpace().getPosition().y;
             double robotFromTargetPosePosAngleInDegrees = fiducial.getRobotPoseTargetSpace().getOrientation().getYaw(AngleUnit.DEGREES);
 
-            Pose2d robotFromTargetPose = new Pose2d(robotFromTargetPosePosX, robotFromTargetPosePosY, Math.toRadians(robotFromTargetPosePosAngleInDegrees));
+            Pose2d robotFromTargetPose = new Pose2d(robotFromTargetPosePosX * 39.3701, robotFromTargetPosePosY * 39.3701, Math.toRadians(robotFromTargetPosePosAngleInDegrees));
 
             telemetry.addData("Robot Position From Target X : ", robotFromTargetPosePosX);
             telemetry.addData("Robot Position From Target Y : ", robotFromTargetPosePosY);
+            telemetry.addData("Robot Position From Target X Inches : ", robotFromTargetPosePosX * 39.3701);
+            telemetry.addData("Robot Position From Target Y Inches : ", robotFromTargetPosePosY * 39.3701);
             telemetry.addData("Robot Position From Target Angle In Degrees : ", robotFromTargetPosePosAngleInDegrees);
             telemetry.update();
 
+            Pose2d targetPose = new Pose2d(-20, -20, Math.toRadians(-135));
+
+//            Actions.runBlocking(createActionForLaunchZoneNear(currRobotPose).build());
 
         }
 

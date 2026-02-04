@@ -1,22 +1,21 @@
 package org.firstinspires.ftc.teamcode.mainbot.opmodes.auto;
 
-import com.acmerobotics.roadrunner.*;
+import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.MecanumDrive;
-import org.firstinspires.ftc.teamcode.gobildastarterbot.mechanicals.StarterBotLaunchMechanism;
-import org.firstinspires.ftc.teamcode.prototypebot.mechanicals.PrototypeBotIntakeMechanism;
-
-import java.lang.Math;
+import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotIntakeMechanism;
+import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotLaunchMechanism;
 
 @Autonomous(name = "MainBotAutoBlueRRGoAndLaunch", group = "MainBot")
 public class MainBotAutoBlueRRGoAndLaunch extends LinearOpMode {
 
     MecanumDrive drive;
-    StarterBotLaunchMechanism launcher;
-    PrototypeBotIntakeMechanism intake;
+    MainBotLaunchMechanism launcher;
+    MainBotIntakeMechanism intake;
 
     /* ---------------- POSES ---------------- */
     Pose2d startPose = new Pose2d(60, -12, Math.toRadians(180));
@@ -29,8 +28,8 @@ public class MainBotAutoBlueRRGoAndLaunch extends LinearOpMode {
     public void runOpMode() {
 
         drive = new MecanumDrive(hardwareMap, startPose);
-        launcher = new StarterBotLaunchMechanism(hardwareMap, telemetry);
-        intake = new PrototypeBotIntakeMechanism(hardwareMap, telemetry);
+        launcher = new MainBotLaunchMechanism(hardwareMap, telemetry);
+        intake = new MainBotIntakeMechanism(hardwareMap, telemetry);
 
         waitForStart();
         if (isStopRequested()) return;
@@ -46,19 +45,24 @@ public class MainBotAutoBlueRRGoAndLaunch extends LinearOpMode {
                         .build()
         );
 
+        intake.startIntake();
         fireLauncher();
-
+        intake.stopIntake();
         /* =========================================================
          * LEFT INTAKE
          * ========================================================= */
         Actions.runBlocking(
                 drive.actionBuilder(shootPose)
-                        .strafeTo(new Vector2d(-13, -54))
+                        .strafeTo(new Vector2d(-13, -34))
                         .build()
         );
 
         intake.startIntake();
-     //   sleep(700);
+//        Actions.runBlocking(
+//                drive.actionBuilder(new Pose2d(-13,-34,Math.toRadians(180)))
+//                        .strafeTo(new Vector2d(-13, -54))
+//                        .build()
+//        );
         intake.stopIntake();
 
         Actions.runBlocking(
@@ -68,8 +72,9 @@ public class MainBotAutoBlueRRGoAndLaunch extends LinearOpMode {
                         .turn(Math.toRadians(-45))
                         .build()
         );
-
+        intake.startIntake();
         fireLauncher();
+        intake.stopIntake();
 
         /* =========================================================
          * RIGHT INTAKE
@@ -92,8 +97,9 @@ public class MainBotAutoBlueRRGoAndLaunch extends LinearOpMode {
                         .turn(Math.toRadians(-45))
                         .build()
         );
-
+        intake.startIntake();
         fireLauncher();
+        intake.stopIntake();
 
         /* =========================================================
          * PARK
