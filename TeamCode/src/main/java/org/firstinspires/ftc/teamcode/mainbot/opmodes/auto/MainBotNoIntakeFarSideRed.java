@@ -30,7 +30,7 @@ public class MainBotNoIntakeFarSideRed extends LinearOpMode {
     public void runOpMode() {
 
         drive = new MecanumDrive(hardwareMap, startPose);
-        launcher = new MainBotLaunchMechanism(hardwareMap, telemetry);
+        launcher = new MainBotLaunchMechanism(hardwareMap, telemetry, "Red");
         intake = new MainBotIntakeMechanism(hardwareMap, telemetry);
 
         telemetry.addData("Status", "Initialized");
