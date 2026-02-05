@@ -11,8 +11,8 @@ import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotMecanumDrive;
 
 import java.lang.Math;
 
-@Autonomous(name = "MainBotNoIntakeNearSideRed", group = "MainBot")
-public class MainBotNoIntakeNearSideRed extends LinearOpMode {
+@Autonomous(name = "MainBotNoIntakeFarSideBlue", group = "MainBot")
+public class MainBotNoIntakeFarSideBlue extends LinearOpMode {
 
     /* ---------------- MECHANISMS ---------------- */
     MainBotMecanumDrive drive;
@@ -20,12 +20,12 @@ public class MainBotNoIntakeNearSideRed extends LinearOpMode {
     MainBotIntakeMechanism intake;
 
     /* ---------------- POSES ---------------- */
-    Pose2d startPose = new Pose2d(-60,12,Math.toRadians(180));
+    Pose2d startPose = new Pose2d(60, -12, Math.toRadians(180));
 
-    Pose2d shootPose = new Pose2d(-56, 12, Math.toRadians(-45));
+    Pose2d shootPose = new Pose2d(56, -12, Math.toRadians(25));
     Pose2d leftIntakePose = new Pose2d(-13, -54, Math.toRadians(180));
     Pose2d rightIntakePose = new Pose2d(13, -54, Math.toRadians(180));
-
+    final String FAR = "FAR_ZONE";
     @Override
     public void runOpMode() {
 
@@ -44,14 +44,14 @@ public class MainBotNoIntakeNearSideRed extends LinearOpMode {
          * ===================================================== */
         Actions.runBlocking(
                 drive.actionBuilder(startPose)
-                        .strafeTo(new Vector2d(-56,12))
-                        .turn(Math.toRadians(30))
+                        .strafeTo(new Vector2d(56, -12))
+                        .turn(Math.toRadians(25))
                         .build()
         );
 
         /* ---------------- FIRST SHOT ---------------- */
         intake.startIntake();
-        fireLauncher("NEAR_ZONE");
+        fireLauncher(FAR);
         intake.stopIntake();
 
         /* =====================================================
@@ -59,8 +59,8 @@ public class MainBotNoIntakeNearSideRed extends LinearOpMode {
          * ===================================================== */
         Actions.runBlocking(
                 drive.actionBuilder(shootPose)
-                        .strafeTo(new Vector2d(-53,25))
-                        .turn(Math.toRadians(-60))
+                        .strafeTo(new Vector2d(53, -25))
+                        .turn(Math.toRadians(100))
                         .build()
         );
 
