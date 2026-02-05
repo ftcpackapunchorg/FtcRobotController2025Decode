@@ -1,5 +1,9 @@
 package org.firstinspires.ftc.teamcode.mainbot.mechanisms;
 
+import androidx.annotation.NonNull;
+
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.acmerobotics.roadrunner.Action;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -30,11 +34,13 @@ public final class MainBotLaunchMechanism {
     final double LAUNCHER_REVERSE_VELOCITY = 150;
 
     final double LAUNCHER_NEAR_ZONE_TARGET_VELOCITY = 600;
-    final double LAUNCHER_NEAR_ZONE_MIN_VELOCITY = 400;
+    final double LAUNCHER_NEAR_ZONE_MIN_VELOCITY = 500;
 
     ElapsedTime feederTimer = new ElapsedTime();
 
-    /** Auto related **/
+    /**
+     * Auto related
+     **/
 
     final double FEED_TIME = 0.20;
     final double TIME_BETWEEN_SHOTS = 2;
@@ -73,7 +79,7 @@ public final class MainBotLaunchMechanism {
     private ElapsedTime autoFeederTimer = new ElapsedTime();
     private ElapsedTime reverseLaunchTimer = new ElapsedTime();
 
-    private enum AutoLaunchState { IDLE, PREPARE, LAUNCH }
+    private enum AutoLaunchState {IDLE, PREPARE, LAUNCH}
 
     private LaunchState launchState;
 
@@ -123,10 +129,10 @@ public final class MainBotLaunchMechanism {
                 }
                 break;
             case SPIN_UP:
-                if("FAR_ZONE".equals(launchZone)) {
+                if ("FAR_ZONE".equals(launchZone)) {
                     targetVelocity = LAUNCHER_TARGET_VELOCITY;
                     minVeliocity = LAUNCHER_MIN_VELOCITY;
-                } else if("NEAR_ZONE".equals(launchZone)) {
+                } else if ("NEAR_ZONE".equals(launchZone)) {
                     targetVelocity = LAUNCHER_NEAR_ZONE_TARGET_VELOCITY;
                     minVeliocity = LAUNCHER_NEAR_ZONE_MIN_VELOCITY;
                 }
@@ -155,12 +161,19 @@ public final class MainBotLaunchMechanism {
     /**
      * Launches one ball, when a shot is requested spins up the motor and once it is above a minimum
      * velocity, runs the feeder servos for the right amount of time to feed the next ball.
+     *
      * @param shotRequested "true" if the user would like to fire a new shot, and "false" if a shot
      *                      has already been requested and we need to continue to move through the
      *                      state machine and launch the ball.
      * @return "true" for one cycle after a ball has been successfully launched, "false" otherwise.
      */
-    public boolean launchForAuto(boolean shotRequested){
+    public boolean launchForAuto(boolean shotRequested, String launchZone, MainBotIntakeMechanism intake, Telemetry telemetry) {
+
+        telemetry.addData("autoLaunchState", autoLaunchState);
+        telemetry.addData("shotRequested", shotRequested);
+        telemetry.addData("launchZone", launchZone);
+        telemetry.update();
+
         switch (autoLaunchState) {
             case IDLE:
                 if (shotRequested) {
@@ -169,25 +182,40 @@ public final class MainBotLaunchMechanism {
                 }
                 break;
             case PREPARE:
-                launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
-                if (launcher.getVelocity() > LAUNCHER_MIN_VELOCITY){
-                    autoLaunchState = AutoLaunchState.LAUNCH;
-//                    feederMechanism.leftFeeder.setPower(1);
-//                    feederMechanism.rightFeeder.setPower(1);
-                    autoFeederTimer.reset();
+                if ("FAR_ZONE".equals(launchZone)) {
+                    targetVelocity = LAUNCHER_TARGET_VELOCITY;
+                    minVeliocity = LAUNCHER_MIN_VELOCITY;
+                } else if ("NEAR_ZONE".equals(launchZone)) {
+                    targetVelocity = LAUNCHER_NEAR_ZONE_TARGET_VELOCITY;
+                    minVeliocity = LAUNCHER_NEAR_ZONE_MIN_VELOCITY;
+                }
+
+                telemetry.addData("Target Velocity", targetVelocity);
+                telemetry.addData("Min Velocity", minVeliocity);
+                telemetry.update();
+
+                launcher.setVelocity(targetVelocity);
+                if (launcher.getVelocity() > minVeliocity) {
+                    telemetry.addData("Current Velocity", launcher.getVelocity());
+                    telemetry.update();
+                    autoLaunchState = autoLaunchState.LAUNCH;
+
+//                    feederMechanism.allowArtifact();
                 }
                 break;
             case LAUNCH:
-                if (autoFeederTimer.seconds() > FEED_TIME) {
+//                if (autoFeederTimer.seconds() > FEED_TIME) {
 //                    feederMechanism.leftFeeder.setPower(0);
 //                    feederMechanism.rightFeeder.setPower(0);
 
-                    if(shotTimer.seconds() > TIME_BETWEEN_SHOTS){
-                        stopLauncher();
-                        autoLaunchState = AutoLaunchState.IDLE;
-                        return true;
-                    }
+                intake.startIntake();
+
+                if (shotTimer.seconds() > TIME_BETWEEN_SHOTS) {
+//                    stopLauncher();
+                    autoLaunchState = AutoLaunchState.IDLE;
+                    return true;
                 }
+//                }
         }
         return false;
     }
@@ -214,5 +242,41 @@ public final class MainBotLaunchMechanism {
 
         launcher.setVelocity(-1 * LAUNCHER_REVERSE_VELOCITY);
 //        launcher.setPower(-1 * 0.1);
+    }
+
+    public void setTargetVelocity(double velocity) {
+        launcher.setVelocity(velocity);
+    }
+
+    public double getVelocity() {
+        return launcher.getVelocity();
+    }
+
+    public class StartLauncher implements Action {
+
+        boolean shotRequested = false;
+        String launchZone = null;
+        MainBotIntakeMechanism intake;
+
+        Telemetry telemetry;
+
+        public StartLauncher(boolean shotRequested, String inputLaunchZone, MainBotIntakeMechanism intake, Telemetry telemetry) {
+
+            this.shotRequested = shotRequested;
+            this.launchZone = inputLaunchZone;
+            this.intake = intake;
+            this.telemetry = telemetry;
+        }
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            telemetryPacket.addLine("In run");
+            launchForAuto(shotRequested, launchZone, intake, telemetry);
+            return false;
+        }
+    }
+
+    public Action launchArtifactsAction(boolean shotRequested, String inputLaunchZone, MainBotIntakeMechanism intake, Telemetry telemetry) {
+        return new StartLauncher(shotRequested, inputLaunchZone, intake, telemetry);
     }
 }

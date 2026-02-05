@@ -9,12 +9,14 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotIntakeMechanism;
 import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotLaunchMechanism;
+import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotLaunchWithFeederMechanism;
+import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotMecanumDrive;
 
 @Autonomous(name = "MainBotAutoBlueRRGoAndLaunch", group = "MainBot")
 public class MainBotAutoBlueRRGoAndLaunch extends LinearOpMode {
 
-    MecanumDrive drive;
-    MainBotLaunchMechanism launcher;
+    MainBotMecanumDrive drive;
+    MainBotLaunchWithFeederMechanism launcher;
     MainBotIntakeMechanism intake;
 
     /* ---------------- POSES ---------------- */
@@ -27,8 +29,8 @@ public class MainBotAutoBlueRRGoAndLaunch extends LinearOpMode {
     @Override
     public void runOpMode() {
 
-        drive = new MecanumDrive(hardwareMap, startPose);
-        launcher = new MainBotLaunchMechanism(hardwareMap, telemetry, "Blue");
+        drive = new MainBotMecanumDrive(hardwareMap, startPose);
+        launcher = new MainBotLaunchWithFeederMechanism(hardwareMap, telemetry, "Blue");
         intake = new MainBotIntakeMechanism(hardwareMap, telemetry);
 
         waitForStart();
@@ -58,11 +60,11 @@ public class MainBotAutoBlueRRGoAndLaunch extends LinearOpMode {
         );
 
         intake.startIntake();
-//        Actions.runBlocking(
-//                drive.actionBuilder(new Pose2d(-13,-34,Math.toRadians(180)))
-//                        .strafeTo(new Vector2d(-13, -54))
-//                        .build()
-//        );
+        Actions.runBlocking(
+                drive.actionBuilder(new Pose2d(-13, -34, Math.toRadians(180)))
+                        .strafeTo(new Vector2d(-13, -54))
+                        .build()
+        );
         intake.stopIntake();
 
         Actions.runBlocking(
@@ -87,7 +89,11 @@ public class MainBotAutoBlueRRGoAndLaunch extends LinearOpMode {
         );
 
         intake.startIntake();
-    //    sleep(700);
+        Actions.runBlocking(
+                drive.actionBuilder(new Pose2d(13,-34,Math.toRadians(180)))
+                        .strafeTo(new Vector2d(13, -54))
+                        .build()
+        );
         intake.stopIntake();
 
         Actions.runBlocking(
@@ -116,8 +122,8 @@ public class MainBotAutoBlueRRGoAndLaunch extends LinearOpMode {
      * LAUNCHER HELPER
      * ============================================================= */
     private void fireLauncher() {
-        launcher.launchForAuto(true);
-        while (opModeIsActive() && !launcher.launchForAuto(false)) {
+        launcher.launchForAuto(true, null, null);
+        while (opModeIsActive() && !launcher.launchForAuto(false, null, null)) {
             idle();
         }
     }
