@@ -20,7 +20,7 @@ public class MainBotAutoWithIntakePath extends LinearOpMode {
 
     /* ---------------- POSES ---------------- */
     Pose2d startPose = new Pose2d(-48, -48, Math.toRadians(-135));
-    Pose2d shootPose = new Pose2d(-40, -30, Math.toRadians(-135));
+    Pose2d shootPose = new Pose2d(-20, -24, Math.toRadians(-135));
 
     @Override
     public void runOpMode() {
@@ -34,7 +34,7 @@ public class MainBotAutoWithIntakePath extends LinearOpMode {
 
         Actions.runBlocking(
                 drive.actionBuilder(startPose)
-                        .strafeToLinearHeading(new Vector2d(-40, -30), Math.toRadians(-135))
+                        .strafeToLinearHeading(new Vector2d(-20, -24), Math.toRadians(-135))
                         .waitSeconds(3)
                         .build()
         );
@@ -62,7 +62,7 @@ public class MainBotAutoWithIntakePath extends LinearOpMode {
 
         Actions.runBlocking(
                 drive.actionBuilder(new Pose2d(-11.8, -51, Math.toRadians(-90)))
-                        .strafeToLinearHeading(new Vector2d(-40, -30), Math.toRadians(-135))
+                        .strafeToLinearHeading(new Vector2d(-20, -24), Math.toRadians(-135))
                         .waitSeconds(3)
                         .build()
         );
@@ -72,7 +72,7 @@ public class MainBotAutoWithIntakePath extends LinearOpMode {
 //        intake.stopIntake();
 
         Actions.runBlocking(
-                drive.actionBuilder(new Pose2d(-40, -30, Math.toRadians(-135)))
+                drive.actionBuilder(new Pose2d(-20, -24, Math.toRadians(-135)))
                         .strafeToLinearHeading(new Vector2d(11.5, -23), Math.toRadians(-90))
                         .build()
         );
@@ -92,7 +92,7 @@ public class MainBotAutoWithIntakePath extends LinearOpMode {
                 drive.actionBuilder(new Pose2d(11.5, -51, Math.toRadians(-90)))
                         .strafeToLinearHeading(new Vector2d(0, -40), Math.toRadians(-180))
                         .strafeToLinearHeading(new Vector2d(0, -53), Math.toRadians(-180))
-                        .strafeToLinearHeading(new Vector2d(-40, -30), Math.toRadians(-135))
+                        .strafeToLinearHeading(new Vector2d(-20, -24), Math.toRadians(-135))
                         .waitSeconds(3)
                         .build()
         );
@@ -102,7 +102,7 @@ public class MainBotAutoWithIntakePath extends LinearOpMode {
 //        intake.stopIntake();
 
         Actions.runBlocking(
-                drive.actionBuilder(new Pose2d(-40, -30, Math.toRadians(-135)))
+                drive.actionBuilder(new Pose2d(-20, -24, Math.toRadians(-135)))
                         .strafeToLinearHeading(new Vector2d(-16, -40), Math.toRadians(0))
                         .build()
         );
