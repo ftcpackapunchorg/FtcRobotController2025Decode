@@ -87,12 +87,10 @@ public class MainBotNoIntakeFarBlueLatest extends LinearOpMode {
         autoLaunchState = AutoLaunchState.IDLE;
 
         TrajectoryActionBuilder goToLaunchZone =  drive.actionBuilder(startPose)
-                .strafeTo(new Vector2d(56, -12))
-                .turn(Math.toRadians(25));
+                .strafeToLinearHeading(new Vector2d(56, -12),Math.toRadians(25));
 
         TrajectoryActionBuilder goToLeaveZone = goToLaunchZone.endTrajectory().fresh()
-                .strafeTo(new Vector2d(50, -25))
-                .turn(Math.toRadians(100));
+                .strafeTo(new Vector2d(46, -27));
 
         waitForStart();
         if (isStopRequested()) return;
