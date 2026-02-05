@@ -26,7 +26,7 @@ public class MainBotAutoWithIntakePath extends LinearOpMode {
     public void runOpMode() {
 
         drive = new MecanumDrive(hardwareMap, startPose);
-        launcher = new MainBotLaunchMechanism(hardwareMap, telemetry);
+        launcher = new MainBotLaunchMechanism(hardwareMap, telemetry, "Blue");
         intake = new MainBotIntakeMechanism(hardwareMap, telemetry);
 
         waitForStart();
@@ -34,7 +34,7 @@ public class MainBotAutoWithIntakePath extends LinearOpMode {
 
         Actions.runBlocking(
                 drive.actionBuilder(startPose)
-                        .strafeToLinearHeading(new Vector2d(-48, -30), Math.toRadians(-135))
+                        .strafeToLinearHeading(new Vector2d(-40, -30), Math.toRadians(-135))
                         .waitSeconds(3)
                         .build()
         );
@@ -108,9 +108,9 @@ public class MainBotAutoWithIntakePath extends LinearOpMode {
         );
     }
 
-    private void fireLauncher() {
-        launcher.launchForAuto(true);
-        while (opModeIsActive() && !launcher.launchForAuto(false)) {
+    private void fireLauncher(String launchZone) {
+        launcher.launchForAuto(true, launchZone, intake, telemetry);
+        while (opModeIsActive() && !launcher.launchForAuto(false, launchZone, intake, telemetry)) {
             idle();
         }
     }
