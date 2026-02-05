@@ -276,7 +276,63 @@ public final class MainBotLaunchMechanism {
         }
     }
 
+    public class StopLauncher implements Action {
+
+        boolean shotRequested = false;
+        String launchZone = null;
+        MainBotIntakeMechanism intake;
+
+        Telemetry telemetry;
+
+        public StopLauncher(boolean shotRequested, String inputLaunchZone, MainBotIntakeMechanism intake, Telemetry telemetry) {
+
+            this.shotRequested = shotRequested;
+            this.launchZone = inputLaunchZone;
+            this.intake = intake;
+            this.telemetry = telemetry;
+        }
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            telemetryPacket.addLine("In run");
+            stopLauncher();
+            return false;
+        }
+    }
+
+    public class ReverseLauncher implements Action {
+
+        boolean shotRequested = false;
+        String launchZone = null;
+        MainBotIntakeMechanism intake;
+
+        Telemetry telemetry;
+
+        public ReverseLauncher(boolean shotRequested, String inputLaunchZone, MainBotIntakeMechanism intake, Telemetry telemetry) {
+
+            this.shotRequested = shotRequested;
+            this.launchZone = inputLaunchZone;
+            this.intake = intake;
+            this.telemetry = telemetry;
+        }
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            telemetryPacket.addLine("In run");
+            reverseLauncher();
+            return false;
+        }
+    }
+
     public Action launchArtifactsAction(boolean shotRequested, String inputLaunchZone, MainBotIntakeMechanism intake, Telemetry telemetry) {
         return new StartLauncher(shotRequested, inputLaunchZone, intake, telemetry);
+    }
+
+    public Action stopLauncherAction(boolean shotRequested, String inputLaunchZone, MainBotIntakeMechanism intake, Telemetry telemetry) {
+        return new StopLauncher(shotRequested, inputLaunchZone, intake, telemetry);
+    }
+
+    public Action reverseLauncherAction(boolean shotRequested, String inputLaunchZone, MainBotIntakeMechanism intake, Telemetry telemetry) {
+        return new ReverseLauncher(shotRequested, inputLaunchZone, intake, telemetry);
     }
 }

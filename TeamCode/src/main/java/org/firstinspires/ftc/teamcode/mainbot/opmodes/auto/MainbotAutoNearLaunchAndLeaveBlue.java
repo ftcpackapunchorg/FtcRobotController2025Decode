@@ -44,7 +44,7 @@ public class MainbotAutoNearLaunchAndLeaveBlue extends LinearOpMode {
     final double LAUNCHER_REVERSE_VELOCITY = 150;
 
     final double LAUNCHER_NEAR_ZONE_TARGET_VELOCITY = 600;
-    final double LAUNCHER_NEAR_ZONE_MIN_VELOCITY = 400;
+    final double LAUNCHER_NEAR_ZONE_MIN_VELOCITY = 350;
 
     ElapsedTime feederTimer = new ElapsedTime();
     ElapsedTime autoFeederTimer = new ElapsedTime();
@@ -86,11 +86,12 @@ public class MainbotAutoNearLaunchAndLeaveBlue extends LinearOpMode {
         autoLaunchState = AutoLaunchState.IDLE;
 
         TrajectoryActionBuilder goToLaunchZone =  drive.actionBuilder(startPose)
-                .strafeTo(new Vector2d(-34, -34));
+                .strafeTo(new Vector2d(-24, -24));
 
         TrajectoryActionBuilder goToLeaveZone = goToLaunchZone.endTrajectory().fresh()
                 .strafeToLinearHeading(new Vector2d(-20, -48), Math.toRadians(-180));
 
+        
         waitForStart();
         if (isStopRequested()) return;
 

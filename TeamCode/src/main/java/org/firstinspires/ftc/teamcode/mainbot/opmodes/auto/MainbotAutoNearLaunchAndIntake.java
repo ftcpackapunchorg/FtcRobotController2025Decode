@@ -23,6 +23,7 @@ public class MainbotAutoNearLaunchAndIntake extends LinearOpMode {
     MainBotIntakeMechanism intake;
 
     int shotsToFire = 3; // The number of shots to fire in this auto.
+    int maxShotsToFire = 3;
 
     private AutonomousState autonomousState;
 
@@ -72,6 +73,8 @@ public class MainbotAutoNearLaunchAndIntake extends LinearOpMode {
         TrajectoryActionBuilder goToIntakePos1 = goToLaunchZone.endTrajectory().fresh()
                 .strafeToLinearHeading(new Vector2d(-11.8, -23),Math.toRadians(-90))
                 .strafeToLinearHeading(new Vector2d(-11.8, -40),Math.toRadians(-90));
+        TrajectoryActionBuilder goToLaunchZone2 = goToLaunchZone.endTrajectory().fresh()
+                .strafeTo(new Vector2d(-24,-27));
 
 //        Actions.runBlocking(
 //                drive.actionBuilder(shootP)
@@ -132,6 +135,9 @@ public class MainbotAutoNearLaunchAndIntake extends LinearOpMode {
                     if(launcher.launchForAuto(false, LAUNCH_ZONE, intake, telemetry)) {
                         shotsToFire -= 1;
                         if(shotsToFire > 0) {
+                            if(shotsToFire < maxShotsToFire) {
+                                Actions.runBlocking(goToLaunchZone2.build());
+                            }
                             autonomousState = AutonomousState.LAUNCH;
                         } else {
                             Actions.runBlocking(
