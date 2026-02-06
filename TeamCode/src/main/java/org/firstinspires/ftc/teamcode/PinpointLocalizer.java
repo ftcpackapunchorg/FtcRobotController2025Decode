@@ -8,7 +8,9 @@ import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit;
 
 import java.util.Objects;
@@ -46,6 +48,14 @@ public final class PinpointLocalizer implements Localizer {
         driver.resetPosAndIMU();
 
         txWorldPinpoint = initialPose;
+    }
+
+    public double getHeading() {
+        return driver.getHeading(AngleUnit.DEGREES);
+    }
+
+    public Pose2D getPosition() {
+        return driver.getPosition();
     }
 
     @Override

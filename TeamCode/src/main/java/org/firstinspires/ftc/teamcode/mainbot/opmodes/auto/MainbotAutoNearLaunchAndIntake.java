@@ -1,19 +1,25 @@
 package org.firstinspires.ftc.teamcode.mainbot.opmodes.auto;
 
+import com.acmerobotics.roadrunner.AccelConstraint;
+import com.acmerobotics.roadrunner.AngularVelConstraint;
+import com.acmerobotics.roadrunner.MinVelConstraint;
 import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
-import com.acmerobotics.roadrunner.SequentialAction;
+import com.acmerobotics.roadrunner.ProfileAccelConstraint;
 import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
+import com.acmerobotics.roadrunner.TranslationalVelConstraint;
 import com.acmerobotics.roadrunner.Vector2d;
+import com.acmerobotics.roadrunner.VelConstraint;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotIntakeMechanism;
 import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotLaunchMechanism;
 import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotMecanumDrive;
+
+import java.util.Arrays;
 
 @Autonomous(name = "MainbotAutoNearLaunchAndIntake", group = "MainBot")
 public class MainbotAutoNearLaunchAndIntake extends LinearOpMode {
@@ -22,13 +28,20 @@ public class MainbotAutoNearLaunchAndIntake extends LinearOpMode {
     MainBotLaunchMechanism launcher;
     MainBotIntakeMechanism intake;
 
-    int shotsToFire = 3; // The number of shots to fire in this auto.
-    int maxShotsToFire = 3;
+    int shotsToFire = 2; // The number of shots to fire in this auto.
+    int maxShotsToFire = 2;
+
+    int noOfIntakePaths = 3;
+    int maxNoOfIntakePaths = 3;
 
     private AutonomousState autonomousState;
 
-    ElapsedTime feederTimer = new ElapsedTime();
+    private double STOP_AUTO_MODE_FOR_LEAVE = 30;
+
+    ElapsedTime autonomousTimer = new ElapsedTime();
+
     ElapsedTime autoFeederTimer = new ElapsedTime();
+    ElapsedTime autoIntakeTimer = new ElapsedTime();
 
     final double FEED_TIME = 0.20;
     final double TIME_BETWEEN_SHOTS = 3;
@@ -37,9 +50,9 @@ public class MainbotAutoNearLaunchAndIntake extends LinearOpMode {
         LAUNCH,
         GO_TO_LAUNCH_POSITION,
         WAIT_FOR_LAUNCH,
+        INTAKE_ARTIFACTS,
         START_INTAKE,
         GO_TO_INTAKE_POS1,
-
         GO_TO_LEAVE_ZONE,
         COMPLETE
     }
@@ -47,11 +60,16 @@ public class MainbotAutoNearLaunchAndIntake extends LinearOpMode {
 
     /* ---------------- POSES ---------------- */
     Pose2d startPose = new Pose2d(-49, -48, Math.toRadians(-135));
+
+    Pose2d nearLaunchPose = new Pose2d(-24, -24, Math.toRadians(-135));
+
+    Pose2d nearLeavePose = new Pose2d(-20, -48, Math.toRadians(-180));
+
     Pose2d intake1  = new Pose2d(-11.8, -23, Math.toRadians(-90));
+
     Pose2d intake2 = new Pose2d(13, -54, Math.toRadians(-180));
 
     Pose2d intake3 = new Pose2d(34.5, 23, Math.toRadians(-90));
-
 
     @Override
     public void runOpMode() {
@@ -64,43 +82,37 @@ public class MainbotAutoNearLaunchAndIntake extends LinearOpMode {
 
         autonomousState = AutonomousState.GO_TO_LAUNCH_POSITION;
 
+        VelConstraint baseVelConstraint = new MinVelConstraint(Arrays.asList(
+                new TranslationalVelConstraint(50.0),
+                new AngularVelConstraint(Math.PI / 2)
+        ));
+        AccelConstraint baseAccelConstraint = new ProfileAccelConstraint(-10.0, 25.0);
+
         TrajectoryActionBuilder goToLaunchZone =  drive.actionBuilder(startPose)
-                .strafeTo(new Vector2d(-24, -24));
+                .strafeToLinearHeading(new Vector2d(nearLaunchPose.position.x, nearLaunchPose.position.y), nearLaunchPose.heading);
 
         TrajectoryActionBuilder goToLeaveZone = goToLaunchZone.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(-20, -48), Math.toRadians(-180));
+                .strafeToLinearHeading(new Vector2d(nearLeavePose.position.x, nearLeavePose.position.y), nearLeavePose.heading);
 
         TrajectoryActionBuilder goToIntakePos1 = goToLaunchZone.endTrajectory().fresh()
-                .strafeToLinearHeading(new Vector2d(-11.8, -23),Math.toRadians(-90))
-                .strafeToLinearHeading(new Vector2d(-11.8, -40),Math.toRadians(-90));
+                .strafeToLinearHeading(new Vector2d(-11.8, -23), Math.toRadians(-90), new TranslationalVelConstraint(20.0))
+                .strafeToLinearHeading(new Vector2d(-11.8, -40), Math.toRadians(-90), new TranslationalVelConstraint(20.0));
+
         TrajectoryActionBuilder goToLaunchZone2 = goToLaunchZone.endTrajectory().fresh()
                 .strafeTo(new Vector2d(-24,-27));
 
-//        Actions.runBlocking(
-//                drive.actionBuilder(shootP)
-//                        .strafeToLinearHeading(new Vector2d(-11.8, -23),Math.toRadians(-90))
-//                        .build()
-//        );
-//
-//        intake.startIntake();
-//        //   sleep(700);
-//        Actions.runBlocking(
-//                drive.actionBuilder(new Pose2d(-11.8,-23,Math.toRadians(-90)))
-//                        .strafeToLinearHeading(new Vector2d(-11.8, -51),Math.toRadians(-90))
-//                        .build()
-//        );
-//        intake.stopIntake();
-//
-//        Actions.runBlocking(
-//                drive.actionBuilder(new Pose2d(-11.8,-51,Math.toRadians(-90)))
-//                        .strafeToLinearHeading(new Vector2d(-16, -20),Math.toRadians(-135))
-//                        .build()
-//        );
         waitForStart();
+        autonomousTimer.reset();
         if (isStopRequested()) return;
 
         while(opModeIsActive()) {
 
+            if(autonomousTimer.seconds() >= STOP_AUTO_MODE_FOR_LEAVE) {
+                launcher.stopLauncher();
+                intake.stopIntake();
+                Actions.runBlocking(goToLeaveZone.build());
+                autonomousState = AutonomousState.COMPLETE;
+            }
             switch (autonomousState){
                 /*
                  * Since the first state of our auto is LAUNCH, this is the first "case" we encounter.
@@ -159,9 +171,7 @@ public class MainbotAutoNearLaunchAndIntake extends LinearOpMode {
                      */
                     Actions.runBlocking(goToLeaveZone.build());
                     autonomousState = AutonomousState.COMPLETE;
-
                     break;
-
                 case START_INTAKE:
                     intake.startIntake();
                     autonomousState = AutonomousState.GO_TO_INTAKE_POS1;

@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.newbot.mechanisms;
 
 import androidx.annotation.NonNull;
 
@@ -53,18 +53,21 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
+import org.firstinspires.ftc.teamcode.Drawing;
+import org.firstinspires.ftc.teamcode.Localizer;
+import org.firstinspires.ftc.teamcode.TwoDeadWheelLocalizer;
+import org.firstinspires.ftc.teamcode.mainbot.utils.MainBotConstants;
 import org.firstinspires.ftc.teamcode.messages.DriveCommandMessage;
 import org.firstinspires.ftc.teamcode.messages.MecanumCommandMessage;
 import org.firstinspires.ftc.teamcode.messages.MecanumLocalizerInputsMessage;
 import org.firstinspires.ftc.teamcode.messages.PoseMessage;
-import org.firstinspires.ftc.teamcode.utils.StarterBotConstants;
 
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
 @Config
-public final class MecanumDrive {
+public final class NewBotMecanumDrive {
     public static class Params {
         // IMU orientation
         // TODO: fill in these values based on
@@ -95,11 +98,11 @@ public final class MecanumDrive {
         public double maxAngAccel = Math.PI;
 
         // path controller gains
-        public double axialGain = .2;
-        public double lateralGain = 2;
-        public double headingGain = 1; // shared with turn
+        public double axialGain = 10;
+        public double lateralGain = 10;
+        public double headingGain = 6; // shared with turn
 
-        public double axialVelGain = 0.0;
+        public double axialVelGain = 1.0;
         public double lateralVelGain = 0.0;
         public double headingVelGain = 0.0; // shared with turn
 
@@ -157,10 +160,10 @@ public final class MecanumDrive {
         private Pose2d pose;
 
         public DriveLocalizer(Pose2d pose) {
-            leftFront = new OverflowEncoder(new RawEncoder(MecanumDrive.this.leftFront));
-            leftBack = new OverflowEncoder(new RawEncoder(MecanumDrive.this.leftBack));
-            rightBack = new OverflowEncoder(new RawEncoder(MecanumDrive.this.rightBack));
-            rightFront = new OverflowEncoder(new RawEncoder(MecanumDrive.this.rightFront));
+            leftFront = new OverflowEncoder(new RawEncoder(NewBotMecanumDrive.this.leftFront));
+            leftBack = new OverflowEncoder(new RawEncoder(NewBotMecanumDrive.this.leftBack));
+            rightBack = new OverflowEncoder(new RawEncoder(NewBotMecanumDrive.this.rightBack));
+            rightFront = new OverflowEncoder(new RawEncoder(NewBotMecanumDrive.this.rightFront));
 
             imu = lazyImu.get();
 
@@ -243,7 +246,7 @@ public final class MecanumDrive {
         }
     }
 
-    public MecanumDrive(HardwareMap hardwareMap, Pose2d pose) {
+    public NewBotMecanumDrive(HardwareMap hardwareMap, Pose2d pose) {
         LynxFirmware.throwIfModulesAreOutdated(hardwareMap);
 
         for (LynxModule module : hardwareMap.getAll(LynxModule.class)) {
@@ -252,10 +255,10 @@ public final class MecanumDrive {
 
         // TODO: make sure your config has motors with these names (or change them)
         //   see https://ftc-docs.firstinspires.org/en/latest/hardware_and_software_configuration/configuring/index.html
-        leftFront = hardwareMap.get(DcMotorEx.class, StarterBotConstants.FRONT_LEFT_WHEEL_MOTOR_NAME);
-        leftBack = hardwareMap.get(DcMotorEx.class, StarterBotConstants.BACK_LEFT_WHEEL_MOTOR_NAME);
-        rightBack = hardwareMap.get(DcMotorEx.class, StarterBotConstants.BACK_RIGHT_WHEEL_MOTOR_NAME);
-        rightFront = hardwareMap.get(DcMotorEx.class, StarterBotConstants.FRONT_RIGHT_WHEEL_MOTOR_NAME);
+        leftFront = hardwareMap.get(DcMotorEx.class, MainBotConstants.FRONT_LEFT_WHEEL_MOTOR_NAME);
+        leftBack = hardwareMap.get(DcMotorEx.class, MainBotConstants.BACK_LEFT_WHEEL_MOTOR_NAME);
+        rightBack = hardwareMap.get(DcMotorEx.class, MainBotConstants.BACK_RIGHT_WHEEL_MOTOR_NAME);
+        rightFront = hardwareMap.get(DcMotorEx.class, MainBotConstants.FRONT_RIGHT_WHEEL_MOTOR_NAME);
 
         /*
          * Setting zeroPowerBehavior to BRAKE enables a "brake mode". This causes the motor to
@@ -279,18 +282,23 @@ public final class MecanumDrive {
         leftBack.setDirection(DcMotorEx.Direction.REVERSE);
         rightBack.setDirection(DcMotorEx.Direction.FORWARD);
 
-        /*
-         * Here we reset the encoders on our drive motors before we start moving.
-         */
         leftFront.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-        rightFront.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         leftBack.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         rightBack.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        rightFront.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
 
         leftFront.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         rightFront.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         leftBack.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         rightBack.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+
+        /*
+         * Here we reset the encoders on our drive motors before we start moving.
+         */
+//        leftFront.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+//        rightFront.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+//        leftBack.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+//        rightBack.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
 
         // TODO: reverse motor directions if needed
         //   leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -657,7 +665,38 @@ public final class MecanumDrive {
 
     public void mecanumDrive(double forward, double strafe, double rotate, float turboSpeed, Telemetry telemetry){
 
-        telemetry.addData("turboSpeed", turboSpeed);
+
+        // Pratt's logic -- Begin
+//        double frontLeftPower = forward + strafe + rotate;
+//        double backLeftPower = forward - strafe + rotate;
+//        double frontRightPower = forward - strafe - rotate;
+//        double backRightPower = forward + strafe - rotate;
+//
+//        double maxPower = 1.0;
+//        double maxSpeed = 1.0;
+//
+//        maxPower = Math.max(maxPower, Math.abs(frontLeftPower));
+//        maxPower = Math.max(maxPower, Math.abs(backLeftPower));
+//        maxPower = Math.max(maxPower, Math.abs(frontRightPower));
+//        maxPower = Math.max(maxPower, Math.abs(backRightPower));
+//
+//        telemetry.addData("maxSpeed : ", maxSpeed);
+//        telemetry.addData("maxPower", maxPower);
+//        telemetry.addData("turboSpeed", turboSpeed);
+//        telemetry.addData("forward : ", forward);
+//        telemetry.addData("strafe : ", strafe);
+//        telemetry.addData("rotate : ", rotate);
+//        telemetry.update();
+//
+//        leftFront.setPower(maxSpeed * (frontLeftPower / maxPower));
+//        leftBack.setPower(maxSpeed * (backLeftPower / maxPower));
+//        rightFront.setPower(maxSpeed * (frontRightPower / maxPower));
+//        rightBack.setPower(maxSpeed * (backRightPower / maxPower));
+
+        // Pratt's logic -- End
+
+
+//        /** Original code **/
 
         /* the denominator is the largest motor power (absolute value) or 1
          * This ensures all the powers maintain the same ratio,
@@ -668,6 +707,9 @@ public final class MecanumDrive {
             speed = 1.1;
         }
 
+        // Counteract imperfect strafing
+        forward = forward * 1.1;
+
         double denominator = Math.max(Math.abs(forward) + Math.abs(strafe) + Math.abs(rotate), speed);
 
         telemetry.addData("speed : ", speed);
@@ -675,7 +717,7 @@ public final class MecanumDrive {
         telemetry.addData("forward : ", forward);
         telemetry.addData("strafe : ", strafe);
         telemetry.addData("rotate : ", rotate);
-        telemetry.update();
+//        telemetry.update();
 
         leftFrontPower = (forward + strafe + rotate) / denominator;
         rightFrontPower = (forward - strafe - rotate) / denominator;
@@ -686,13 +728,15 @@ public final class MecanumDrive {
         rightFront.setPower(rightFrontPower);
         leftBack.setPower(leftBackPower);
         rightBack.setPower(rightBackPower);
+        /** Original Code End **/
 
+        /** Old code for reference
 //        double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), speed);
 //
 //        double y = Math.pow(-gamepad1.left_stick_y,3); // Remember, Y stick value is reversed
 //        double x = Math.pow(gamepad1.left_stick_x * 1.1,3); // Counteract imperfect strafing
 //        double rx = Math.pow(gamepad1.right_stick_x,3);
-
+**/
 
     }
 

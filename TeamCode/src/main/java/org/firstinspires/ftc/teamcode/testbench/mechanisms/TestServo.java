@@ -40,13 +40,13 @@ public final class TestServo {
 
     public void lowPosition() {
 //        rightIntakeFeeder.setPosition(0); // Right servo
-        rightIntakeFeeder.setPosition(0);
+        rightIntakeFeeder.setPosition(.1);
 //        leftIntakeFeeder.setPosition(1); // Left servo
 
     }
 
     public void middlePosition() {
-        rightIntakeFeeder.setPosition(.4); // Right servo
+        rightIntakeFeeder.setPosition(.35); // Right servo
 //        leftIntakeFeeder.setPosition(.7); // Left servo
 
     }

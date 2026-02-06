@@ -23,7 +23,19 @@ public class MainBotRGBLightIndicator {
 
     public void setRGBLightToRed() {
 
-        rgbLightIndicator.setPosition(0.3);
+        rgbLightIndicator.setPosition(0.277);
+
+    }
+
+    public void setRGBLightToOrange() {
+
+        rgbLightIndicator.setPosition(0.333);
+
+    }
+
+    public void setRGBLightToYellow() {
+
+        rgbLightIndicator.setPosition(0.388);
 
     }
 

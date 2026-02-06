@@ -17,7 +17,7 @@ public class TestMotorPort0 extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
 
         motor = hardwareMap.get(DcMotor.class, "testMotor");
-//        motor.setDirection(DcMotorSimple.Direction.REVERSE);
+        motor.setDirection(DcMotor.Direction.REVERSE);
 
         waitForStart();
 

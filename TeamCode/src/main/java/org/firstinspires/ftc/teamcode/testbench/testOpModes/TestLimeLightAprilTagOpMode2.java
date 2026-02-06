@@ -11,6 +11,8 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.gobildastarterbot.mechanicals.StarterBotFeederMechanism;
 import org.firstinspires.ftc.teamcode.gobildastarterbot.mechanicals.StarterBotLaunchMechanism;
@@ -56,8 +58,16 @@ public class TestLimeLightAprilTagOpMode2 extends OpMode {
 
         drive = new MainBotMecanumDrive(hardwareMap, initPose);
 
+        drive.localizer.update();
+
+        double headingRadians = drive.localizer.getPose().heading.toDouble();
+
+        double headingDegrees = Math.toDegrees(headingRadians);
+
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
-        limelight.pipelineSwitch(4); // 0 is purple artifact, 1 is green artifact. // 2 - April tag 20 (Blue) // 3 - April tag 24 (Red) // 4 - April Tag Multiple 19 - 24
+        limelight.pipelineSwitch(2); // 0 is purple artifact, 1 is green artifact. // 2 - April tag 20 (Blue) // 3 - April tag 24 (Red) // 4 - April Tag Multiple 19 - 24
+
+        limelight.updateRobotOrientation(headingDegrees);
 
 //        TrajectoryActionBuilder goToNearLaunchZone = createActionForLaunchZoneNear(currentPoseFromAprilTag);
 
@@ -80,6 +90,7 @@ public class TestLimeLightAprilTagOpMode2 extends OpMode {
     public void start() {
 
         limelight.start();
+//        limelight.setPollRateHz();
     }
 
     @Override
@@ -87,7 +98,6 @@ public class TestLimeLightAprilTagOpMode2 extends OpMode {
 
         YawPitchRollAngles orientation = drive.lazyImu.get().getRobotYawPitchRollAngles();
         limelight.updateRobotOrientation(orientation.getYaw());
-
 
         LLResult llResult = limelight.getLatestResult();
 
@@ -152,35 +162,57 @@ public class TestLimeLightAprilTagOpMode2 extends OpMode {
 
         }
 
-
-
-
-//        if(llResult != null && llResult.isValid()) {
+//        drive.localizer.update();
 //
-//            Pose3D robotPose = llResult.getBotpose_MT2(); // If using Metatag 2. If using metatag 1, use getBotpose
+//        double headingRadians = drive.localizer.getPose().heading.toDouble();
+//
+//        double headingDegrees = Math.toDegrees(headingRadians);
+//
+//        telemetry.addData("headingRadians", headingRadians);
+//
+//        limelight.updateRobotOrientation(headingDegrees);
+
+        if(llResult != null && llResult.isValid()) {
+
+            Pose3D robotPose = llResult.getBotpose_MT2(); // If using Metatag 2. If using metatag 1, use getBotpose
+
+            telemetry.addData("Target X Offset : ", llResult.getTx());
+            telemetry.addData("Target Y Offset : ", llResult.getTy());
+            telemetry.addData("Target Area Offset : ", llResult.getTa());
+            telemetry.addData("Robot Pose : ", robotPose.toString());
+            telemetry.addData("Yaw : ", robotPose.getOrientation().getYaw());
+
+            // Field coordinates in meters
+//            double fieldX = robotPose.getPosition().x;
+//            double fieldY = robotPose.getPosition().y;
+//
+//            // If you need inches for Roadrunner:
+//            double xInches = fieldX * 39.37;
+//            double yInches = fieldY * 39.37;
+
+            double xInches = robotPose.getPosition().toUnit(DistanceUnit.INCH).x;
+            double yInches = robotPose.getPosition().toUnit(DistanceUnit.INCH).y;
+
+            telemetry.addData("Field X (in)", xInches);
+            telemetry.addData("Field Y (in)", yInches);
+            telemetry.update();
+
+//            double distance = getDistanceFromTag(llResult.getTa());
+//
+//            telemetry.addData("Calculated Distance : ", distance);
+
+//            y = 8939.352*x^-1.923755
+
+//            Pose3D mt1RobotPose = llResult.getBotpose();
 //
 //            telemetry.addData("Target X Offset : ", llResult.getTx());
 //            telemetry.addData("Target Y Offset : ", llResult.getTy());
 //            telemetry.addData("Target Area Offset : ", llResult.getTa());
-//            telemetry.addData("Robot Pose : ", robotPose.toString());
-//            telemetry.addData("Yaw : ", robotPose.getOrientation().getYaw());
-//
-//            double distance = getDistanceFromTag(llResult.getTa());
-//
-//            telemetry.addData("Calculated Distance : ", distance);
-//
-////            y = 8939.352*x^-1.923755
-//
-////            Pose3D mt1RobotPose = llResult.getBotpose();
-////
-////            telemetry.addData("Target X Offset : ", llResult.getTx());
-////            telemetry.addData("Target Y Offset : ", llResult.getTy());
-////            telemetry.addData("Target Area Offset : ", llResult.getTa());
-////            telemetry.addData("Robot Pose : ", mt1RobotPose.toString());
-////            telemetry.addData("Yaw : ", mt1RobotPose.getOrientation().getYaw());
-////            telemetry.addData("X : ", mt1RobotPose.getPosition().x);
-////            telemetry.addData("Y : ", mt1RobotPose.getPosition().y);
-////            telemetry.addData("Z : ", mt1RobotPose.getPosition().z);
+//            telemetry.addData("Robot Pose : ", mt1RobotPose.toString());
+//            telemetry.addData("Yaw : ", mt1RobotPose.getOrientation().getYaw());
+//            telemetry.addData("X : ", mt1RobotPose.getPosition().x);
+//            telemetry.addData("Y : ", mt1RobotPose.getPosition().y);
+//            telemetry.addData("Z : ", mt1RobotPose.getPosition().z);
 //
 //
 //
@@ -227,7 +259,7 @@ public class TestLimeLightAprilTagOpMode2 extends OpMode {
 ////
 //////                drive.mecanumDrive(forward, strafe, rotate, 0, telemetry);
 ////            }
-//        }
+        }
 
 
 
