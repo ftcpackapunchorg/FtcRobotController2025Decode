@@ -185,7 +185,7 @@ public class MainbotAutoNearLaunchAndIntake extends LinearOpMode {
                     break;
 
                 case INTAKE:
-                    launcher.blockArtifact();
+//                    launcher.blockArtifact();
                     isArtifactAllowedIndicator.setRGBLightToRed();
                     intake.startIntake();
                     autonomousState = AutonomousState.GO_TO_INTAKE_POS;
