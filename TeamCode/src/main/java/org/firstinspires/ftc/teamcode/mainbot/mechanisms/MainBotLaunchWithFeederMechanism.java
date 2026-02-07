@@ -1,5 +1,9 @@
 package org.firstinspires.ftc.teamcode.mainbot.mechanisms;
 
+import androidx.annotation.NonNull;
+
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
@@ -10,7 +14,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
+import org.firstinspires.ftc.teamcode.mainbot.sensors.MainBotRGBLightIndicator;
 import org.firstinspires.ftc.teamcode.mainbot.utils.MainBotConstants;
 
 import java.util.List;
@@ -42,11 +46,9 @@ public final class MainBotLaunchWithFeederMechanism {
 
     /** Auto related **/
 
-    final double FEED_TIME = 0.20;
-    final double TIME_BETWEEN_SHOTS = 0.2;
+    final double FEED_TIME = 3;
+    final double TIME_BETWEEN_SHOTS = 3;
     final double REVERSE_ROTATION_TIME = 0.1;
-
-
 
     /*
      * TECH TIP: State Machines
@@ -186,7 +188,7 @@ public final class MainBotLaunchWithFeederMechanism {
      *                      state machine and launch the ball.
      * @return "true" for one cycle after a ball has been successfully launched, "false" otherwise.
      */
-    public boolean launchForAuto(boolean shotRequested, YawPitchRollAngles orientation, Telemetry telemetry){
+    public boolean launchForAuto(boolean shotRequested, String launchZone, MainBotIntakeMechanism intake, MainBotRGBLightIndicator isArtifactAllowedIndicator, MainBotMecanumDrive drive, Telemetry telemetry){
         switch (autoLaunchState) {
             case IDLE:
                 if (shotRequested) {
@@ -198,7 +200,7 @@ public final class MainBotLaunchWithFeederMechanism {
 
                 if(enableLimelight) {
 
-                    mainBotLimeLightCamera.limelight.updateRobotOrientation(orientation.getYaw());
+                    mainBotLimeLightCamera.limelight.updateRobotOrientation(drive.lazyImu.get().getRobotYawPitchRollAngles().getYaw());
 
                     LLResult llResult = mainBotLimeLightCamera.limelight.getLatestResult();
 
@@ -260,16 +262,23 @@ public final class MainBotLaunchWithFeederMechanism {
                     targetVelocity = LAUNCHER_NEAR_ZONE_TARGET_VELOCITY;
                     minVeliocity = LAUNCHER_NEAR_ZONE_MIN_VELOCITY;
                 }
+
+                telemetry.addData("Target Velocity", targetVelocity);
+                telemetry.addData("Min Velocity", minVeliocity);
+                telemetry.addData("Current Velocity", launcher.getVelocity());
+                telemetry.update();
+
                 launcher.setVelocity(targetVelocity);
                 if (launcher.getVelocity() > minVeliocity) {
                     autoLaunchState = AutoLaunchState.LAUNCH;
+                    intake.startIntake();
                     feederMechanism.allowArtifact();
                 }
                 break;
             case LAUNCH:
                 if (autoFeederTimer.seconds() > FEED_TIME) {
-                    blockArtifact();
                     if(shotTimer.seconds() > TIME_BETWEEN_SHOTS){
+//                        blockArtifact();
                         stopLauncher();
                         autoLaunchState = AutoLaunchState.IDLE;
                         return true;
@@ -330,5 +339,96 @@ public final class MainBotLaunchWithFeederMechanism {
 
     public boolean isArtifactAllowedToFlow(Telemetry telemetry) {
         return feederMechanism.isArtifactAllowedToFlow(telemetry);
+    }
+
+    public class StartLauncher implements Action {
+
+        boolean shotRequested = false;
+        String launchZone = null;
+        MainBotIntakeMechanism intake;
+        MainBotMecanumDrive drive;
+
+        Telemetry telemetry;
+
+        public StartLauncher(boolean shotRequested, String inputLaunchZone, MainBotIntakeMechanism intake, MainBotMecanumDrive drive, Telemetry telemetry) {
+
+            this.shotRequested = shotRequested;
+            this.launchZone = inputLaunchZone;
+            this.intake = intake;
+            this.drive = drive;
+            this.telemetry = telemetry;
+
+        }
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            telemetryPacket.addLine("In run");
+            launchForAuto(shotRequested, launchZone, intake, null, drive, telemetry);
+            return false;
+        }
+    }
+
+    public class StopLauncher implements Action {
+
+        boolean shotRequested = false;
+        String launchZone = null;
+        MainBotIntakeMechanism intake;
+        MainBotMecanumDrive drive;
+
+        Telemetry telemetry;
+
+        public StopLauncher(boolean shotRequested, String inputLaunchZone, MainBotIntakeMechanism intake, MainBotMecanumDrive drive, Telemetry telemetry) {
+
+            this.shotRequested = shotRequested;
+            this.launchZone = inputLaunchZone;
+            this.intake = intake;
+            this.drive = drive;
+            this.telemetry = telemetry;
+        }
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            telemetryPacket.addLine("In run");
+            stopLauncher();
+            return false;
+        }
+    }
+
+    public class ReverseLauncher implements Action {
+
+        boolean shotRequested = false;
+        String launchZone = null;
+        MainBotIntakeMechanism intake;
+        MainBotMecanumDrive drive;
+
+        Telemetry telemetry;
+
+        public ReverseLauncher(boolean shotRequested, String inputLaunchZone, MainBotIntakeMechanism intake, MainBotMecanumDrive drive, Telemetry telemetry) {
+
+            this.shotRequested = shotRequested;
+            this.launchZone = inputLaunchZone;
+            this.intake = intake;
+            this.drive = drive;
+            this.telemetry = telemetry;
+        }
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            telemetryPacket.addLine("In run");
+            reverseLauncher();
+            return false;
+        }
+    }
+
+    public Action launchArtifactsAction(boolean shotRequested, String inputLaunchZone, MainBotIntakeMechanism intake, MainBotMecanumDrive drive, Telemetry telemetry) {
+        return new StartLauncher(shotRequested, inputLaunchZone, intake, drive, telemetry);
+    }
+
+    public Action stopLauncherAction(boolean shotRequested, String inputLaunchZone, MainBotIntakeMechanism intake, MainBotMecanumDrive drive, Telemetry telemetry) {
+        return new StopLauncher(shotRequested, inputLaunchZone, intake, drive, telemetry);
+    }
+
+    public Action reverseLauncherAction(boolean shotRequested, String inputLaunchZone, MainBotIntakeMechanism intake, MainBotMecanumDrive drive, Telemetry telemetry) {
+        return new ReverseLauncher(shotRequested, inputLaunchZone, intake, drive, telemetry);
     }
 }

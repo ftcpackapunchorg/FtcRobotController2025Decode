@@ -6,9 +6,7 @@ import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotIntakeMechanism;
-import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotLaunchMechanism;
 import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotLaunchWithFeederMechanism;
 import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotMecanumDrive;
 
@@ -122,8 +120,8 @@ public class MainBotAutoBlueRRGoAndLaunch extends LinearOpMode {
      * LAUNCHER HELPER
      * ============================================================= */
     private void fireLauncher() {
-        launcher.launchForAuto(true, null, null);
-        while (opModeIsActive() && !launcher.launchForAuto(false, null, null)) {
+        launcher.launchForAuto(true, null,  null, null, null, telemetry);
+        while (opModeIsActive() && !launcher.launchForAuto(false, null, null, null, null, telemetry)) {
             idle();
         }
     }

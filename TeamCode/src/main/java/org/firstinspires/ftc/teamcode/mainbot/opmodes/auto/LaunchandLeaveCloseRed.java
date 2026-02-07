@@ -1,22 +1,15 @@
 package org.firstinspires.ftc.teamcode.mainbot.opmodes.auto;
 
-import com.acmerobotics.roadrunner.*;
+import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
+import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
-import org.firstinspires.ftc.teamcode.MecanumDrive;
-//import org.firstinspires.ftc.teamcode.gobildastarterbot.mechanicals.StarterBotLaunchMechanism;
 import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotIntakeMechanism;
-import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotLaunchMechanism;
 import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotLaunchWithFeederMechanism;
 import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotMecanumDrive;
-import org.firstinspires.ftc.teamcode.prototypebot.mechanicals.PrototypeBotIntakeMechanism;
-
-
-import java.lang.Math;
 
 @Autonomous(name = "LaunchandleaveCloseRed", group = "MainBot")
 public class LaunchandLeaveCloseRed extends LinearOpMode {
@@ -73,8 +66,8 @@ public class LaunchandLeaveCloseRed extends LinearOpMode {
      * LAUNCHER HELPER
      * ============================================================= */
     private void fireLauncher() {
-        launcher.launchForAuto(true, null, telemetry);
-        while (opModeIsActive() && !launcher.launchForAuto(false, null, telemetry)) {
+        launcher.launchForAuto(true, null, null, null, null, telemetry);
+        while (opModeIsActive() && !launcher.launchForAuto(false, null, null, null, null, telemetry)) {
             idle();
         }
     }

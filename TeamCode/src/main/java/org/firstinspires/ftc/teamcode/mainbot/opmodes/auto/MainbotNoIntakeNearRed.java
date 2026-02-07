@@ -156,8 +156,8 @@ public class MainbotNoIntakeNearRed extends LinearOpMode {
      * LAUNCHER HELPER
      * ============================================================= */
     private void fireLauncher() {
-        launcher.launchForAuto(true, null, null);
-        while (opModeIsActive() && !launcher.launchForAuto(false, null, null)) {
+        launcher.launchForAuto(true, null, null, null, null, telemetry);
+        while (opModeIsActive() && !launcher.launchForAuto(false, null, null, null, null, telemetry)) {
             idle();
         }
     }

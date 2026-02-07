@@ -24,7 +24,8 @@ public final class MainBotLaunchFeederMechanism {
         /*
          * set Feeders to an initial value to initialize the servo controller
          */
-        blockArtifact();
+//        blockArtifact();
+        allowArtifact();
 
     }
 
