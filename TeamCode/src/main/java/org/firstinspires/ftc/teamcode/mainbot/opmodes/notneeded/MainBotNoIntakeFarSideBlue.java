@@ -1,8 +1,9 @@
-package org.firstinspires.ftc.teamcode.mainbot.opmodes.auto;
+package org.firstinspires.ftc.teamcode.mainbot.opmodes.notneeded;
 
 import com.acmerobotics.roadrunner.*;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotIntakeMechanism;
@@ -10,7 +11,7 @@ import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotLaunchMechanism;
 import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotMecanumDrive;
 
 import java.lang.Math;
-
+@Disabled
 @Autonomous(name = "MainBotNoIntakeFarSideBlue", group = "MainBot")
 public class MainBotNoIntakeFarSideBlue extends LinearOpMode {
 

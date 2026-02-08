@@ -16,8 +16,8 @@ import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotMecanumDrive;
 import org.firstinspires.ftc.teamcode.mainbot.sensors.MainBotRGBLightIndicator;
 import org.firstinspires.ftc.teamcode.mainbot.utils.MainBotConstants;
 
-@Autonomous(name = "Blue Far", group = "MainBot")
-public class MainBotAutoBlueFarWithIntakeLatest extends LinearOpMode {
+@Autonomous(name = "Red Far", group = "MainBot")
+public class MainBotAutoRedFarWithIntakeLatest extends LinearOpMode {
 
     MainBotMecanumDrive drive;
     MainBotLaunchWithFeederMechanism launcher;
@@ -28,7 +28,7 @@ public class MainBotAutoBlueFarWithIntakeLatest extends LinearOpMode {
     int maxShotsToFire = 3;
 
     int currNoOfIntakePaths = 0;
-    int maxNoOfIntakePaths = 1;
+    int maxNoOfIntakePaths = 2;
 
     private AutonomousState autonomousState;
 
@@ -46,17 +46,17 @@ public class MainBotAutoBlueFarWithIntakeLatest extends LinearOpMode {
     }
 
     /* ---------------- POSES (FAR, MeepMeep) ---------------- */
-    Pose2d startPose = new Pose2d(67, -12, Math.toRadians(180));
+    Pose2d startPose = new Pose2d(67, 12, Math.toRadians(180));
 
-    Pose2d farLaunchPose = new Pose2d(56, -12, Math.toRadians(206));
+    Pose2d farLaunchPose = new Pose2d(56, 12, Math.toRadians(154));
 
-    Pose2d farParkPose = new Pose2d(46, -27, Math.toRadians(180));
+    Pose2d farParkPose = new Pose2d(46, 27, Math.toRadians(180));
 
-    Pose2d intake1Start = new Pose2d(37, -23, Math.toRadians(270));
-    Pose2d intake1End   = new Pose2d(37, -56.5, Math.toRadians(270));
+    Pose2d intake1Start = new Pose2d(37, 23, Math.toRadians(90));
+    Pose2d intake1End   = new Pose2d(37, 55.5, Math.toRadians(90));
 
-    Pose2d intake2Start = new Pose2d(12, -23, Math.toRadians(270));
-    Pose2d intake2End   = new Pose2d(12, -55.5, Math.toRadians(270));
+    Pose2d intake2Start = new Pose2d(12, 23, Math.toRadians(90));
+    Pose2d intake2End   = new Pose2d(12, 53, Math.toRadians(90));
 
     TrajectoryActionBuilder currentTrajectory = null;
     TrajectoryActionBuilder newTrajectory = null;
@@ -65,12 +65,12 @@ public class MainBotAutoBlueFarWithIntakeLatest extends LinearOpMode {
     public void runOpMode() {
 
         drive = new MainBotMecanumDrive(hardwareMap, startPose);
-        launcher = new MainBotLaunchWithFeederMechanism(hardwareMap, telemetry, "Blue");
+        launcher = new MainBotLaunchWithFeederMechanism(hardwareMap, telemetry, "Red");
         intake = new MainBotIntakeMechanism(hardwareMap, telemetry);
 
         String LAUNCH_ZONE = "FAR_ZONE";
 
-        autonomousState = AutonomousState.INIT;
+        autonomousState = MainBotAutoRedFarWithIntakeLatest.AutonomousState.INIT;
         isArtifactAllowedIndicator = new MainBotRGBLightIndicator();
         isArtifactAllowedIndicator.init(hardwareMap, MainBotConstants.ALLOW_ARTIFACT_SERVO_INDICATOR);
 
@@ -83,26 +83,26 @@ public class MainBotAutoBlueFarWithIntakeLatest extends LinearOpMode {
             switch (autonomousState) {
 
                 case INIT:
-                    autonomousState = AutonomousState.GO_TO_LAUNCH_POSITION;
+                    autonomousState = MainBotAutoRedFarWithIntakeLatest.AutonomousState.GO_TO_LAUNCH_POSITION;
                     break;
 
                 case GO_TO_LAUNCH_POSITION:
                     newTrajectory = getTrajectoryActionBuilderForLaunchZone(currentTrajectory);
                     Actions.runBlocking(newTrajectory.build());
                     currentTrajectory = newTrajectory;
-                    autonomousState = AutonomousState.LAUNCH;
+                    autonomousState = MainBotAutoRedFarWithIntakeLatest.AutonomousState.LAUNCH;
                     break;
 
                 case LAUNCH:
                     launcher.launchForAuto(true, LAUNCH_ZONE, intake,isArtifactAllowedIndicator, drive,  telemetry);
-                    autonomousState = AutonomousState.WAIT_FOR_LAUNCH;
+                    autonomousState = MainBotAutoRedFarWithIntakeLatest.AutonomousState.WAIT_FOR_LAUNCH;
                     break;
 
                 case WAIT_FOR_LAUNCH:
                     if (launcher.launchForAuto(false, LAUNCH_ZONE, intake,isArtifactAllowedIndicator , drive, telemetry)) {
                         shotsToFire--;
                         if (shotsToFire > 0) {
-                            autonomousState = AutonomousState.LAUNCH;
+                            autonomousState = MainBotAutoRedFarWithIntakeLatest.AutonomousState.LAUNCH;
                         } else {
                             Actions.runBlocking(
                                     new ParallelAction(
@@ -110,14 +110,14 @@ public class MainBotAutoBlueFarWithIntakeLatest extends LinearOpMode {
                                             intake.stopIntakeAction()
                                     )
                             );
-                            autonomousState = AutonomousState.INTAKE;
+                            autonomousState = MainBotAutoRedFarWithIntakeLatest.AutonomousState.INTAKE;
                         }
                     }
                     break;
 
                 case INTAKE:
                     intake.startIntake();
-                    autonomousState = AutonomousState.GO_TO_INTAKE_POS;
+                    autonomousState = MainBotAutoRedFarWithIntakeLatest.AutonomousState.GO_TO_INTAKE_POS;
                     break;
 
                 case GO_TO_INTAKE_POS:
@@ -132,16 +132,16 @@ public class MainBotAutoBlueFarWithIntakeLatest extends LinearOpMode {
                         shotsToFire = maxShotsToFire;
                         launcher.startLauncher();
 
-                        autonomousState = AutonomousState.GO_TO_LAUNCH_POSITION;
+                        autonomousState = MainBotAutoRedFarWithIntakeLatest.AutonomousState.GO_TO_LAUNCH_POSITION;
                     } else {
-                        autonomousState = AutonomousState.GO_TO_LEAVE_ZONE;
+                        autonomousState = MainBotAutoRedFarWithIntakeLatest.AutonomousState.GO_TO_LEAVE_ZONE;
                     }
                     break;
 
                 case GO_TO_LEAVE_ZONE:
                     newTrajectory = getTrajectoryActionBuilderForLeaveZone(currentTrajectory);
                     Actions.runBlocking(newTrajectory.build());
-                    autonomousState = AutonomousState.COMPLETE;
+                    autonomousState = MainBotAutoRedFarWithIntakeLatest.AutonomousState.COMPLETE;
                     break;
 
                 case COMPLETE:
@@ -178,9 +178,9 @@ public class MainBotAutoBlueFarWithIntakeLatest extends LinearOpMode {
                             new TranslationalVelConstraint(20.0)
                     )
 //                    .waitSeconds(0.5)
-                    .strafeTo(new Vector2d(37,-49), new TranslationalVelConstraint(15.0))
+                    .strafeTo(new Vector2d(37,49), new TranslationalVelConstraint(15.0))
                     .waitSeconds(0.5)
-                    .strafeTo(new Vector2d(37,-52), new TranslationalVelConstraint(15.0))
+                    .strafeTo(new Vector2d(37,52), new TranslationalVelConstraint(15.0))
                     .strafeTo(intake1End.position, new TranslationalVelConstraint(15.0));
         } else {
             return currTrajectory.endTrajectory().fresh()

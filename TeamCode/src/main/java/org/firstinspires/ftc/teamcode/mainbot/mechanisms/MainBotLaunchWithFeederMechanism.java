@@ -10,6 +10,7 @@ import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -32,10 +33,10 @@ public final class MainBotLaunchWithFeederMechanism {
      * at. The minimum velocity is a threshold for determining when to fire.
      */
     final double LAUNCHER_TARGET_VELOCITY = 800;
-    final double LAUNCHER_MIN_VELOCITY = 580;
+    final double LAUNCHER_MIN_VELOCITY = 770;
     final double LAUNCHER_REVERSE_VELOCITY = 230;
 
-    final double LAUNCHER_NEAR_ZONE_TARGET_VELOCITY = 600;
+    final double LAUNCHER_NEAR_ZONE_TARGET_VELOCITY = 550;
     final double LAUNCHER_NEAR_ZONE_MIN_VELOCITY = 400;
 
     final double LAUNCHER_STOP_VELOCITY = 0.0;
@@ -141,8 +142,11 @@ public final class MainBotLaunchWithFeederMechanism {
         launcher.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
 
 //        launcher.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 0, 0, 10));
-
+//
 //        launcher.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(60.1060, 0, 0, 14.3960));
+//        launcher.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(150, 0, 0, 10));
+//
+//        launcher.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(30, 0, 0, 14.3960));
 
 
     }

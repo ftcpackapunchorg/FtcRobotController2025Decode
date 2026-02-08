@@ -46,6 +46,7 @@ import org.firstinspires.ftc.teamcode.mainbot.sensors.MainBotDistanceSensor;
 import org.firstinspires.ftc.teamcode.mainbot.sensors.MainBotRGBLightIndicator;
 import org.firstinspires.ftc.teamcode.mainbot.sensors.MainBotSimpleLEDLight;
 import org.firstinspires.ftc.teamcode.mainbot.utils.MainBotConstants;
+import org.firstinspires.ftc.teamcode.newbot.utils.NewBotConstants;
 
 /*
  * This file includes a teleop (driver-controlled) file for the goBILDA® StarterBot for the
@@ -81,7 +82,8 @@ public class MainBotTeleopMainWithStopper extends OpMode {
 
     MainBotRGBLightIndicator artifactIntakeIndicator, isArtifactAllowedIndicator;
 
-    MainBotColorSensor intakeColorSensor = new MainBotColorSensor();
+    MainBotColorSensor intakeColorSensorArtifact1 = new MainBotColorSensor();
+    MainBotColorSensor intakeColorSensorArtifact2 = new MainBotColorSensor();
 
     boolean enableDistanceSensors;
     boolean enableRGBLights;
@@ -171,7 +173,8 @@ public class MainBotTeleopMainWithStopper extends OpMode {
         // Initiate Color Sensor if configured
         try {
 
-            intakeColorSensor.init(hardwareMap, "intakeColorSensor");
+            intakeColorSensorArtifact1.init(hardwareMap, NewBotConstants.COLOR_SENSOR_ARTIFACT_TOP_1);
+            intakeColorSensorArtifact2.init(hardwareMap, NewBotConstants.COLOR_SENSOR_ARTIFACT_MIDDLE_2);
 
             enableIntakeColorSensor = true;
 
@@ -280,16 +283,36 @@ public class MainBotTeleopMainWithStopper extends OpMode {
 
         if(enableIntakeColorSensor) {
 
-            intakeColorSensor.getDetectedColor(telemetry);
+            intakeColorSensorArtifact1.getDetectedColor(telemetry);
+            intakeColorSensorArtifact2.getDetectedColor(telemetry);
 
         }
 
         if(enableRGBLights) {
 
-            if(enableIntakeColorSensor && (intakeColorSensor.getDetectedColor(telemetry).equals(MainBotColorSensor.DetectedColor.GREEN) ||
-                    intakeColorSensor.getDetectedColor(telemetry).equals(MainBotColorSensor.DetectedColor.PURPLE))) {
+            String color = glowColorSensorRGBLight(intakeColorSensorArtifact1, intakeColorSensorArtifact2);
 
-                telemetry.addData("Detected color : ", intakeColorSensor.getDetectedColor(telemetry));
+            telemetry.addData("Color of RGB Light : ", color);
+
+            if ("GREEN".equals(color)) {
+                artifactIntakeIndicator.setRGBLightToGreen();
+            } else if ("YELLOW".equals(color)) {
+                artifactIntakeIndicator.setRGBLightToYellow();
+            } else if ("ORANGE".equals(color)) {
+                artifactIntakeIndicator.setRGBLightToOrange();
+            } else if ("GREEN".equals(color)) {
+                artifactIntakeIndicator.setRGBLightToGreen();
+            } else if ("RED".equals(color)) {
+                artifactIntakeIndicator.setRGBLightToRed();
+            } else {
+                artifactIntakeIndicator.setRGBLightToWhite();
+            }
+
+
+//            if(enableIntakeColorSensor && (intakeColorSensor.getDetectedColor(telemetry).equals(MainBotColorSensor.DetectedColor.GREEN) ||
+//                    intakeColorSensor.getDetectedColor(telemetry).equals(MainBotColorSensor.DetectedColor.PURPLE))) {
+//
+//                telemetry.addData("Detected color : ", intakeColorSensor.getDetectedColor(telemetry));
 
 //            if(intakeColorSensor.getDetectedColor(telemetry) <= 4) {
 //
@@ -307,9 +330,9 @@ public class MainBotTeleopMainWithStopper extends OpMode {
 //                        thirdRGBLightIndicator.setRGBLightToGreen();
 //                        noOfArtifactsInTheRobot++;
 //                    }
-            } else {
-                artifactIntakeIndicator.setRGBLightToWhite();
-            }
+//            } else {
+//                artifactIntakeIndicator.setRGBLightToWhite();
+//            }
 
             if(enableRGBLights && isStopperBlockingArtifact) {
                 isArtifactAllowedIndicator.setRGBLightToRed();
@@ -362,5 +385,42 @@ public class MainBotTeleopMainWithStopper extends OpMode {
      */
     @Override
     public void stop() {
+    }
+
+    private String glowColorSensorRGBLight(MainBotColorSensor intakeColorSensorArtifact1, MainBotColorSensor intakeColorSensorArtifact2) {
+
+        String colorToSet;
+
+        boolean artifactOneDetected = hasColorSensorDetectedAnArtifact(intakeColorSensorArtifact1);
+        boolean artifactTwoDetected = hasColorSensorDetectedAnArtifact(intakeColorSensorArtifact2);
+
+        if (artifactOneDetected && artifactTwoDetected) {
+            // All three artifacts are detected
+            colorToSet = "GREEN";
+        } else if (artifactOneDetected || artifactTwoDetected) {
+            // Two artifacts are detected
+            colorToSet = "ORANGE";
+        } else {
+            colorToSet = "RED";
+        }
+
+        return colorToSet;
+    }
+
+    private boolean hasColorSensorDetectedAnArtifact(MainBotColorSensor colorSensor) {
+
+        boolean artifactDetected;
+
+        if(enableIntakeColorSensor && (colorSensor.getDetectedColor(telemetry).equals(MainBotColorSensor.DetectedColor.GREEN) ||
+                colorSensor.getDetectedColor(telemetry).equals(MainBotColorSensor.DetectedColor.PURPLE))) {
+
+            artifactDetected = true;
+
+        } else {
+
+            artifactDetected = false;
+        }
+
+        return artifactDetected;
     }
 }

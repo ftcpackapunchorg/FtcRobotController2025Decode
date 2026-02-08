@@ -56,19 +56,19 @@ public class MainBotColorSensor {
 //        telemetry.addData("Blue", "%.3f", colors.blue);
 
         //Determining HSV and alpha
-        telemetry.addData("Hue", JavaUtil.colorToHue(colors.toColor()));
-        telemetry.addData("Saturation", "%.3f", JavaUtil.colorToSaturation(colors.toColor()));
-        telemetry.addData("Value", "%.3f", JavaUtil.colorToValue(colors.toColor()));
-        telemetry.addData("Alpha", "%.3f", colors.alpha);
+//        telemetry.addData("Hue", JavaUtil.colorToHue(colors.toColor()));
+//        telemetry.addData("Saturation", "%.3f", JavaUtil.colorToSaturation(colors.toColor()));
+//        telemetry.addData("Value", "%.3f", JavaUtil.colorToValue(colors.toColor()));
+//        telemetry.addData("Alpha", "%.3f", colors.alpha);
 
         normRed = colors.red/ colors.alpha;
         normGreen = colors.green/ colors.alpha;
         normBlue = colors.blue/ colors.alpha;
         double hue = JavaUtil.colorToHue(colors.toColor());
 
-        telemetry.addData("Red = ", normRed);
-        telemetry.addData("Green = ", normGreen);
-        telemetry.addData("Blue = ", normBlue);
+//        telemetry.addData("Red = ", normRed);
+//        telemetry.addData("Green = ", normGreen);
+//        telemetry.addData("Blue = ", normBlue);
 
         DetectedColor detectedColor = DetectedColor.UNKNOWN;
 
@@ -102,6 +102,7 @@ public class MainBotColorSensor {
             detectedColor = DetectedColor.UNKNOWN;
         }
 //        telemetry.update();
+//        telemetry.addData("Color : ", detectedColor);
 
         return detectedColor;
 

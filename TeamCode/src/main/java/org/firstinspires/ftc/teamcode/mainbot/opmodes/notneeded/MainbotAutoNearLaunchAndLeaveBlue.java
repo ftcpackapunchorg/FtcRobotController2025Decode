@@ -1,10 +1,11 @@
-package org.firstinspires.ftc.teamcode.mainbot.opmodes.auto;
+package org.firstinspires.ftc.teamcode.mainbot.opmodes.notneeded;
 
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -12,7 +13,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotIntakeMechanism;
 import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotLaunchMechanism;
 import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotMecanumDrive;
-
+@Disabled
 @Autonomous(name = "MainbotAutoNearLaunchAndLeaveBlue", group = "MainBot")
 public class MainbotAutoNearLaunchAndLeaveBlue extends LinearOpMode {
 

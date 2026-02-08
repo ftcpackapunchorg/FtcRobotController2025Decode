@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotIntakeMechanism;
 import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotLaunchMechanism;
 import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotMecanumDrive;
 
-@Autonomous(name = "MainBotAutoNoIntakeFarBlueLatest", group = "MainBot")
+@Autonomous(name = "Blue Far No Intake", group = "MainBot")
 public class MainBotNoIntakeFarBlueLatest extends LinearOpMode {
 
     MainBotMecanumDrive drive;

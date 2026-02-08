@@ -1,26 +1,27 @@
-package org.firstinspires.ftc.teamcode.mainbot.opmodes.auto;
+package org.firstinspires.ftc.teamcode.mainbot.opmodes.notneeded;
 
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotIntakeMechanism;
 import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotLaunchWithFeederMechanism;
 import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotMecanumDrive;
-
-@Autonomous(name = "LaunchandleaveCloseRed", group = "MainBot")
-public class LaunchandLeaveCloseRed extends LinearOpMode {
+@Disabled
+@Autonomous(name = "LaunchandleaveCloseBlue", group = "MainBot")
+public class LaunchandLeaveCloseBlue extends LinearOpMode {
 
     MainBotMecanumDrive drive;
     MainBotLaunchWithFeederMechanism launcher;
     MainBotIntakeMechanism intake;
 
     /* ---------------- POSES ---------------- */
-    Pose2d startPose = new Pose2d(-48, 51, Math.toRadians(135));
-    Pose2d shootPose = new Pose2d(-16, 20, Math.toRadians(135));
+    Pose2d startPose = new Pose2d(-48, -51, Math.toRadians(-135));
+    Pose2d shootPose = new Pose2d(-16, -20, Math.toRadians(-135));
 
 
 
@@ -30,8 +31,7 @@ public class LaunchandLeaveCloseRed extends LinearOpMode {
     public void runOpMode() {
 
         drive = new MainBotMecanumDrive(hardwareMap, startPose);
-        launcher = new MainBotLaunchWithFeederMechanism(hardwareMap, telemetry, "Red");
-
+        launcher = new MainBotLaunchWithFeederMechanism(hardwareMap, telemetry, "Blue");
 
 
         /* =========================================================
@@ -39,11 +39,10 @@ public class LaunchandLeaveCloseRed extends LinearOpMode {
          * ========================================================= */
         Actions.runBlocking(
                 drive.actionBuilder(startPose)
-                        .strafeTo(new Vector2d(-16,20))
+                        .strafeTo(new Vector2d(-16,-20))
                         .build()
         );
         fireLauncher();
-
 
 
         /* =========================================================
@@ -51,7 +50,7 @@ public class LaunchandLeaveCloseRed extends LinearOpMode {
          * ========================================================= */
         Actions.runBlocking(
                 drive.actionBuilder(shootPose)
-                        .strafeToLinearHeading(new Vector2d(-10, 25),Math.toRadians(90))
+                        .strafeToLinearHeading(new Vector2d(-8, -32),Math.toRadians(-90))
                         .build()
         );
 
@@ -67,10 +66,9 @@ public class LaunchandLeaveCloseRed extends LinearOpMode {
      * ============================================================= */
     private void fireLauncher() {
         launcher.launchForAuto(true, null, null, null, null, telemetry);
-        while (opModeIsActive() && !launcher.launchForAuto(false, null, null, null, null, telemetry)) {
+        while (opModeIsActive() && !launcher.launchForAuto(false, null, null,  null,null, telemetry)) {
             idle();
         }
     }
 }
-
 

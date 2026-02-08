@@ -16,8 +16,8 @@ import org.firstinspires.ftc.teamcode.mainbot.mechanisms.MainBotMecanumDrive;
 import org.firstinspires.ftc.teamcode.mainbot.sensors.MainBotRGBLightIndicator;
 import org.firstinspires.ftc.teamcode.mainbot.utils.MainBotConstants;
 
-@Autonomous(name = "MainbotAutoNearLaunchAndIntake", group = "MainBot")
-public class MainbotAutoNearLaunchAndIntake extends LinearOpMode {
+@Autonomous(name = "Blue Near", group = "MainBot")
+public class MainBotAutoNearBlueLaunchAndIntake extends LinearOpMode {
 
     MainBotMecanumDrive drive;
     MainBotLaunchWithFeederMechanism launcher;
