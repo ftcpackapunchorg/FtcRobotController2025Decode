@@ -270,11 +270,11 @@ public class MainBotAutoNearRedLaunchAndIntake extends LinearOpMode {
                 headingRadiansIntake = intake1.heading.toDouble();
 
                 intakeTrajectory = currTrajectory.endTrajectory().fresh()
-                        .strafeToLinearHeading(new Vector2d(-12, -23), Math.toRadians(-90), new TranslationalVelConstraint(20.0))
+                        .strafeToLinearHeading(new Vector2d(-12, 23), Math.toRadians(90), new TranslationalVelConstraint(20.0))
                         .waitSeconds(0.5)
-                        .strafeToLinearHeading(new Vector2d(-12, -46), Math.toRadians(-90), new TranslationalVelConstraint(20.0))
+                        .strafeToLinearHeading(new Vector2d(-12, 46), Math.toRadians(90), new TranslationalVelConstraint(20.0))
                         .waitSeconds(0.5)
-                        .strafeToLinearHeading(new Vector2d(-12, -51),Math.toRadians(-90), new TranslationalVelConstraint(20.0));
+                        .strafeToLinearHeading(new Vector2d(-12, 51),Math.toRadians(90), new TranslationalVelConstraint(20.0));
 
                 break;
             case 2:
@@ -285,11 +285,11 @@ public class MainBotAutoNearRedLaunchAndIntake extends LinearOpMode {
                 headingRadiansIntake = intake1.heading.toDouble();
 
                 intakeTrajectory = currTrajectory.endTrajectory().fresh()
-                        .strafeToLinearHeading(new Vector2d(12, -23), Math.toRadians(-90), new TranslationalVelConstraint(20.0))
+                        .strafeToLinearHeading(new Vector2d(12, 23), Math.toRadians(90), new TranslationalVelConstraint(20.0))
                         .waitSeconds(0.5)
-                        .strafeToLinearHeading(new Vector2d(12, -46), Math.toRadians(-90), new TranslationalVelConstraint(20.0))
+                        .strafeToLinearHeading(new Vector2d(12, 46), Math.toRadians(90), new TranslationalVelConstraint(20.0))
                         .waitSeconds(0.5)
-                        .strafeToLinearHeading(new Vector2d(12, -51),Math.toRadians(-90), new TranslationalVelConstraint(20.0));
+                        .strafeToLinearHeading(new Vector2d(12, 51),Math.toRadians(90), new TranslationalVelConstraint(20.0));
 
                 break;
             case 3:

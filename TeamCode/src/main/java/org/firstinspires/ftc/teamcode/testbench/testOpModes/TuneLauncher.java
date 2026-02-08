@@ -18,9 +18,9 @@ public class TuneLauncher extends LinearOpMode {
 
     int stepIndex = 1;
 
-    double highVelocity = 1500;
+    double highVelocity = 800;
 
-    double lowVelovity = 450;
+    double lowVelocity = 400;
 
     double curTargetVelocity = highVelocity;
 
@@ -48,7 +48,7 @@ public class TuneLauncher extends LinearOpMode {
            if(gamepad1.yWasPressed()) {
 
                if(curTargetVelocity == highVelocity) {
-                   curTargetVelocity = lowVelovity;
+                   curTargetVelocity = lowVelocity;
                } else {
                    curTargetVelocity = highVelocity;
                }

@@ -357,13 +357,13 @@ public class MainBotTeleopMainWithStopper extends OpMode {
 
     private void lightUpDistanceBasedLEDs(MainBotSimpleLEDLight ledInput, Telemetry telemetry, double distance) {
 
-        if(distance < 30) {
+        if(distance < 15) {
 
             ledInput.turnLEDToRed();
 
             telemetry.addData("Too close", ledInput.getNameOfLED());
 
-        } else if(distance >= 30 && distance <= 55) {
+        } else if(distance >= 15 && distance <= 30) {
 
             ledInput.turnLEDToAmber();
 

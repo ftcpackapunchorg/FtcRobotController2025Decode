@@ -187,7 +187,7 @@ public class MainBotAutoBlueFarWithIntakeLatest extends LinearOpMode {
                     .strafeToLinearHeading(
                             intake2Start.position,
                             intake2Start.heading,
-                            new TranslationalVelConstraint(10.0)
+                            new TranslationalVelConstraint(20.0)
                     )
                     .waitSeconds(1)
                     .strafeTo(intake2End.position)

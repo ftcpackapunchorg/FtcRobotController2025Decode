@@ -15,6 +15,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.teamcode.mainbot.sensors.MainBotRGBLightIndicator;
 import org.firstinspires.ftc.teamcode.mainbot.utils.MainBotConstants;
 
@@ -144,7 +145,7 @@ public final class MainBotLaunchWithFeederMechanism {
 //        launcher.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 0, 0, 10));
 //
 //        launcher.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(60.1060, 0, 0, 14.3960));
-//        launcher.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(150, 0, 0, 10));
+        launcher.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(270.0, 0, 0, 25.3560));
 //
 //        launcher.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(30, 0, 0, 14.3960));
 
@@ -207,6 +208,16 @@ public final class MainBotLaunchWithFeederMechanism {
                     mainBotLimeLightCamera.limelight.updateRobotOrientation(drive.lazyImu.get().getRobotYawPitchRollAngles().getYaw());
 
                     LLResult llResult = mainBotLimeLightCamera.limelight.getLatestResult();
+
+                    if (llResult != null && llResult.isValid()) {
+                        Pose3D botpose = llResult.getBotpose();
+                        if (botpose != null) {
+                            double x = botpose.getPosition().x;
+                            double y = botpose.getPosition().y;
+                            double heading = botpose.getOrientation().getYaw(AngleUnit.DEGREES);
+                            telemetry.addData("MT1 Location", "(" + x + ", " + y + ", " + heading + ")");
+                        }
+                    }
 
                     // Access fiducial results
                     List<LLResultTypes.FiducialResult> fiducialResults = llResult.getFiducialResults();
