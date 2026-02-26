@@ -24,8 +24,8 @@ public class MainBotAutoBlueFarWithIntakeLatest extends LinearOpMode {
     MainBotIntakeMechanism intake;
     MainBotRGBLightIndicator artifactIntakeIndicator, isArtifactAllowedIndicator;
 
-    int shotsToFire = 3;
-    int maxShotsToFire = 3;
+    int shotsToFire = 2;
+    int maxShotsToFire = 2;
 
     int currNoOfIntakePaths = 0;
     int maxNoOfIntakePaths = 1;
@@ -46,7 +46,7 @@ public class MainBotAutoBlueFarWithIntakeLatest extends LinearOpMode {
     }
 
     /* ---------------- POSES (FAR, MeepMeep) ---------------- */
-    Pose2d startPose = new Pose2d(67, -12, Math.toRadians(180));
+    Pose2d startPose = new Pose2d(67.5, -12, Math.toRadians(180));
 
     Pose2d farLaunchPose = new Pose2d(56, -12, Math.toRadians(206));
 

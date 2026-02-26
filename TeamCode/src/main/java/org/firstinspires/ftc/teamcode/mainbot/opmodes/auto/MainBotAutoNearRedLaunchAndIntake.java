@@ -23,11 +23,11 @@ public class MainBotAutoNearRedLaunchAndIntake extends LinearOpMode {
     MainBotLaunchWithFeederMechanism launcher;
     MainBotIntakeMechanism intake;
     MainBotRGBLightIndicator artifactIntakeIndicator, isArtifactAllowedIndicator;
-    int shotsToFire = 3; // The number of shots to fire in this auto.
-    int maxShotsToFire = 3;
+    int shotsToFire = 2; // The number of shots to fire in this auto.
+    int maxShotsToFire = 2;
 
     int currNoOfIntakePaths = 0;
-    int maxNoOfIntakePaths = 2;
+    int maxNoOfIntakePaths = 1;
 
     private AutonomousState autonomousState;
 
@@ -55,13 +55,13 @@ public class MainBotAutoNearRedLaunchAndIntake extends LinearOpMode {
 
 
     /* ---------------- POSES ---------------- */
-    Pose2d startPose = new Pose2d(-49, 48, Math.toRadians(-45));
+    Pose2d startPose = new Pose2d(-49, 48, Math.toRadians(135));
 
     Pose2d nearLaunchPose = new Pose2d(-24, 24, Math.toRadians(-45));
 
     Pose2d nearLeavePose = new Pose2d(-20, 48, Math.toRadians(180));
 
-    Pose2d intake1  = new Pose2d(-11.8, 23, Math.toRadians(90));
+    Pose2d intake1  = new Pose2d(-12, 23, Math.toRadians(90));
 
     Pose2d intake2 = new Pose2d(13, 54, Math.toRadians(-180));
 

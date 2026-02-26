@@ -29,12 +29,12 @@ public final class MainBotLaunchMechanism {
      * velocity. Here we are setting the target, and minimum velocity that the launcher should run
      * at. The minimum velocity is a threshold for determining when to fire.
      */
-    final double LAUNCHER_TARGET_VELOCITY = 800;
-    final double LAUNCHER_MIN_VELOCITY = 780;
+    final double LAUNCHER_TARGET_VELOCITY = 780;
+    final double LAUNCHER_MIN_VELOCITY = 760;
     final double LAUNCHER_REVERSE_VELOCITY = 150;
 
-    final double LAUNCHER_NEAR_ZONE_TARGET_VELOCITY = 600;
-    final double LAUNCHER_NEAR_ZONE_MIN_VELOCITY = 500;
+    final double LAUNCHER_NEAR_ZONE_TARGET_VELOCITY = 5500;
+    final double LAUNCHER_NEAR_ZONE_MIN_VELOCITY = 450;
 
     ElapsedTime feederTimer = new ElapsedTime();
 

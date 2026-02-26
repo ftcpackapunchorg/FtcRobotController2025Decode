@@ -23,11 +23,11 @@ public class MainBotAutoNearBlueLaunchAndIntake extends LinearOpMode {
     MainBotLaunchWithFeederMechanism launcher;
     MainBotIntakeMechanism intake;
     MainBotRGBLightIndicator artifactIntakeIndicator, isArtifactAllowedIndicator;
-    int shotsToFire = 3; // The number of shots to fire in this auto.
-    int maxShotsToFire = 3;
+    int shotsToFire = 2; // The number of shots to fire in this auto.
+    int maxShotsToFire = 2;
 
     int currNoOfIntakePaths = 0;
-    int maxNoOfIntakePaths = 2;
+    int maxNoOfIntakePaths = 1;
 
     private AutonomousState autonomousState;
 

@@ -33,6 +33,7 @@
 package org.firstinspires.ftc.teamcode.newbot.opmodes.teleop;
 
 import com.acmerobotics.roadrunner.Pose2d;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -63,6 +64,7 @@ import org.firstinspires.ftc.teamcode.newbot.utils.NewBotConstants;
  */
 
 @TeleOp(name = "NewBot Teleop Main With Stopper OpMode", group = "NewBot")
+@Disabled
 public class NewBotTeleopMainWithStopperOpMode extends OpMode {
 
     NewBotMecanumDrive drive;

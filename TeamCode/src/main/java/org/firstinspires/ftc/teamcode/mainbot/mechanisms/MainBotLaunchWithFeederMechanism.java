@@ -33,11 +33,11 @@ public final class MainBotLaunchWithFeederMechanism {
      * velocity. Here we are setting the target, and minimum velocity that the launcher should run
      * at. The minimum velocity is a threshold for determining when to fire.
      */
-    final double LAUNCHER_TARGET_VELOCITY = 800;
-    final double LAUNCHER_MIN_VELOCITY = 770;
+    final double LAUNCHER_TARGET_VELOCITY = 780;
+    final double LAUNCHER_MIN_VELOCITY = 755;
     final double LAUNCHER_REVERSE_VELOCITY = 230;
 
-    final double LAUNCHER_NEAR_ZONE_TARGET_VELOCITY = 550;
+    final double LAUNCHER_NEAR_ZONE_TARGET_VELOCITY = 570;
     final double LAUNCHER_NEAR_ZONE_MIN_VELOCITY = 400;
 
     final double LAUNCHER_STOP_VELOCITY = 0.0;
@@ -193,7 +193,7 @@ public final class MainBotLaunchWithFeederMechanism {
      *                      state machine and launch the ball.
      * @return "true" for one cycle after a ball has been successfully launched, "false" otherwise.
      */
-    public boolean launchForAuto(boolean shotRequested, String launchZone, MainBotIntakeMechanism intake, MainBotRGBLightIndicator isArtifactAllowedIndicator, MainBotMecanumDrive drive, Telemetry telemetry){
+    public boolean launchForAuto(boolean shotRequested, String autoLaunchZoneIn, MainBotIntakeMechanism intake, MainBotRGBLightIndicator isArtifactAllowedIndicator, MainBotMecanumDrive drive, Telemetry telemetry){
         switch (autoLaunchState) {
             case IDLE:
                 if (shotRequested) {
@@ -201,79 +201,12 @@ public final class MainBotLaunchWithFeederMechanism {
                     shotTimer.reset();
                 }
                 break;
-            case FIND_LAUNCH_ZONE:
-
-                if(enableLimelight) {
-
-                    mainBotLimeLightCamera.limelight.updateRobotOrientation(drive.lazyImu.get().getRobotYawPitchRollAngles().getYaw());
-
-                    LLResult llResult = mainBotLimeLightCamera.limelight.getLatestResult();
-
-                    if (llResult != null && llResult.isValid()) {
-                        Pose3D botpose = llResult.getBotpose();
-                        if (botpose != null) {
-                            double x = botpose.getPosition().x;
-                            double y = botpose.getPosition().y;
-                            double heading = botpose.getOrientation().getYaw(AngleUnit.DEGREES);
-                            telemetry.addData("MT1 Location", "(" + x + ", " + y + ", " + heading + ")");
-                        }
-                    }
-
-                    // Access fiducial results
-                    List<LLResultTypes.FiducialResult> fiducialResults = llResult.getFiducialResults();
-
-                    for (LLResultTypes.FiducialResult fiducial : fiducialResults) {
-                        int id = fiducial.getFiducialId(); // The ID number of the fiducial
-                        double x = fiducial.getTargetXDegrees(); // Where it is (left-right)
-                        double y = fiducial.getTargetYDegrees(); // Where it is (up-down)
-                        double StrafeDistance_3D = fiducial.getRobotPoseTargetSpace().getPosition().y;;
-                        telemetry.addData("Fiducial " + id, "is " + StrafeDistance_3D + " meters away");
-
-//            fiducial.getRobotPoseTargetSpace(); // Robot pose relative it the AprilTag Coordinate System (Most Useful)
-//            fiducial.getCameraPoseTargetSpace(); // Camera pose relative to the AprilTag (useful)
-//            fiducial.getRobotPoseFieldSpace(); // Robot pose in the field coordinate system based on this tag alone (useful)
-//            fiducial.getTargetPoseCameraSpace(); // AprilTag pose in the camera's coordinate system (not very useful)
-//            fiducial.getTargetPoseRobotSpace(); // AprilTag pose in the robot's coordinate system (not very useful)
-
-//                        double currentPositionX = fiducial.getRobotPoseFieldSpace().getPosition().x;
-//                        double currentPositionY = fiducial.getRobotPoseFieldSpace().getPosition().y;
-//                        double currentPositionAngleInDegrees = fiducial.getRobotPoseFieldSpace().getOrientation().getYaw(AngleUnit.DEGREES);
-//
-//                        Pose2d currRobotPose = new Pose2d(currentPositionX, currentPositionY, Math.toRadians(currentPositionAngleInDegrees));
-//
-//                        telemetry.addData("Current Position X : ", currentPositionX);
-//                        telemetry.addData("Current Position Y : ", currentPositionY);
-//                        telemetry.addData("Current Position Angle In Degrees : ", currentPositionAngleInDegrees);
-//                        telemetry.update();
-
-                        double robotFromTargetPosePosX = fiducial.getRobotPoseTargetSpace().getPosition().x;
-                        double robotFromTargetPosePosY = fiducial.getRobotPoseTargetSpace().getPosition().y;
-                        double robotFromTargetPosePosAngleInDegrees = fiducial.getRobotPoseTargetSpace().getOrientation().getYaw(AngleUnit.DEGREES);
-
-                        Pose2d robotFromTargetPose = new Pose2d(robotFromTargetPosePosX, robotFromTargetPosePosY, Math.toRadians(robotFromTargetPosePosAngleInDegrees));
-
-                        telemetry.addData("Robot Position From Target X : ", robotFromTargetPosePosX);
-                        telemetry.addData("Robot Position From Target Y : ", robotFromTargetPosePosY);
-                        telemetry.addData("Robot Position From Target Angle In Degrees : ", robotFromTargetPosePosAngleInDegrees);
-                        telemetry.update();
-
-                        if(robotFromTargetPosePosX > 10000) {
-                            autoLaunchZone = "FAR_ZONE";
-                        } else {
-                            autoLaunchZone = "NEAR_ZONE";
-                        }
-                    }
-
-                    autoLaunchState = AutoLaunchState.PREPARE;
-                } else {
-                    autoLaunchState = AutoLaunchState.PREPARE;
-                }
-                break;
             case PREPARE:
-                if("FAR_ZONE".equals(autoLaunchZone)) {
+                telemetry.addData("autoLaunchZoneIn", autoLaunchZoneIn);
+                if("FAR_ZONE".equals(autoLaunchZoneIn)) {
                     targetVelocity = LAUNCHER_TARGET_VELOCITY;
                     minVeliocity = LAUNCHER_MIN_VELOCITY;
-                } else if("NEAR_ZONE".equals(autoLaunchZone)) {
+                } else if("NEAR_ZONE".equals(autoLaunchZoneIn)) {
                     targetVelocity = LAUNCHER_NEAR_ZONE_TARGET_VELOCITY;
                     minVeliocity = LAUNCHER_NEAR_ZONE_MIN_VELOCITY;
                 }
